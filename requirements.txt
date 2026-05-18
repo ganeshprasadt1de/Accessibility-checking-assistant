@@ -1,0 +1,8 @@
+ifcopenshell
+rdflib
+pyshacl
+streamlit
+pandas
+requests
+shapely
+plotly

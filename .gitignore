@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.streamlit/
+lbd_graph.ttl
+raw_lbd_graph.ttl
+property_mapping/
+.tools/
+IFCtoLBD-master.zip
+NBU_MedicalClinic_ifc.zip
+sample_models/
+*.pptx
+~$*.pptx
+*.msi
+.service_state.json

@@ -1,0 +1,573 @@
+@prefix check: <http://example.org/lbd-check#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix bot: <https://w3id.org/bot#> .
+@prefix beo: <https://pi.pauwel.be/voc/buildingelement#> .
+@prefix ifc: <https://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix acc: <http://example.org/accessibility#> .
+
+check:DoorShape
+    a sh:NodeShape ;
+    sh:targetClass beo:Door ;
+    sh:sparql [
+        sh:message "Door clear width: Route doors should provide at least 0.90 m clear width." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX acc: <http://example.org/accessibility#>
+SELECT $this ?value
+WHERE {
+  OPTIONAL { $this acc:derivedDoorWidthM ?geometryValue . }
+  OPTIONAL {
+    $this ?property ?propertyValue .
+    FILTER(REGEX(LCASE(STR(?property)), "(clearwidth|overallwidth|openingwidth|lichtebreite|durchgangsbreite)"))
+  }
+  BIND(COALESCE(?propertyValue, ?geometryValue) AS ?value)
+  FILTER(!BOUND(?value) || xsd:decimal(?value) < 0.90)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Door clear height: Route doors should provide at least 2.05 m clear height." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX acc: <http://example.org/accessibility#>
+SELECT $this ?value
+WHERE {
+  OPTIONAL { $this acc:derivedDoorHeightM ?geometryValue . }
+  OPTIONAL {
+    $this ?property ?propertyValue .
+    FILTER(REGEX(LCASE(STR(?property)), "(clearheight|overallheight|openingheight|lichtehoehe|durchgangshoehe)"))
+  }
+  BIND(COALESCE(?propertyValue, ?geometryValue) AS ?value)
+  FILTER(!BOUND(?value) || xsd:decimal(?value) < 2.05)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Door approach space: Manual doors should provide at least 0.50 m lateral approach space near the lock side." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT $this ?value
+WHERE {
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(approachspace|lateralapproachspace|movementspace|bewegungsflaeche)"))
+  }
+  FILTER(!BOUND(?value) || xsd:decimal(?value) < 0.50)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Door reveal depth: Door reveal depth should not exceed 0.26 m where the handle must be reached." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT $this ?value
+WHERE {
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(revealdepth|laibungstiefe)"))
+  }
+  FILTER(!BOUND(?value) || xsd:decimal(?value) > 0.26)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Door threshold height: Door thresholds should be avoided or not exceed 0.02 m." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT $this ?value
+WHERE {
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(thresholdheight|sillheight|schwellenhoehe)"))
+  }
+  FILTER(!BOUND(?value) || xsd:decimal(?value) > 0.02)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Door handle height: Door handles should be reachable between 0.85 m and 1.05 m." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT $this ?value
+WHERE {
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(handleheight|controlheight|operatingheight|griffhoehe|bedienhoehe)"))
+  }
+  FILTER(!BOUND(?value) || xsd:decimal(?value) < 0.85 || xsd:decimal(?value) > 1.05)
+}
+        """ ;
+    ] .
+
+check:RampShape
+    a sh:NodeShape ;
+    sh:targetClass beo:Ramp ;
+    sh:targetClass beo:RampFlight ;
+    sh:targetClass ifc:IfcRamp ;
+    sh:targetClass ifc:IfcRampFlight ;
+    sh:sparql [
+        sh:message "Ramp slope: Ramp longitudinal gradient should not exceed 6 percent." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT $this ?value
+WHERE {
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(slopepercent|slope|rampslope|gradient|steigung|laengsneigung)"))
+  }
+  FILTER(!BOUND(?value) || IF(xsd:decimal(?value) <= 1, xsd:decimal(?value) * 100, xsd:decimal(?value)) > 6.00)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Ramp usable width: Ramp usable width should be at least 1.20 m." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT $this ?value
+WHERE {
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(usablewidth|clearwidth|width|nutzbreite|laufbreite)"))
+  }
+  FILTER(!BOUND(?value) || xsd:decimal(?value) < 1.20)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Ramp run length: A ramp run should not be longer than 6.00 m without a platform." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT $this ?value
+WHERE {
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(length|ramplength|laenge)"))
+  }
+  FILTER(!BOUND(?value) || xsd:decimal(?value) > 6.00)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Ramp platform length: Ramp platforms should provide at least 1.50 m usable length." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT $this ?value
+WHERE {
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(platformlength|landinglength|podestlaenge)"))
+  }
+  FILTER(!BOUND(?value) || xsd:decimal(?value) < 1.50)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Ramp handrails: Ramps should have handrails on both sides." ;
+        sh:select """
+SELECT $this ?value
+WHERE {
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(hashandrails|hashandrail|handrails|handlauf)"))
+  }
+  FILTER(!BOUND(?value) || ?value != true)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Ramp edge protection: Ramps should have wheel deflectors or edge protection." ;
+        sh:select """
+SELECT $this ?value
+WHERE {
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(hasedgeprotection|wheeldeflector|raisedkerb|radabweiser)"))
+  }
+  FILTER(!BOUND(?value) || ?value != true)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Ramp cross slope: Ramps should not have a cross slope." ;
+        sh:select """
+SELECT $this ?value
+WHERE {
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(hascrossslope|crossslope|querneigung)"))
+  }
+  FILTER(BOUND(?value) && ?value = true)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Ramp handrail height: Ramp handrails should be between 0.85 m and 0.90 m high." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT $this ?value
+WHERE {
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(handrailheight|railheight|handlaufhoehe)"))
+  }
+  FILTER(!BOUND(?value) || xsd:decimal(?value) < 0.85 || xsd:decimal(?value) > 0.90)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Ramp handrail diameter: Ramp handrails should have a grip diameter between 0.03 m and 0.045 m." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT $this ?value
+WHERE {
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(handraildiameter|raildiameter|handlaufdurchmesser)"))
+  }
+  FILTER(!BOUND(?value) || xsd:decimal(?value) < 0.03 || xsd:decimal(?value) > 0.045)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Ramp handrail extension: Ramp handrails should extend at least 0.30 m beyond the ramp run." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT $this ?value
+WHERE {
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(handrailextension|railextension|handlaufverlaengerung)"))
+  }
+  FILTER(!BOUND(?value) || xsd:decimal(?value) < 0.30)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Ramp start area width: The movement area before the ramp should be at least 1.50 m wide." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT $this ?value
+WHERE {
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(startmovementareawidth|startareawidth|lowerlandingwidth)"))
+  }
+  FILTER(!BOUND(?value) || xsd:decimal(?value) < 1.50)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Ramp start area depth: The movement area before the ramp should be at least 1.50 m deep." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT $this ?value
+WHERE {
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(startmovementareadepth|startareadepth|lowerlandingdepth)"))
+  }
+  FILTER(!BOUND(?value) || xsd:decimal(?value) < 1.50)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Ramp end area width: The movement area after the ramp should be at least 1.50 m wide." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT $this ?value
+WHERE {
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(endmovementareawidth|endareawidth|upperlandingwidth)"))
+  }
+  FILTER(!BOUND(?value) || xsd:decimal(?value) < 1.50)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Ramp end area depth: The movement area after the ramp should be at least 1.50 m deep." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT $this ?value
+WHERE {
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(endmovementareadepth|endareadepth|upperlandingdepth)"))
+  }
+  FILTER(!BOUND(?value) || xsd:decimal(?value) < 1.50)
+}
+        """ ;
+    ] .
+
+check:LiftShape
+    a sh:NodeShape ;
+    sh:targetClass ifc:IfcTransportElement ;
+    sh:sparql [
+        sh:message "Lift door width: Lift doors should provide at least 0.90 m clear width." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT $this ?value
+WHERE {
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(liftdoorwidth|doorwidth|cleardoorwidth|aufzugtuerbreite)"))
+  }
+  FILTER(!BOUND(?value) || xsd:decimal(?value) < 0.90)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Lift cabin size: Lift cabins should provide at least 1.10 m width and 1.40 m depth." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT $this ?value
+WHERE {
+  OPTIONAL {
+    $this ?widthProperty ?width .
+    FILTER(REGEX(LCASE(STR(?widthProperty)), "(cabinwidth|carwidth|liftcabinwidth|kabinenbreite)"))
+  }
+  OPTIONAL {
+    $this ?depthProperty ?depth .
+    FILTER(REGEX(LCASE(STR(?depthProperty)), "(cabindepth|cardepth|liftcabindepth|kabinentiefe)"))
+  }
+  BIND(CONCAT("width ", STR(?width), " depth ", STR(?depth)) AS ?value)
+  FILTER(!BOUND(?width) || !BOUND(?depth) || xsd:decimal(?width) < 1.10 || xsd:decimal(?depth) < 1.40)
+}
+        """ ;
+    ] .
+
+check:SpaceShape
+    a sh:NodeShape ;
+    sh:targetClass bot:Space ;
+    sh:sparql [
+        sh:message "Corridor clear width: Corridors and circulation spaces should provide at least 1.20 m clear width." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX acc: <http://example.org/accessibility#>
+SELECT $this ?value
+WHERE {
+  $this rdfs:label ?label .
+  FILTER(REGEX(LCASE(STR(?label)), "corridor|flur|gang|circulation|verkehr"))
+  OPTIONAL { $this acc:derivedClearWidthM ?geometryValue . }
+  OPTIONAL {
+    $this ?property ?propertyValue .
+    FILTER(REGEX(LCASE(STR(?property)), "(clearwidth|width|corridorwidth|lichtebreite)"))
+  }
+  BIND(COALESCE(?geometryValue, ?propertyValue) AS ?value)
+  FILTER(!BOUND(?value) || xsd:decimal(?value) < 1.20)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Passing space: Long circulation routes should provide passing spaces of at least 1.80 m." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT $this ?value
+WHERE {
+  $this rdfs:label ?label .
+  FILTER(REGEX(LCASE(STR(?label)), "corridor|flur|gang|circulation|verkehr"))
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(passingspace|passingplace|begegnungsflaeche)"))
+  }
+  FILTER(!BOUND(?value) || xsd:decimal(?value) < 1.80)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Route topology: Circulation spaces should connect to at least one route door." ;
+        sh:select """
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX acc: <http://example.org/accessibility#>
+SELECT $this ?value
+WHERE {
+  $this rdfs:label ?label .
+  FILTER(REGEX(LCASE(STR(?label)), "corridor|flur|gang|circulation|verkehr"))
+  FILTER NOT EXISTS { $this acc:hasRouteDoor ?door . }
+  BIND("missing" AS ?value)
+}
+        """ ;
+    ] .
+
+check:ToiletShape
+    a sh:NodeShape ;
+    sh:targetClass bot:Space ;
+    sh:sparql [
+        sh:message "Accessible toilet movement width: Accessible toilets should provide at least 1.50 m free movement width." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT $this ?value
+WHERE {
+  $this rdfs:label ?label .
+  FILTER(REGEX(LCASE(STR(?label)), "toilet|wc|sanitary|restroom|bathroom"))
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(movementareawidth|clearareawidth|turningareawidth)"))
+  }
+  FILTER(!BOUND(?value) || xsd:decimal(?value) < 1.50)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Accessible toilet movement depth: Accessible toilets should provide at least 1.50 m free movement depth." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT $this ?value
+WHERE {
+  $this rdfs:label ?label .
+  FILTER(REGEX(LCASE(STR(?label)), "toilet|wc|sanitary|restroom|bathroom"))
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(movementareadepth|clearareadepth|turningareadepth)"))
+  }
+  FILTER(!BOUND(?value) || xsd:decimal(?value) < 1.50)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Accessible toilet turning space: Accessible toilets should provide a 1.50 m turning circle." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT $this ?value
+WHERE {
+  $this rdfs:label ?label .
+  FILTER(REGEX(LCASE(STR(?label)), "toilet|wc|sanitary|restroom|bathroom"))
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(turningdiameter|turningcircle|turningspace|wendekreis)"))
+  }
+  FILTER(!BOUND(?value) || xsd:decimal(?value) < 1.50)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Accessible toilet door direction: Accessible toilet doors should not open into the movement area." ;
+        sh:select """
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT $this ?value
+WHERE {
+  $this rdfs:label ?label .
+  FILTER(REGEX(LCASE(STR(?label)), "toilet|wc|sanitary|restroom|bathroom"))
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(opensinward|dooropensinward)"))
+  }
+  FILTER(!BOUND(?value) || ?value = true)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Accessible toilet washbasin: Accessible toilets should include a reachable washbasin." ;
+        sh:select """
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT $this ?value
+WHERE {
+  $this rdfs:label ?label .
+  FILTER(REGEX(LCASE(STR(?label)), "toilet|wc|sanitary|restroom|bathroom"))
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(haswashbasin|washbasin|hassink)"))
+  }
+  FILTER(!BOUND(?value) || ?value != true)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Accessible toilet side approach width: Transfer space next to the toilet should be at least 0.90 m wide." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT $this ?value
+WHERE {
+  $this rdfs:label ?label .
+  FILTER(REGEX(LCASE(STR(?label)), "toilet|wc|sanitary|restroom|bathroom"))
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(sideapproachwidth)"))
+  }
+  FILTER(!BOUND(?value) || xsd:decimal(?value) < 0.90)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Accessible toilet side approach depth: Transfer space next to the toilet should be at least 0.70 m deep." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT $this ?value
+WHERE {
+  $this rdfs:label ?label .
+  FILTER(REGEX(LCASE(STR(?label)), "toilet|wc|sanitary|restroom|bathroom"))
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(sideapproachdepth)"))
+  }
+  FILTER(!BOUND(?value) || xsd:decimal(?value) < 0.70)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Accessible toilet emergency call: Accessible toilets should include an emergency call control." ;
+        sh:select """
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT $this ?value
+WHERE {
+  $this rdfs:label ?label .
+  FILTER(REGEX(LCASE(STR(?label)), "toilet|wc|sanitary|restroom|bathroom"))
+  OPTIONAL {
+    $this ?property ?value .
+    FILTER(REGEX(LCASE(STR(?property)), "(hasemergencycall|emergencycall)"))
+  }
+  FILTER(!BOUND(?value) || ?value != true)
+}
+        """ ;
+    ] .
+
+check:RouteEdgeShape
+    a sh:NodeShape ;
+    sh:targetClass acc:RouteEdge ;
+    sh:sparql [
+        sh:message "Route door width: Every door on an accessible route should be at least 0.90 m wide." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX acc: <http://example.org/accessibility#>
+SELECT $this ?value
+WHERE {
+  $this acc:routeDoorWidthM ?value .
+  FILTER(xsd:decimal(?value) < 0.90)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Route level change: Accessible route edges should be step-free or have a level change of at most 0.02 m." ;
+        sh:select """
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX acc: <http://example.org/accessibility#>
+SELECT $this ?value
+WHERE {
+  $this acc:levelChangeM ?value .
+  FILTER(xsd:decimal(?value) > 0.02)
+}
+        """ ;
+    ] ;
+    sh:sparql [
+        sh:message "Route pass result: Every accessible route edge should pass the width and level-change checks." ;
+        sh:select """
+PREFIX acc: <http://example.org/accessibility#>
+SELECT $this ?value
+WHERE {
+  $this acc:routePass ?value .
+  FILTER(?value != true)
+}
+        """ ;
+    ] .
+
+
+

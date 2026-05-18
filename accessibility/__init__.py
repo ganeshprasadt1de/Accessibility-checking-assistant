@@ -1,0 +1,1 @@
+"""Accessibility checking assistant."""

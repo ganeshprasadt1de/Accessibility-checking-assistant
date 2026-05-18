@@ -236,15 +236,15 @@ def add_impact_option_to_graph(graph: Graph, option: ImpactOption) -> None:
     graph.add((subject, ACC.changeExplanation, Literal(option.explanation)))
 
 
-def impact_rows(option: ImpactOption) -> list[dict[str, float | str | bool]]:
+def impact_rows(option: ImpactOption) -> list[dict[str, str]]:
     return [
         {"Item": "Checked element", "Before": option.element, "After": option.rule, "Change": option.source},
         {"Item": "Current value", "Before": option.current_value, "After": option.required_value, "Change": option.action},
-        {"Item": "Building footprint m2", "Before": option.old_footprint_m2, "After": option.new_footprint_m2, "Change": option.footprint_change_m2},
-        {"Item": "Building footprint percent", "Before": 0.0, "After": option.footprint_change_percent, "Change": option.footprint_change_percent},
-        {"Item": "Building volume m3", "Before": option.old_volume_m3, "After": option.new_volume_m3, "Change": option.volume_change_m3},
-        {"Item": f"{option.affected_zone} area m2", "Before": option.affected_zone_area_before_m2, "After": option.affected_zone_area_after_m2, "Change": option.affected_zone_area_change_m2},
-        {"Item": "Fits plot", "Before": "", "After": option.fits_plot, "Change": ""},
+        {"Item": "Building footprint", "Before": _m2(option.old_footprint_m2), "After": _m2(option.new_footprint_m2), "Change": _m2(option.footprint_change_m2)},
+        {"Item": "Building footprint percent", "Before": "0.000 percent", "After": _percent_text(option.footprint_change_percent), "Change": _percent_text(option.footprint_change_percent)},
+        {"Item": "Building volume", "Before": _m3(option.old_volume_m3), "After": _m3(option.new_volume_m3), "Change": _m3(option.volume_change_m3)},
+        {"Item": f"{option.affected_zone} area", "Before": _m2(option.affected_zone_area_before_m2), "After": _m2(option.affected_zone_area_after_m2), "Change": _m2(option.affected_zone_area_change_m2)},
+        {"Item": "Fits plot", "Before": "not checked", "After": "yes" if option.fits_plot else "no", "Change": "plot limit respected" if option.fits_plot else "plot limit exceeded"},
     ]
 
 
@@ -472,6 +472,18 @@ def _percent(change: float, base: float) -> float:
     if abs(base) < 0.0001:
         return 0.0
     return change / base * 100
+
+
+def _m2(value: float) -> str:
+    return f"{value:.3f} m2"
+
+
+def _m3(value: float) -> str:
+    return f"{value:.3f} m3"
+
+
+def _percent_text(value: float) -> str:
+    return f"{value:.3f} percent"
 
 
 def _add_box(fig, bounds, name: str, color: str, text: str) -> None:

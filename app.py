@@ -3,6 +3,7 @@ from hashlib import sha1
 
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 from rdflib import Graph
 
 from accessibility.checker import check_graph
@@ -47,7 +48,7 @@ def show_html(html: str, height: int) -> None:
     path = STATIC_VIEW_DIR / name
     if not path.exists():
         path.write_text(html, encoding="utf-8")
-    st.iframe(f"app/static/generated/{name}", height=height, width="stretch")
+    components.iframe(f"/app/static/generated/{name}", height=height, scrolling=True)
 
 
 class StoredUpload:

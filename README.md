@@ -68,7 +68,8 @@ IFC file
 -> 2D Shapely route plan
 -> 3D route and issue viewer
 -> detailed 3D clearance model
--> RDF visualisation and door-size impact view
+-> voxel route simulation
+-> RDF visualisation and Changes Impact view
 -> local LLM explanation through Ollama
 ```
 
@@ -79,13 +80,15 @@ The LLM does not decide if something passes or fails. SHACL, SPARQL, IfcOpenShel
 ```text
 Check Results     tables for accessibility elements, issues, route edges, SPARQL checks, RDF output, and assistant
 Visualisation     raw IFCtoLBD graph, enriched accessibility-route graph, and RDF downloads
-Design Impact     simple door-width impact model when the outer building size stays fixed
-Building Model    2D route plan, 3D route viewer, and detailed 3D clearance model
+Changes Impact    door-widening impact simulation with footprint, volume, plot, room, and RDF change facts
+Building Model    2D route plan, 3D route viewer, detailed 3D clearance model, and voxel route simulation
 ```
 
 The visualisation page does not draw every triple from a large IFC file. It shows focused graph views so the browser stays usable. The full RDF data is still available through the Turtle downloads.
 
-The design impact page is a small reasoning view. It shows that widening an accessible route door can affect connected space, such as the wall opening, corridor clearance, connected room clearance, and accessible route.
+The Changes Impact page is a reasoning view tied to failed route doors. It shows what happens when a door is widened to satisfy the route width rule. The user can choose whether the building expands outward or the outer footprint stays fixed and a connected space gives up area. The app calculates footprint change, volume change, affected space area, percent change, and whether the entered plot limit can accept the change.
+
+The selected change is also written into the RDF graph as a change option. That gives the assistant real numbers to explain instead of asking the LLM to guess.
 
 ## Route Viewer Checks
 
@@ -102,11 +105,13 @@ clearance height 2.05 m
 
 The clearance volume is compared against 3D obstacle bounding boxes. A bounding box is a simple box around a 3D object. This adds height-based checking to the 2D plan check.
 
+The voxel route simulation divides obstacle geometry into small 3D cells called voxels. A voxel is a cube in a 3D grid. The app moves a wheelchair-sized clearance volume along the route and checks whether that volume intersects occupied voxels. The visible wheelchair and person in the viewer explain the movement, but the pass or fail result comes from the clearance volume. The implementation uses the same voxel-grid logic directly in Python and detects Open3D if it is installed in a compatible Python environment.
+
 ## Needed Software
 
 Install these once:
 
-1. Python
+1. Python 3.12
 2. Java 17 or newer
 3. Ollama
 
@@ -114,10 +119,16 @@ Java is needed because IFCtoLBD runs as a Java tool.
 
 Ollama is needed for the local LLM explanation.
 
-Install Python packages:
+Python 3.12 is recommended because Open3D currently does not install reliably on newer Python versions such as Python 3.14.
+
+Open3D is used by the voxel route simulation setup. The app also keeps a direct Python voxel grid for the pass or fail calculation, so the route result stays clear and inspectable.
+
+Create the local Python environment:
 
 ```powershell
-pip install -r requirements.txt
+py -3.12 -m venv .venv312
+.\.venv312\Scripts\activate
+python -m pip install -r requirements.txt
 ```
 
 Install the local LLM model:
@@ -148,6 +159,7 @@ Open PowerShell in this folder:
 
 ```powershell
 cd "C:\Users\ganes\Desktop\Ubung - UniStuttgart\Ubung - UniStuttgart\LAB - Knowledge representations for Buildings\Mid Term 1"
+.\.venv312\Scripts\activate
 streamlit run app.py
 ```
 
@@ -172,6 +184,8 @@ accessibility/plan_viewer.py            2D Shapely route plan
 accessibility/rdf_graph_viewer.py       RDF graph visualisation
 accessibility/model_viewer.py           3D route and issue viewer
 accessibility/clearance_3d.py           detailed 3D clearance model
+accessibility/voxel_clearance.py        voxel route simulation with wheelchair/person marker
+accessibility/change_impact.py          Changes Impact calculations and RDF change facts
 accessibility/checker.py                SHACL validation
 accessibility/explainer.py              local LLM explanations
 ```

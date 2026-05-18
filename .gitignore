@@ -1,5 +1,7 @@
 __pycache__/
 *.pyc
+.venv/
+.venv312/
 .streamlit/
 lbd_graph.ttl
 raw_lbd_graph.ttl

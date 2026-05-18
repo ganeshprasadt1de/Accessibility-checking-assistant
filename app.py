@@ -6,6 +6,12 @@ import streamlit.components.v1 as components
 from rdflib import Graph
 
 from accessibility.checker import check_graph
+from accessibility.change_impact import add_change_option_to_graph
+from accessibility.change_impact import calculate_change_option
+from accessibility.change_impact import change_context
+from accessibility.change_impact import failed_door_options
+from accessibility.change_impact import make_change_impact_viewer
+from accessibility.change_impact import option_rows
 from accessibility.clearance_3d import make_3d_clearance_viewer
 from accessibility.explainer import answer_question
 from accessibility.explainer import explain_issue
@@ -28,6 +34,7 @@ from accessibility.pipeline import save_graph
 from accessibility.plan_viewer import make_2d_route_plan
 from accessibility.rdf_graph_viewer import make_rdf_graph_viewers
 from accessibility.route_graph import build_accessible_route_graph
+from accessibility.voxel_clearance import make_voxel_clearance_viewer
 
 
 ACCESSIBILITY_KINDS = {"Door", "Ramp", "Lift", "Corridor", "Accessible toilet", "Route edge"}
@@ -69,48 +76,6 @@ def issue_rows(issues):
     ]
 
 
-def design_impact_rows(
-    current_door: float,
-    required_door: float,
-    corridor_width: float,
-    connected_room_width: float,
-    wall_zone: float,
-    compensation: str,
-) -> list[dict[str, float | str]]:
-    increase = max(required_door - current_door, 0)
-    remaining_wall = wall_zone
-    remaining_room = connected_room_width
-    remaining_corridor = corridor_width
-    if compensation == "wall or fitting zone":
-        remaining_wall = max(wall_zone - increase, 0)
-    elif compensation == "connected room":
-        remaining_room = max(connected_room_width - increase, 0)
-    else:
-        remaining_corridor = max(corridor_width - increase, 0)
-
-    return [
-        {"Item": "Door clear width", "Before m": current_door, "After m": current_door + increase, "Change m": increase},
-        {"Item": "Corridor width", "Before m": corridor_width, "After m": remaining_corridor, "Change m": remaining_corridor - corridor_width},
-        {"Item": "Connected room width", "Before m": connected_room_width, "After m": remaining_room, "Change m": remaining_room - connected_room_width},
-        {"Item": "Wall or fitting zone", "Before m": wall_zone, "After m": remaining_wall, "Change m": remaining_wall - wall_zone},
-    ]
-
-
-def design_impact_context(rows: list[dict[str, float | str]], compensation: str) -> str:
-    lines = [
-        "Door size impact model: the outer building size is kept constant.",
-        f"Extra width is taken from: {compensation}.",
-    ]
-    for row in rows:
-        lines.append(
-            f"{row['Item']}: before {row['Before m']} m, after {row['After m']} m, change {row['Change m']} m."
-        )
-    lines.append(
-        "Meaning: widening an accessible route door can affect the wall opening, nearby corridor clearance, connected room clearance, and the accessible route graph."
-    )
-    return "\n".join(lines)
-
-
 def build_assistant_context(result: dict) -> str:
     lines = []
     elements = route_elements(result.get("elements", []))
@@ -118,6 +83,7 @@ def build_assistant_context(result: dict) -> str:
     geometry_findings = result.get("geometry_findings", [])
     route_graph_findings = result.get("route_graph_findings", [])
     clearance_3d_findings = result.get("clearance_3d_findings", [])
+    voxel_findings = result.get("voxel_findings", [])
     route_edge_rows = result.get("route_edge_rows", [])
     local_query_rows = result.get("local_query_rows", [])
     rdf_graph_stats = result.get("rdf_graph_stats", {})
@@ -155,52 +121,59 @@ def build_assistant_context(result: dict) -> str:
         lines.append(f"Route graph: {item.check}, {item.result}. {item.reason}")
     for item in clearance_3d_findings[:20]:
         lines.append(f"3D clearance: {item.element}, {item.result}. {item.reason}")
+    for item in voxel_findings[:20]:
+        lines.append(f"Voxel route simulation: {item.element}, {item.result}. {item.reason}")
     for row in local_query_rows[:20]:
         lines.append("SPARQL row: " + ", ".join(f"{key}: {value}" for key, value in row.items()) + ".")
     if rdf_graph_stats:
         lines.append("RDF visualisation stats: " + ", ".join(f"{key}: {value}" for key, value in rdf_graph_stats.items()) + ".")
-    design_context = st.session_state.get("design_impact_context", "")
-    if design_context:
-        lines.append(design_context)
+    impact_context = change_context(result.get("change_option"))
+    if impact_context:
+        lines.append(impact_context)
 
     return "\n".join(lines)[:16000]
 
 
-def render_design_impact_page() -> None:
-    st.subheader("Door Size And Building Impact")
+def render_changes_impact_page(result: dict) -> None:
+    st.subheader("Changes Impact")
     st.write(
-        "This page shows what changes when an accessible route door is widened while the outer building size stays fixed."
+        "This page simulates what happens when a failed route door is widened. "
+        "It stores the selected change as RDF facts, shows the area and percent impact, and gives the assistant concrete numbers to explain."
     )
+    options = failed_door_options(result.get("route_edge_rows", []))
+    if not options:
+        st.info("No failed route door below 0.90 m was found in the current route data.")
+        return
 
+    labels = [item["label"] for item in options]
+    selected = st.selectbox("Failed route door", labels)
+    selected_info = next(item for item in options if item["label"] == selected)
+    current_width = float(selected_info["current_width"])
     col_a, col_b, col_c = st.columns(3)
     with col_a:
-        current_door = st.slider("Current clear door width m", 0.60, 1.40, 0.81, 0.01)
-        required_door = st.slider("Required clear door width m", 0.80, 1.50, 0.90, 0.01)
+        target_width = st.slider("Target clear door width m", current_width, 1.50, max(0.90, current_width), 0.01)
     with col_b:
-        corridor_width = st.slider("Current corridor width m", 0.80, 3.00, 1.20, 0.01)
-        connected_room_width = st.slider("Connected room width m", 1.50, 8.00, 3.00, 0.05)
+        strategy = st.selectbox("Change strategy", ["expand building outward", "keep building fixed and reduce connected space"])
     with col_c:
-        wall_zone = st.slider("Wall or fitting zone beside door m", 0.05, 1.50, 0.30, 0.01)
-        compensation = st.selectbox(
-            "Keep building size constant by taking space from",
-            ["wall or fitting zone", "connected room", "corridor"],
-        )
+        plot_limit = st.number_input("Plot footprint limit m2", min_value=0.0, value=0.0, step=5.0)
 
-    rows = design_impact_rows(
-        current_door,
-        required_door,
-        corridor_width,
-        connected_room_width,
-        wall_zone,
-        compensation,
-    )
-    st.session_state["design_impact_context"] = design_impact_context(rows, compensation)
+    option = calculate_change_option(result["lbd_graph"], result.get("route_edge_rows", []), selected, target_width, strategy, plot_limit)
+    if option is None:
+        st.warning("The selected door could not be linked to the route graph.")
+        return
+    add_change_option_to_graph(result["lbd_graph"], option)
+    result["change_option"] = option
+    result["change_impact_html"] = make_change_impact_viewer(option)
+    st.session_state["check_result"] = result
 
-    st.write("If the door becomes wider and the outside building size does not grow, another connected zone must give up space.")
-    st.dataframe(pd.DataFrame(rows), use_container_width=True)
-    st.write(
-        "In a real BIM model this can affect the door leaf, wall opening, adjacent wall segment, corridor clearance, room clearance, and accessible route."
-    )
+    st.write(option.explanation)
+    st.dataframe(pd.DataFrame(option_rows(option)), use_container_width=True)
+    if option.fits_plot:
+        st.write("The selected plot limit can accept this option.")
+    else:
+        st.write("The selected plot limit cannot accept this outward expansion. Use a fixed-building strategy or choose another accessible route.")
+    if result.get("change_impact_html"):
+        components.html(result["change_impact_html"], height=660, scrolling=True)
 
 
 def render_rdf_visualisation_page(result: dict) -> None:
@@ -288,6 +261,36 @@ def render_building_model(result: dict) -> None:
         )
         components.html(result["clearance_3d_html"], height=980, scrolling=True)
 
+    st.markdown("### Voxel Route Simulation")
+    st.write(
+        "This check divides obstacle geometry into small 3D voxels and moves a wheelchair-sized clearance volume along the route. "
+        "The visible wheelchair/person marker explains the movement; the collision result comes from the clearance volume."
+    )
+    if not result.get("voxel_html"):
+        if st.button("Run voxel route simulation"):
+            if not result.get("ifc_bytes"):
+                st.error("Run the main check again so the IFC data is available.")
+            else:
+                with st.spinner("Building voxel route simulation..."):
+                    stored_upload = StoredUpload(result["ifc_bytes"])
+                    voxel_html, voxel_stats, voxel_findings = make_voxel_clearance_viewer(stored_upload, result["lbd_graph"])
+                    result["voxel_html"] = voxel_html
+                    result["voxel_stats"] = voxel_stats
+                    result["voxel_findings"] = voxel_findings
+                    st.session_state["check_result"] = result
+                st.rerun()
+    if result.get("voxel_html"):
+        stats = result.get("voxel_stats", {})
+        st.caption(
+            f"voxel size: {stats.get('voxel_size_m', 0)} m | "
+            f"occupied voxels: {stats.get('occupied_voxels', 0)} | "
+            f"checked route segments: {stats.get('checked_route_segments', 0)} | "
+            f"failed route segments: {stats.get('failed_route_segments', 0)} | "
+            f"Open3D voxel cells: {stats.get('open3d_voxel_cells', 0)} | "
+            f"voxel engine: {stats.get('voxel_engine', 'internal Python grid')}"
+        )
+        components.html(result["voxel_html"], height=1040, scrolling=True)
+
 
 st.set_page_config(page_title="Accessibility Compliance Checker", layout="wide")
 app_config = load_app_config()
@@ -307,11 +310,7 @@ st.write(
     "checks DIN 18040-style wheelchair accessibility rules with SHACL and SPARQL, and explains the result."
 )
 
-if "design_impact_context" not in st.session_state:
-    default_design_rows = design_impact_rows(0.81, 0.90, 1.20, 3.00, 0.30, "wall or fitting zone")
-    st.session_state["design_impact_context"] = design_impact_context(default_design_rows, "wall or fitting zone")
-
-page = st.radio("Page", ["Check Results", "Visualisation", "Design Impact", "Building Model"], horizontal=True, label_visibility="collapsed")
+page = st.radio("Page", ["Check Results", "Visualisation", "Changes Impact", "Building Model"], horizontal=True, label_visibility="collapsed")
 
 with st.sidebar:
     st.header("Input")
@@ -401,18 +400,19 @@ if run_button:
         "clearance_3d_html": None,
         "clearance_3d_stats": {},
         "clearance_3d_findings": [],
+        "voxel_html": None,
+        "voxel_stats": {},
+        "voxel_findings": [],
+        "change_option": None,
+        "change_impact_html": None,
         "result_text": result_text,
         "lbd_message": lbd_message,
         "geometry_messages": geometry_messages,
     }
     st.session_state["check_result"] = result
 
-if page == "Design Impact":
-    render_design_impact_page()
-    st.stop()
-
 if "check_result" not in st.session_state:
-    if page in {"Visualisation", "Building Model"}:
+    if page in {"Visualisation", "Changes Impact", "Building Model"}:
         st.info("Run a check first, then open this page.")
     else:
         st.info("Upload an IFC file, then run the check.")
@@ -421,6 +421,11 @@ if "check_result" not in st.session_state:
 result = st.session_state["check_result"]
 save_graph(result["raw_lbd_graph"], Path("raw_lbd_graph.ttl"))
 save_graph(result["lbd_graph"], Path("lbd_graph.ttl"))
+
+if page == "Changes Impact":
+    render_changes_impact_page(result)
+    save_graph(result["lbd_graph"], Path("lbd_graph.ttl"))
+    st.stop()
 
 if page == "Building Model":
     render_building_model(result)
@@ -512,6 +517,10 @@ if result.get("geometry_findings"):
 if result.get("route_graph_findings"):
     st.subheader("Route Graph Findings")
     st.dataframe(pd.DataFrame([item.__dict__ for item in result["route_graph_findings"]]), use_container_width=True)
+
+if result.get("voxel_findings"):
+    st.subheader("Voxel Route Findings")
+    st.dataframe(pd.DataFrame([item.__dict__ for item in result["voxel_findings"]]), use_container_width=True)
 
 if result.get("local_query_rows"):
     st.subheader("SPARQL Route Checks")

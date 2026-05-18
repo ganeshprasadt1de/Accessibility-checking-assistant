@@ -253,11 +253,11 @@ WHERE {
         acc:fromSpace ?from ;
         acc:toSpace ?to ;
         acc:routeDoor ?door ;
-        acc:routeDoorWidthM ?doorWidth ;
         acc:levelChangeM ?levelChange ;
         acc:stepFree ?stepFree .
   ?from acc:centerX ?fx ; acc:centerY ?fy ; acc:centerZ ?fz .
   ?to acc:centerX ?tx ; acc:centerY ?ty ; acc:centerZ ?tz .
+  OPTIONAL { ?edge acc:routeDoorWidthM ?doorWidth . }
   OPTIONAL { ?edge acc:doorCenterX ?dx ; acc:doorCenterY ?dy ; acc:doorCenterZ ?dz . }
   OPTIONAL { ?door rdfs:label ?doorLabel . }
 }
@@ -307,18 +307,19 @@ WHERE {
 
 def _route_issue_text(row, issue_text: str | None) -> str:
     door = html.escape(str(row.doorLabel or "route door"))
-    width = float(row.doorWidth)
+    width = None if row.doorWidth is None else float(row.doorWidth)
     level = float(row.levelChange)
     step_free = str(row.stepFree)
     if str(row["pass"]) == "true":
+        width_text = "missing" if width is None else f"{width:.3f} m"
         return (
             f"Status: passed.<br>"
             f"Door: {door}.<br>"
-            f"Door width: {width:.3f} m. Level change: {level:.3f} m. Step-free: {step_free}."
+            f"Door width: {width_text}. Level change: {level:.3f} m. Step-free: {step_free}."
         )
 
     reasons = []
-    if width < 0:
+    if width is None:
         reasons.append("door width is missing")
     elif width < 0.90:
         reasons.append(f"door width is {width:.3f} m, but it should be at least 0.90 m")

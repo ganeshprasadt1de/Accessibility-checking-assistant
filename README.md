@@ -75,6 +75,8 @@ IFC file
 
 The LLM does not decide if something passes or fails. SHACL, SPARQL, IfcOpenShell, and Shapely do the checking. The LLM only explains the checked result in simple language.
 
+DIN 18040 values are used only as rule thresholds. The app does not fill missing IFC data with DIN minimum values. If a width, height, ramp value, lift value, toilet value, or route value is missing in the IFC and cannot be calculated from geometry, it stays missing and is reported as missing.
+
 ## Pages
 
 ```text
@@ -87,6 +89,8 @@ Building Model    on-demand 2D route plan, 3D route viewer, detailed 3D clearanc
 The visualisation page does not draw every triple from a large IFC file. It shows focused graph views so the browser stays usable. The full RDF data is still available through the Turtle downloads.
 
 Geometry values such as `footprintAreaM2`, `geometryDepthM`, and `centerX` are stored as literal values on the same IFCtoLBD element node. In the graph viewer, these values are drawn as small value nodes connected by their property name. They are not separate building elements.
+
+Geometry enrichment only adds values calculated from the IFC geometry, for example bounding-box width, depth, height, footprint area, center point, and door/space dimensions derived from those measurements. It does not add DIN minimum values as if they were real building measurements.
 
 The first run creates the RDF graph, route facts, SPARQL results, SHACL results, and the result tables. The heavier viewers are built on demand from the same RDF graph and IFC geometry when their buttons are pressed. This keeps the first check faster without changing the checked facts.
 

@@ -540,8 +540,9 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 PREFIX acc: <http://example.org/accessibility#>
 SELECT $this ?value
 WHERE {
-  $this acc:routeDoorWidthM ?value .
-  FILTER(xsd:decimal(?value) < 0.90)
+  OPTIONAL { $this acc:routeDoorWidthM ?width . }
+  BIND(COALESCE(?width, "missing") AS ?value)
+  FILTER(!BOUND(?width) || xsd:decimal(?width) < 0.90)
 }
         """ ;
     ] ;

@@ -135,7 +135,10 @@ def _route_edge(graph: Graph, subjects: dict[str, URIRef], door, space_a, space_
     graph.add((edge_subject, ACC.fromSpace, space_a_subject))
     graph.add((edge_subject, ACC.toSpace, space_b_subject))
     graph.add((edge_subject, ACC.routeDoor, door_subject))
-    graph.add((edge_subject, ACC.routeDoorWidthM, Literal(door_width if door_width is not None else -1, datatype=XSD.double)))
+    if door_width is not None:
+        graph.add((edge_subject, ACC.routeDoorWidthM, Literal(door_width, datatype=XSD.double)))
+    else:
+        graph.add((edge_subject, ACC.routeDoorWidthMissing, Literal(True, datatype=XSD.boolean)))
     if door_center is not None:
         graph.add((edge_subject, ACC.doorCenterX, Literal(door_center[0], datatype=XSD.double)))
         graph.add((edge_subject, ACC.doorCenterY, Literal(door_center[1], datatype=XSD.double)))

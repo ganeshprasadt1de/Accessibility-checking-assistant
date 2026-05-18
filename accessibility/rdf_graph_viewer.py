@@ -43,6 +43,7 @@ ENRICHED_PREDICATES = {
     "toSpace",
     "routeDoor",
     "routeDoorWidthM",
+    "routeDoorWidthMissing",
     "levelChangeM",
     "stepFree",
     "routePass",

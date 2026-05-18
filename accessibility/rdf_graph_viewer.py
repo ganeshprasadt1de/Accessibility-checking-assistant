@@ -12,7 +12,7 @@ BOT = Namespace("https://w3id.org/bot#")
 PROPS = Namespace("http://lbd.arch.rwth-aachen.de/props#")
 
 MAX_RAW_EDGES = 420
-MAX_ENRICHED_EDGES = 520
+MAX_ENRICHED_EDGES = 1600
 
 IMPORTANT_RAW_TYPES = {
     "Element",
@@ -25,7 +25,14 @@ IMPORTANT_RAW_TYPES = {
     "IfcBuildingStorey",
 }
 
-ENRICHED_PREDICATES = {
+CONNECTIVITY_PREDICATES = {
+    "hasRouteDoor",
+    "fromSpace",
+    "toSpace",
+    "routeDoor",
+}
+
+GEOMETRY_PREDICATES = {
     "centerX",
     "centerY",
     "centerZ",
@@ -37,11 +44,6 @@ ENRICHED_PREDICATES = {
     "derivedTurningDiameterM",
     "derivedDoorWidthM",
     "derivedDoorHeightM",
-    "hasRouteDoor",
-    "hasBoundaryElement",
-    "fromSpace",
-    "toSpace",
-    "routeDoor",
     "routeDoorWidthM",
     "routeDoorWidthMissing",
     "levelChangeM",
@@ -50,11 +52,21 @@ ENRICHED_PREDICATES = {
     "doorCenterX",
     "doorCenterY",
     "doorCenterZ",
+}
+
+CHANGE_PREDICATES = {
     "affectsRouteEdge",
     "affectsDoor",
     "affectsFromSpace",
     "affectsToSpace",
     "hasChangeOption",
+    "sourceCheck",
+    "affectedElementLabel",
+    "affectedRule",
+    "currentValue",
+    "requiredValue",
+    "recommendedAction",
+    "strategy",
     "currentDoorWidthM",
     "targetDoorWidthM",
     "widthIncreaseM",
@@ -62,11 +74,18 @@ ENRICHED_PREDICATES = {
     "newFootprintM2",
     "footprintChangeM2",
     "footprintChangePercent",
+    "oldVolumeM3",
+    "newVolumeM3",
+    "volumeChangeM3",
+    "affectedZoneLabel",
     "affectedSpaceAreaBeforeM2",
     "affectedSpaceAreaAfterM2",
+    "affectedZoneAreaBeforeM2",
+    "affectedZoneAreaAfterM2",
+    "affectedZoneAreaChangeM2",
+    "plotLimitM2",
     "fitsPlot",
 }
-
 
 def make_rdf_graph_viewers(raw_graph: Graph, enriched_graph: Graph, issues: list[Issue]) -> tuple[str, dict[str, int]]:
     raw_data = _raw_graph_data(raw_graph)
@@ -121,25 +140,74 @@ def _enriched_graph_data(graph: Graph, issues: list[Issue]) -> dict[str, list[di
     subject_by_short = {_short(subject): subject for subject in graph.subjects()}
     issue_subjects = {subject_by_short.get(issue.element_key) for issue in issues}
     issue_subjects.discard(None)
+    visible_subjects = set(issue_subjects)
 
-    for subject, predicate, obj in graph:
-        pred_name = _short(predicate)
-        if pred_name not in ENRICHED_PREDICATES:
-            continue
+    route_edges = sorted(graph.subjects(RDF.type, ACC.RouteEdge), key=lambda item: labels.get(item, _short(item)).lower())
+    for subject in route_edges:
+        if builder.edge_count >= MAX_ENRICHED_EDGES:
+            break
+        builder.add_node(subject, labels.get(subject, _short(subject)), "route")
+        visible_subjects.add(subject)
+        for predicate in [ACC.fromSpace, ACC.toSpace, ACC.routeDoor]:
+            for obj in graph.objects(subject, predicate):
+                if isinstance(obj, Literal):
+                    continue
+                _add_resource_link(builder, labels, subject, predicate, obj, "route")
+                visible_subjects.add(obj)
+        for predicate in [
+            ACC.routeDoorWidthM,
+            ACC.routeDoorWidthMissing,
+            ACC.levelChangeM,
+            ACC.stepFree,
+            ACC.routePass,
+            ACC.doorCenterX,
+            ACC.doorCenterY,
+            ACC.doorCenterZ,
+        ]:
+            _add_literal_links(graph, builder, labels, subject, predicate, "route")
+
+    for subject in sorted(visible_subjects, key=lambda item: labels.get(item, _short(item)).lower()):
+        if builder.edge_count >= MAX_ENRICHED_EDGES:
+            break
+        for obj in graph.objects(subject, ACC.hasRouteDoor):
+            if isinstance(obj, Literal):
+                continue
+            _add_resource_link(builder, labels, subject, ACC.hasRouteDoor, obj, "route")
+            visible_subjects.add(obj)
+
+    for subject in sorted(issue_subjects, key=lambda item: labels.get(item, _short(item)).lower()):
+        if builder.edge_count >= MAX_ENRICHED_EDGES:
+            break
+        for route_edge in graph.subjects(ACC.routeDoor, subject):
+            _add_resource_link(builder, labels, route_edge, ACC.routeDoor, subject, "issue-element")
+            visible_subjects.add(route_edge)
+        for route_edge in graph.subjects(ACC.fromSpace, subject):
+            _add_resource_link(builder, labels, route_edge, ACC.fromSpace, subject, "issue-element")
+            visible_subjects.add(route_edge)
+        for route_edge in graph.subjects(ACC.toSpace, subject):
+            _add_resource_link(builder, labels, route_edge, ACC.toSpace, subject, "issue-element")
+            visible_subjects.add(route_edge)
+
+    measured_subjects = visible_subjects | issue_subjects
+    for subject in sorted(measured_subjects, key=lambda item: labels.get(item, _short(item)).lower()):
         if builder.edge_count >= MAX_ENRICHED_EDGES:
             break
         group = "issue-element" if subject in issue_subjects else "geometry"
         builder.add_node(subject, labels.get(subject, _short(subject)), group)
-        if isinstance(obj, Literal):
-            obj_node = _literal_node_key(subject, predicate, obj)
-            obj_group = "value"
-            obj_label = f"{pred_name}: {_literal_label(obj)}"
-        else:
-            obj_node = obj
-            obj_group = "route"
-            obj_label = labels.get(obj, _short(obj))
-        builder.add_node(obj_node, obj_label, obj_group)
-        builder.add_edge(subject, obj_node, pred_name)
+        for predicate_name in sorted(GEOMETRY_PREDICATES):
+            _add_literal_links(graph, builder, labels, subject, ACC[predicate_name], group)
+
+    for subject in sorted(graph.subjects(RDF.type, ACC.ChangeOption), key=lambda item: labels.get(item, _short(item)).lower()):
+        if builder.edge_count >= MAX_ENRICHED_EDGES:
+            break
+        builder.add_node(subject, labels.get(subject, _short(subject)), "requirement")
+        for predicate_name in sorted(CHANGE_PREDICATES):
+            predicate = ACC[predicate_name]
+            for obj in graph.objects(subject, predicate):
+                if isinstance(obj, Literal):
+                    _add_literal_links(graph, builder, labels, subject, predicate, "requirement")
+                else:
+                    _add_resource_link(builder, labels, subject, predicate, obj, "route")
 
     for issue in issues[:350]:
         subject = subject_by_short.get(issue.element_key)
@@ -154,6 +222,31 @@ def _enriched_graph_data(graph: Graph, issues: list[Issue]) -> dict[str, list[di
         builder.add_edge(subject, rule_id, "must satisfy")
 
     return builder.data()
+
+
+def _add_resource_link(builder: "_GraphBuilder", labels: dict[object, str], subject, predicate, obj, group: str) -> None:
+    if builder.edge_count >= MAX_ENRICHED_EDGES:
+        return
+    builder.add_node(subject, labels.get(subject, _short(subject)), group)
+    builder.add_node(obj, labels.get(obj, _short(obj)), group)
+    builder.add_edge(subject, obj, _short(predicate))
+
+
+def _add_literal_links(graph: Graph, builder: "_GraphBuilder", labels: dict[object, str], subject, predicate, group: str) -> None:
+    if builder.edge_count >= MAX_ENRICHED_EDGES:
+        return
+    pred_name = _short(predicate)
+    for obj in graph.objects(subject, predicate):
+        if builder.edge_count >= MAX_ENRICHED_EDGES:
+            return
+        if not isinstance(obj, Literal):
+            continue
+        obj_node = _literal_node_key(subject, predicate, obj)
+        obj_label = f"{pred_name}: {_literal_label(obj)}"
+        builder.add_node(subject, labels.get(subject, _short(subject)), group)
+        builder.add_node(obj_node, obj_label, "value")
+        builder.add_edge(subject, obj_node, pred_name)
+
 
 
 class _GraphBuilder:
@@ -261,6 +354,7 @@ def _html(raw_data: dict[str, object], enriched_data: dict[str, object], stats: 
 <div class="rdf-panel">
   <div class="rdf-note">
     The complete RDF data stays in the Turtle file. The force graphs below show focused views, because drawing every triple from a large IFC file would make the browser very slow.
+    Small value nodes such as width, height, area, and pass/fail are measurements attached to building or route nodes, not separate building objects.
     Use the mouse wheel to zoom. Drag empty space to pan. Drag a node to move it.
   </div>
   <h3>IFCtoLBD RDF Graph Before Geometry Enrichment</h3>

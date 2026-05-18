@@ -4,8 +4,10 @@ import html
 from dataclasses import dataclass
 from hashlib import sha1
 
-from rdflib import Graph, Literal, Namespace, RDF, RDFS, URIRef
+from rdflib import Graph, Literal, Namespace, RDF, RDFS
 from rdflib.namespace import XSD
+
+from accessibility.model import GeometryFinding, Issue
 
 try:
     import plotly.graph_objects as go
@@ -16,25 +18,60 @@ except ModuleNotFoundError:
 ACC = Namespace("http://example.org/accessibility#")
 CHANGE = Namespace("http://example.org/accessibility-change#")
 
-MIN_DOOR_WIDTH_M = 0.90
 DEFAULT_STOREY_HEIGHT_M = 3.0
+
+NUMERIC_RULE_TARGETS = {
+    "Door clear width": ("at least", 0.90, "m"),
+    "Route door width": ("at least", 0.90, "m"),
+    "Door clear height": ("at least", 2.05, "m"),
+    "Door threshold height": ("at most", 0.02, "m"),
+    "Door handle height": ("range", 0.95, "m"),
+    "Door reveal depth": ("at most", 0.26, "m"),
+    "Ramp slope": ("at most", 6.0, "percent"),
+    "Ramp usable width": ("at least", 1.20, "m"),
+    "Ramp run length": ("at most", 6.0, "m"),
+    "Ramp platform length": ("at least", 1.50, "m"),
+    "Ramp handrail height": ("range", 0.875, "m"),
+    "Ramp handrail diameter": ("range", 0.0375, "m"),
+    "Ramp handrail extension": ("at least", 0.30, "m"),
+    "Ramp start area width": ("at least", 1.50, "m"),
+    "Ramp start area depth": ("at least", 1.50, "m"),
+    "Ramp end area width": ("at least", 1.50, "m"),
+    "Ramp end area depth": ("at least", 1.50, "m"),
+    "Lift door width": ("at least", 0.90, "m"),
+    "Corridor clear width": ("at least", 1.20, "m"),
+    "Passing space": ("at least", 1.80, "m"),
+    "Accessible toilet movement width": ("at least", 1.50, "m"),
+    "Accessible toilet movement depth": ("at least", 1.50, "m"),
+    "Accessible toilet turning space": ("at least", 1.50, "m"),
+    "Accessible toilet side approach width": ("at least", 0.90, "m"),
+    "Accessible toilet side approach depth": ("at least", 0.70, "m"),
+    "Route level change": ("at most", 0.02, "m"),
+}
+
+BOOLEAN_RULE_FIXES = {
+    "Ramp handrails": "Add continuous handrails on both sides of the ramp.",
+    "Ramp edge protection": "Add edge protection so wheelchair wheels cannot leave the ramp edge.",
+    "Ramp cross slope": "Remove cross slope or keep it within the allowed route condition.",
+    "Accessible toilet door direction": "Make the toilet door open outward or slide so it does not block the wheelchair movement area.",
+    "Accessible toilet washbasin": "Add a reachable washbasin inside the accessible toilet layout.",
+    "Accessible toilet emergency call": "Add an emergency call device reachable from the toilet position.",
+    "Route topology": "Add a usable door boundary or connection so the route graph can connect the spaces.",
+    "Route pass result": "Fix the failed route edge checks such as door width, level change, or missing route data.",
+}
 
 
 @dataclass
-class ChangeOption:
+class ImpactOption:
     key: str
     label: str
-    route_edge: str
-    route_edge_node: str
-    door_label: str
-    door_node: str
-    from_space: str
-    from_space_node: str
-    to_space: str
-    to_space_node: str
-    current_door_width_m: float
-    target_door_width_m: float
-    width_increase_m: float
+    source: str
+    element: str
+    rule: str
+    check: str
+    current_value: str
+    required_value: str
+    action: str
     strategy: str
     old_footprint_m2: float
     new_footprint_m2: float
@@ -43,153 +80,146 @@ class ChangeOption:
     old_volume_m3: float
     new_volume_m3: float
     volume_change_m3: float
-    affected_space: str
-    affected_space_area_before_m2: float
-    affected_space_area_after_m2: float
-    affected_space_area_change_m2: float
-    affected_space_area_change_percent: float
+    affected_zone: str
+    affected_zone_area_before_m2: float
+    affected_zone_area_after_m2: float
+    affected_zone_area_change_m2: float
     plot_limit_m2: float
     fits_plot: bool
     explanation: str
 
 
-def failed_door_options(route_edge_rows: list[dict[str, str]]) -> list[dict[str, str]]:
+def impact_options(issues: list[Issue], clearance_findings: list[GeometryFinding]) -> list[dict[str, str]]:
     options = []
-    for row in route_edge_rows:
-        width = _float(row.get("Door width m"))
-        if width is None or width >= MIN_DOOR_WIDTH_M:
+    seen = set()
+    for finding in clearance_findings:
+        if finding.result != "failed":
             continue
+        key = f"3d|{finding.element}|{finding.reason}"
+        if key in seen:
+            continue
+        seen.add(key)
         options.append(
             {
-                "label": f"{row.get('Door', 'Door')} | {row.get('From space', '')} -> {row.get('To space', '')}",
-                "route_edge": row.get("Route edge", ""),
-                "route_edge_node": row.get("Route edge node", ""),
-                "door_label": row.get("Door", "Door"),
-                "door_node": row.get("Door node", ""),
-                "from_space": row.get("From space", ""),
-                "from_space_node": row.get("From space node", ""),
-                "to_space": row.get("To space", ""),
-                "to_space_node": row.get("To space node", ""),
-                "current_width": f"{width:.3f}",
+                "label": f"3D clearance volume | {finding.element}",
+                "source": "Detailed 3D clearance",
+                "element": finding.element,
+                "rule": "3D clearance volume",
+                "check": finding.check,
+                "current_value": "clearance volume intersects obstacle boxes",
+                "required_value": "0.90 m wide and 2.05 m high clear volume",
+                "reason": finding.reason,
+                "fix": finding.fix,
+            }
+        )
+
+    for issue in issues:
+        if issue.rule not in NUMERIC_RULE_TARGETS and issue.rule not in BOOLEAN_RULE_FIXES:
+            continue
+        key = f"issue|{issue.element_key}|{issue.rule}|{issue.value}"
+        if key in seen:
+            continue
+        seen.add(key)
+        options.append(
+            {
+                "label": f"{issue.rule} | {issue.element_name}",
+                "source": "SHACL and SPARQL",
+                "element": issue.element_name,
+                "rule": issue.rule,
+                "check": issue.rule,
+                "current_value": issue.value,
+                "required_value": issue.required,
+                "reason": issue.message,
+                "fix": _fix_for_issue(issue),
             }
         )
     return options
 
 
-def calculate_change_option(
+def calculate_impact_option(
     graph: Graph,
-    route_edge_rows: list[dict[str, str]],
-    selected_label: str,
-    target_width_m: float,
+    candidate: dict[str, str],
     strategy: str,
     plot_limit_m2: float,
     storey_height_m: float = DEFAULT_STOREY_HEIGHT_M,
-) -> ChangeOption | None:
-    selected = None
-    for row in route_edge_rows:
-        label = f"{row.get('Door', 'Door')} | {row.get('From space', '')} -> {row.get('To space', '')}"
-        if label == selected_label:
-            selected = row
-            break
-    if selected is None:
-        return None
-
-    current_width = _float(selected.get("Door width m")) or 0.0
-    target_width = max(target_width_m, current_width)
-    width_increase = max(target_width - current_width, 0.0)
+) -> ImpactOption:
     old_footprint = _building_footprint(graph)
-    route_length = _route_length(graph, selected.get("Route edge node", ""), selected.get("Route edge", ""))
-    impacted_area = width_increase * route_length
-    affected_space = selected.get("To space") or selected.get("From space") or "connected space"
-    affected_area = _space_area(graph, selected.get("To space node", ""), affected_space)
+    old_volume = old_footprint * storey_height_m
+    current = _float(candidate.get("current_value"))
+    target_info = NUMERIC_RULE_TARGETS.get(candidate.get("rule", ""))
+    target = target_info[1] if target_info else None
+    unit = target_info[2] if target_info else ""
+    change = _change_amount(current, target, target_info[0] if target_info else "")
+    affected_zone = _affected_zone(candidate)
+    affected_area = _estimated_affected_area(graph, candidate)
+    footprint_change = _estimated_footprint_change(candidate, change, affected_area)
 
     if strategy == "expand building outward":
-        footprint_change = impacted_area
         new_footprint = old_footprint + footprint_change
         area_after = affected_area
         area_change = 0.0
     else:
-        footprint_change = 0.0
         new_footprint = old_footprint
-        area_change = -min(impacted_area, affected_area)
+        area_change = -min(footprint_change, affected_area)
         area_after = max(affected_area + area_change, 0.0)
+        footprint_change = 0.0
 
-    volume_before = old_footprint * storey_height_m
-    volume_after = new_footprint * storey_height_m
+    new_volume = new_footprint * storey_height_m
     fits_plot = new_footprint <= plot_limit_m2 if plot_limit_m2 > 0 else True
-    footprint_percent = _percent(footprint_change, old_footprint)
-    affected_percent = _percent(area_change, affected_area)
-    key = _change_key(selected_label, target_width, strategy)
+    rule = candidate.get("rule", "Accessibility check")
+    element = candidate.get("element", "building element")
+    key = _change_key(f"{rule}|{element}|{candidate.get('reason', '')}", target or 0.0, strategy)
+    action = _impact_action(candidate, current, target, unit)
+    explanation = _impact_explanation(
+        candidate,
+        action,
+        strategy,
+        footprint_change,
+        old_footprint,
+        affected_zone,
+        area_change,
+        fits_plot,
+    )
 
-    if strategy == "expand building outward":
-        explanation = (
-            f"{selected.get('Door')} is widened from {current_width:.3f} m to {target_width:.3f} m. "
-            f"The estimated route zone adds {footprint_change:.2f} m2 to the building footprint, "
-            f"which is {footprint_percent:.2f} percent of the current footprint."
-        )
-        if not fits_plot:
-            explanation += " The entered plot limit is too small for this outward expansion."
-    else:
-        explanation = (
-            f"{selected.get('Door')} is widened from {current_width:.3f} m to {target_width:.3f} m while the outer footprint stays fixed. "
-            f"The estimated extra route zone is taken from {affected_space}, reducing it by {abs(area_change):.2f} m2 "
-            f"or {abs(affected_percent):.2f} percent."
-        )
-
-    return ChangeOption(
+    return ImpactOption(
         key=key,
-        label=f"Change option {key}",
-        route_edge=selected.get("Route edge", ""),
-        route_edge_node=selected.get("Route edge node", ""),
-        door_label=selected.get("Door", "Door"),
-        door_node=selected.get("Door node", ""),
-        from_space=selected.get("From space", ""),
-        from_space_node=selected.get("From space node", ""),
-        to_space=selected.get("To space", ""),
-        to_space_node=selected.get("To space node", ""),
-        current_door_width_m=round(current_width, 4),
-        target_door_width_m=round(target_width, 4),
-        width_increase_m=round(width_increase, 4),
+        label=f"Impact option {key}",
+        source=candidate.get("source", ""),
+        element=element,
+        rule=rule,
+        check=candidate.get("check", rule),
+        current_value=candidate.get("current_value", "missing"),
+        required_value=candidate.get("required_value", "rule value"),
+        action=action,
         strategy=strategy,
         old_footprint_m2=round(old_footprint, 3),
         new_footprint_m2=round(new_footprint, 3),
-        footprint_change_m2=round(footprint_change, 3),
-        footprint_change_percent=round(footprint_percent, 3),
-        old_volume_m3=round(volume_before, 3),
-        new_volume_m3=round(volume_after, 3),
-        volume_change_m3=round(volume_after - volume_before, 3),
-        affected_space=affected_space,
-        affected_space_area_before_m2=round(affected_area, 3),
-        affected_space_area_after_m2=round(area_after, 3),
-        affected_space_area_change_m2=round(area_change, 3),
-        affected_space_area_change_percent=round(affected_percent, 3),
+        footprint_change_m2=round(new_footprint - old_footprint, 3),
+        footprint_change_percent=round(_percent(new_footprint - old_footprint, old_footprint), 3),
+        old_volume_m3=round(old_volume, 3),
+        new_volume_m3=round(new_volume, 3),
+        volume_change_m3=round(new_volume - old_volume, 3),
+        affected_zone=affected_zone,
+        affected_zone_area_before_m2=round(affected_area, 3),
+        affected_zone_area_after_m2=round(area_after, 3),
+        affected_zone_area_change_m2=round(area_change, 3),
         plot_limit_m2=round(plot_limit_m2, 3),
         fits_plot=fits_plot,
         explanation=explanation,
     )
 
 
-def add_change_option_to_graph(graph: Graph, option: ChangeOption) -> None:
+def add_impact_option_to_graph(graph: Graph, option: ImpactOption) -> None:
     subject = CHANGE[option.key]
     graph.add((subject, RDF.type, ACC.ChangeOption))
     graph.add((subject, RDFS.label, Literal(option.label)))
-    for predicate, value in [
-        (ACC.affectsRouteEdge, option.route_edge_node),
-        (ACC.affectsDoor, option.door_node),
-        (ACC.affectsFromSpace, option.from_space_node),
-        (ACC.affectsToSpace, option.to_space_node),
-    ]:
-        if value:
-            target = URIRef(value)
-            graph.add((subject, predicate, target))
-            graph.add((target, ACC.hasChangeOption, subject))
+    graph.add((subject, ACC.sourceCheck, Literal(option.source)))
+    graph.add((subject, ACC.affectedElementLabel, Literal(option.element)))
+    graph.add((subject, ACC.affectedRule, Literal(option.rule)))
+    graph.add((subject, ACC.currentValue, Literal(option.current_value)))
+    graph.add((subject, ACC.requiredValue, Literal(option.required_value)))
+    graph.add((subject, ACC.recommendedAction, Literal(option.action)))
     graph.add((subject, ACC.strategy, Literal(option.strategy)))
-    graph.add((subject, ACC.affectedDoorLabel, Literal(option.door_label)))
-    graph.add((subject, ACC.fromSpaceLabel, Literal(option.from_space)))
-    graph.add((subject, ACC.toSpaceLabel, Literal(option.to_space)))
-    graph.add((subject, ACC.currentDoorWidthM, Literal(option.current_door_width_m, datatype=XSD.double)))
-    graph.add((subject, ACC.targetDoorWidthM, Literal(option.target_door_width_m, datatype=XSD.double)))
-    graph.add((subject, ACC.widthIncreaseM, Literal(option.width_increase_m, datatype=XSD.double)))
     graph.add((subject, ACC.oldFootprintM2, Literal(option.old_footprint_m2, datatype=XSD.double)))
     graph.add((subject, ACC.newFootprintM2, Literal(option.new_footprint_m2, datatype=XSD.double)))
     graph.add((subject, ACC.footprintChangeM2, Literal(option.footprint_change_m2, datatype=XSD.double)))
@@ -197,70 +227,78 @@ def add_change_option_to_graph(graph: Graph, option: ChangeOption) -> None:
     graph.add((subject, ACC.oldVolumeM3, Literal(option.old_volume_m3, datatype=XSD.double)))
     graph.add((subject, ACC.newVolumeM3, Literal(option.new_volume_m3, datatype=XSD.double)))
     graph.add((subject, ACC.volumeChangeM3, Literal(option.volume_change_m3, datatype=XSD.double)))
-    graph.add((subject, ACC.affectedSpaceLabel, Literal(option.affected_space)))
-    graph.add((subject, ACC.affectedSpaceAreaBeforeM2, Literal(option.affected_space_area_before_m2, datatype=XSD.double)))
-    graph.add((subject, ACC.affectedSpaceAreaAfterM2, Literal(option.affected_space_area_after_m2, datatype=XSD.double)))
-    graph.add((subject, ACC.affectedSpaceAreaChangeM2, Literal(option.affected_space_area_change_m2, datatype=XSD.double)))
-    graph.add((subject, ACC.affectedSpaceAreaChangePercent, Literal(option.affected_space_area_change_percent, datatype=XSD.double)))
+    graph.add((subject, ACC.affectedZoneLabel, Literal(option.affected_zone)))
+    graph.add((subject, ACC.affectedZoneAreaBeforeM2, Literal(option.affected_zone_area_before_m2, datatype=XSD.double)))
+    graph.add((subject, ACC.affectedZoneAreaAfterM2, Literal(option.affected_zone_area_after_m2, datatype=XSD.double)))
+    graph.add((subject, ACC.affectedZoneAreaChangeM2, Literal(option.affected_zone_area_change_m2, datatype=XSD.double)))
     graph.add((subject, ACC.plotLimitM2, Literal(option.plot_limit_m2, datatype=XSD.double)))
     graph.add((subject, ACC.fitsPlot, Literal(option.fits_plot, datatype=XSD.boolean)))
     graph.add((subject, ACC.changeExplanation, Literal(option.explanation)))
 
 
-def option_rows(option: ChangeOption) -> list[dict[str, float | str | bool]]:
+def impact_rows(option: ImpactOption) -> list[dict[str, float | str | bool]]:
     return [
-        {"Item": "Door clear width", "Before": option.current_door_width_m, "After": option.target_door_width_m, "Change": option.width_increase_m},
+        {"Item": "Checked element", "Before": option.element, "After": option.rule, "Change": option.source},
+        {"Item": "Current value", "Before": option.current_value, "After": option.required_value, "Change": option.action},
         {"Item": "Building footprint m2", "Before": option.old_footprint_m2, "After": option.new_footprint_m2, "Change": option.footprint_change_m2},
         {"Item": "Building footprint percent", "Before": 0.0, "After": option.footprint_change_percent, "Change": option.footprint_change_percent},
         {"Item": "Building volume m3", "Before": option.old_volume_m3, "After": option.new_volume_m3, "Change": option.volume_change_m3},
-        {"Item": f"{option.affected_space} area m2", "Before": option.affected_space_area_before_m2, "After": option.affected_space_area_after_m2, "Change": option.affected_space_area_change_m2},
+        {"Item": f"{option.affected_zone} area m2", "Before": option.affected_zone_area_before_m2, "After": option.affected_zone_area_after_m2, "Change": option.affected_zone_area_change_m2},
         {"Item": "Fits plot", "Before": "", "After": option.fits_plot, "Change": ""},
     ]
 
 
-def change_context(option: ChangeOption | None) -> str:
+def impact_context(option: ImpactOption | None) -> str:
     if option is None:
         return ""
-    lines = [
-        "Changes Impact simulation:",
-        f"Door: {option.door_label}.",
-        f"Route: {option.from_space} to {option.to_space}.",
-        f"Strategy: {option.strategy}.",
-        f"Door width changes from {option.current_door_width_m} m to {option.target_door_width_m} m.",
-        f"Building footprint changes from {option.old_footprint_m2} m2 to {option.new_footprint_m2} m2.",
-        f"Footprint change is {option.footprint_change_m2} m2 or {option.footprint_change_percent} percent.",
-        f"Affected space: {option.affected_space}. Area changes from {option.affected_space_area_before_m2} m2 to {option.affected_space_area_after_m2} m2.",
-        f"Fits entered plot limit: {option.fits_plot}.",
-        option.explanation,
-    ]
-    return "\n".join(lines)
+    return "\n".join(
+        [
+            "Changes Impact simulation:",
+            f"Element: {option.element}.",
+            f"Rule: {option.rule}.",
+            f"Source check: {option.source}.",
+            f"Current value: {option.current_value}.",
+            f"Required value: {option.required_value}.",
+            f"Recommended action: {option.action}.",
+            f"Strategy: {option.strategy}.",
+            f"Building footprint changes from {option.old_footprint_m2} m2 to {option.new_footprint_m2} m2.",
+            f"Footprint change is {option.footprint_change_m2} m2 or {option.footprint_change_percent} percent.",
+            f"Affected zone: {option.affected_zone}. Area changes from {option.affected_zone_area_before_m2} m2 to {option.affected_zone_area_after_m2} m2.",
+            f"Fits entered plot limit: {option.fits_plot}.",
+            option.explanation,
+        ]
+    )
 
 
-def make_change_impact_viewer(option: ChangeOption | None) -> str | None:
+def make_change_impact_viewer(option: ImpactOption | None) -> str | None:
     if go is None or option is None:
         return None
+    return _make_general_impact_viewer(option)
 
+
+def _make_general_impact_viewer(option: ImpactOption) -> str | None:
     fig = go.Figure()
     base_width = 5.0
     base_depth = 3.0
-    increase = max(option.width_increase_m, 0.05)
+    growth = max(abs(option.footprint_change_m2) / max(base_depth, 1.0), 0.08)
+    compression = max(abs(option.affected_zone_area_change_m2) / max(base_depth, 1.0), 0.08)
 
-    _add_box(fig, (0, base_width, 0, base_depth, 0, 3.0), "Original route zone", "rgba(148, 163, 184, 0.22)", "Original route/corridor zone")
+    _add_box(fig, (0, base_width, 0, base_depth, 0, 3.0), "Current checked zone", "rgba(148, 163, 184, 0.22)", "Current route, corridor, room, ramp, lift, toilet, or clearance zone")
     if option.strategy == "expand building outward":
-        _add_box(fig, (base_width, base_width + increase * 10, 0, base_depth, 0, 3.0), "Added building volume", "rgba(47, 191, 113, 0.46)", option.explanation)
+        _add_box(fig, (base_width, base_width + growth, 0, base_depth, 0, 3.0), "Added zone", "rgba(47, 191, 113, 0.46)", option.explanation)
     else:
-        _add_box(fig, (base_width, base_width + increase * 10, 0, base_depth, 0, 3.0), "Space taken from adjacent room", "rgba(255, 145, 77, 0.52)", option.explanation)
+        _add_box(fig, (base_width, base_width + compression, 0, base_depth, 0, 3.0), "Zone taken from connected space", "rgba(255, 145, 77, 0.52)", option.explanation)
 
     fig.add_trace(
         go.Scatter3d(
-            x=[base_width / 2, base_width + increase * 5],
+            x=[base_width / 2, base_width + max(growth, compression) / 2],
             y=[base_depth / 2, base_depth / 2],
             z=[1.05, 1.05],
             mode="lines+markers",
             line={"color": "#ffd166", "width": 8},
             marker={"size": 5, "color": "#ffd166"},
             hovertemplate=html.escape(option.explanation) + "<extra></extra>",
-            name="Door widening direction",
+            name="Change direction",
         )
     )
     fig.update_layout(
@@ -281,11 +319,127 @@ def make_change_impact_viewer(option: ChangeOption | None) -> str | None:
     return f"""
 <div style="font-family: Arial, sans-serif; color: #edf2f7; background: #0b0f17; padding: 14px; min-height: 620px;">
   <div style="border: 1px solid #334155; border-radius: 8px; padding: 14px; margin-bottom: 10px; background: #111827; line-height: 1.45;">
-    This viewer is an impact overlay, not an edited IFC model. Grey is the original route zone. Green means outward growth. Orange means space taken from a connected room or zone.
+    This viewer is an impact overlay, not an edited IFC model. It uses the selected detected violation. For 3D clearance findings, the impact refers to the wheelchair-sized volume that collided with obstacle boxes.
   </div>
   {plot}
 </div>
 """
+
+
+def _fix_for_issue(issue: Issue) -> str:
+    if issue.rule in BOOLEAN_RULE_FIXES:
+        return BOOLEAN_RULE_FIXES[issue.rule]
+    target_info = NUMERIC_RULE_TARGETS.get(issue.rule)
+    if not target_info:
+        return issue.message
+    mode, target, unit = target_info
+    if mode == "at least":
+        return f"Increase {issue.rule.lower()} to at least {target:g} {unit}."
+    if mode == "at most":
+        return f"Reduce {issue.rule.lower()} to at most {target:g} {unit}."
+    return f"Adjust {issue.rule.lower()} to the required range around {target:g} {unit}."
+
+
+def _change_amount(current: float | None, target: float | None, mode: str) -> float:
+    if current is None or target is None:
+        return 0.0
+    if mode == "at least":
+        return max(target - current, 0.0)
+    if mode == "at most":
+        return max(current - target, 0.0)
+    return abs(current - target)
+
+
+def _estimated_footprint_change(candidate: dict[str, str], change: float, affected_area: float) -> float:
+    rule = candidate.get("rule", "")
+    if rule == "3D clearance volume":
+        return max(0.90 * 1.20, 1.08)
+    if "height" in rule.lower() or "slope" in rule.lower() or "threshold" in rule.lower() or "handle" in rule.lower():
+        return 0.0
+    if change > 0:
+        return max(change * max(affected_area ** 0.5, 1.0), 0.0)
+    if rule in BOOLEAN_RULE_FIXES:
+        return 0.0
+    return 0.0
+
+
+def _estimated_affected_area(graph: Graph, candidate: dict[str, str]) -> float:
+    element = candidate.get("element", "")
+    query = """
+PREFIX acc: <http://example.org/accessibility#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?area
+WHERE {
+  ?item rdfs:label ?label ;
+        acc:footprintAreaM2 ?area .
+}
+"""
+    for row in graph.query(query, initBindings={"label": Literal(element)}):
+        try:
+            return max(float(row.area), 0.0)
+        except (TypeError, ValueError):
+            pass
+    if candidate.get("rule") == "3D clearance volume":
+        return 0.90 * 1.20
+    return 1.0
+
+
+def _affected_zone(candidate: dict[str, str]) -> str:
+    rule = candidate.get("rule", "")
+    if "corridor" in rule.lower() or "route" in rule.lower() or rule == "3D clearance volume":
+        return "accessible route zone"
+    if "toilet" in rule.lower():
+        return "toilet movement zone"
+    if "ramp" in rule.lower():
+        return "ramp zone"
+    if "lift" in rule.lower():
+        return "lift zone"
+    if "door" in rule.lower():
+        return "door approach zone"
+    return "connected building zone"
+
+
+def _impact_action(candidate: dict[str, str], current: float | None, target: float | None, unit: str) -> str:
+    rule = candidate.get("rule", "")
+    if rule == "3D clearance volume":
+        return "Clear the wheelchair volume, remove the obstacle, widen the route zone, or choose another accessible route."
+    if rule in BOOLEAN_RULE_FIXES:
+        return BOOLEAN_RULE_FIXES[rule]
+    if current is None or target is None:
+        return f"Provide the missing value and meet {candidate.get('required_value', 'the required value')}."
+    if target >= current:
+        return f"Increase from {current:g} {unit} to {target:g} {unit}."
+    return f"Reduce from {current:g} {unit} to {target:g} {unit}."
+
+
+def _impact_explanation(
+    candidate: dict[str, str],
+    action: str,
+    strategy: str,
+    footprint_change: float,
+    old_footprint: float,
+    affected_zone: str,
+    area_change: float,
+    fits_plot: bool,
+) -> str:
+    percent = _percent(footprint_change, old_footprint)
+    source = candidate.get("source", "check")
+    rule = candidate.get("rule", "accessibility rule")
+    element = candidate.get("element", "building element")
+    if strategy == "expand building outward":
+        plot_text = "The entered plot limit accepts this option." if fits_plot else "The entered plot limit does not accept this outward growth."
+        return (
+            f"{source} found a {rule} problem at {element}. "
+            f"Recommended action: {action} "
+            f"With outward expansion, the estimated added footprint is {footprint_change:.2f} m2, "
+            f"which is {percent:.2f} percent of the current footprint. {plot_text}"
+        )
+    return (
+        f"{source} found a {rule} problem at {element}. "
+        f"Recommended action: {action} "
+        f"With the outer building fixed, the estimated adjustment is taken from {affected_zone}. "
+        f"The affected zone changes by {area_change:.2f} m2."
+    )
 
 
 def _building_footprint(graph: Graph) -> float:
@@ -298,71 +452,6 @@ def _building_footprint(graph: Graph) -> float:
         if area > 0:
             total += area
     return total or 1.0
-
-
-def _space_area(graph: Graph, node_uri: str, label: str) -> float:
-    if node_uri:
-        value = graph.value(URIRef(node_uri), ACC.footprintAreaM2)
-        if value is not None:
-            try:
-                return float(value)
-            except (TypeError, ValueError):
-                pass
-    query = """
-PREFIX acc: <http://example.org/accessibility#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-SELECT ?area
-WHERE {
-  ?space rdfs:label ?label ;
-         acc:footprintAreaM2 ?area .
-}
-"""
-    for row in graph.query(query, initBindings={"label": Literal(label)}):
-        try:
-            return float(row.area)
-        except (TypeError, ValueError):
-            return 0.0
-    return 0.0
-
-
-def _route_length(graph: Graph, route_edge_node: str, route_edge_label: str) -> float:
-    if route_edge_node:
-        edge = URIRef(route_edge_node)
-        from_space = graph.value(edge, ACC.fromSpace)
-        to_space = graph.value(edge, ACC.toSpace)
-        if from_space is not None and to_space is not None:
-            start = _xy(graph, from_space)
-            end = _xy(graph, to_space)
-            if start is not None and end is not None:
-                dx = start[0] - end[0]
-                dy = start[1] - end[1]
-                return max((dx * dx + dy * dy) ** 0.5, 1.0)
-    query = """
-PREFIX acc: <http://example.org/accessibility#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-SELECT ?fx ?fy ?tx ?ty
-WHERE {
-  ?edge a acc:RouteEdge ;
-        rdfs:label ?label ;
-        acc:fromSpace ?from ;
-        acc:toSpace ?to .
-  ?from acc:centerX ?fx ; acc:centerY ?fy .
-  ?to acc:centerX ?tx ; acc:centerY ?ty .
-}
-"""
-    for row in graph.query(query, initBindings={"label": Literal(route_edge_label)}):
-        dx = float(row.fx) - float(row.tx)
-        dy = float(row.fy) - float(row.ty)
-        return max((dx * dx + dy * dy) ** 0.5, 1.0)
-    return 1.0
-
-
-def _xy(graph: Graph, subject: URIRef) -> tuple[float, float] | None:
-    x = graph.value(subject, ACC.centerX)
-    y = graph.value(subject, ACC.centerY)
-    if x is None or y is None:
-        return None
-    return float(x), float(y)
 
 
 def _change_key(label: str, target_width: float, strategy: str) -> str:

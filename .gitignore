@@ -2,7 +2,9 @@ __pycache__/
 *.pyc
 .venv/
 .venv312/
-.streamlit/
+.streamlit/*
+!.streamlit/config.toml
+static/generated/
 lbd_graph.ttl
 raw_lbd_graph.ttl
 property_mapping/

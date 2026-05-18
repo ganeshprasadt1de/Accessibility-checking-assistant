@@ -25,8 +25,11 @@ ACC = Namespace("http://example.org/accessibility#")
 
 MIN_CLEAR_WIDTH_M = 0.90
 MIN_CLEAR_HEIGHT_M = 2.05
+CLEAR_LENGTH_M = 1.20
 MAX_OBSTACLE_BOXES = 650
-MAX_ROUTE_BOXES = 220
+MAX_ROUTE_BOXES = 1200
+MAX_ANIMATION_STEPS = 1200
+ANIMATION_STEP_M = 1.60
 
 OBSTACLE_CLASSES = [
     "IfcWall",
@@ -97,11 +100,13 @@ def make_3d_clearance_viewer(uploaded_file, graph: Graph) -> tuple[str | None, d
 
     route_segments = _right_angle_segments(route_edges, obstacle_boxes)
 
+    checked_segments = []
     for index, segment in enumerate(route_segments[:MAX_ROUTE_BOXES]):
         envelope = segment_envelope(segment["start"], segment["end"], MIN_CLEAR_WIDTH_M, MIN_CLEAR_HEIGHT_M)
         collisions = _colliding_obstacles(envelope, obstacle_boxes)
         collision_names = [item["label"] for item in collisions[:6]]
         passed = not collisions and segment["route_pass"]
+        checked_segments.append({**segment, "passed": passed, "collision_names": collision_names})
         if passed:
             color = "rgba(47, 191, 113, 0.34)"
             name = "Passed 3D clearance envelope"
@@ -122,6 +127,8 @@ def make_3d_clearance_viewer(uploaded_file, graph: Graph) -> tuple[str | None, d
             )
         _add_box(fig, envelope, name, color, _route_text(segment, collision_names), showlegend=(index == 0 or (not passed and failed_boxes == 1)))
         _add_route_line(fig, segment, "#2fbf71" if passed else "#ff3333")
+
+    animated_steps = _add_clearance_animation(fig, checked_segments)
 
     if route_segments and failed_boxes == 0:
         findings.append(
@@ -160,7 +167,9 @@ def make_3d_clearance_viewer(uploaded_file, graph: Graph) -> tuple[str | None, d
         "failed_clearance_segments": failed_boxes,
         "obstacle_intersections": collisions_total,
         "clearance_width_m": MIN_CLEAR_WIDTH_M,
+        "clearance_length_m": CLEAR_LENGTH_M,
         "clearance_height_m": MIN_CLEAR_HEIGHT_M,
+        "animated_route_steps": animated_steps,
     }
     return _viewer_html(fig), stats, findings
 
@@ -317,6 +326,213 @@ def _add_route_line(fig, segment: dict[str, object], color: str) -> None:
     )
 
 
+def _add_clearance_animation(fig, segments: list[dict[str, object]]) -> int:
+    samples = _motion_samples(segments)
+    if not samples:
+        return 0
+
+    first = samples[0]
+    mesh = _mesh_from_bounds(_moving_clearance_bounds(first["point"], first["segment"]))
+    box_index = len(fig.data)
+    fig.add_trace(
+        go.Mesh3d(
+            x=mesh["x"],
+            y=mesh["y"],
+            z=mesh["z"],
+            i=mesh["i"],
+            j=mesh["j"],
+            k=mesh["k"],
+            color=_motion_color(first["passed"], 0.62),
+            flatshading=True,
+            name="Moving wheelchair clearance volume",
+            hovertemplate=_motion_text(first) + "<extra></extra>",
+        )
+    )
+
+    progress_index = len(fig.data)
+    fig.add_trace(
+        go.Scatter3d(
+            x=[first["point"][0]],
+            y=[first["point"][1]],
+            z=[first["point"][2] + 0.18],
+            mode="lines+markers",
+            line={"color": "#ffd166", "width": 6},
+            marker={"size": 5, "color": "#ffd166"},
+            name="Mapped clearance path",
+            hovertemplate="Animated route progress<extra></extra>",
+        )
+    )
+
+    xs: list[float] = []
+    ys: list[float] = []
+    zs: list[float] = []
+    frames = []
+    for index, sample in enumerate(samples):
+        point = sample["point"]
+        xs.append(point[0])
+        ys.append(point[1])
+        zs.append(point[2] + 0.18)
+        frame_mesh = _mesh_from_bounds(_moving_clearance_bounds(point, sample["segment"]))
+        frames.append(
+            go.Frame(
+                name=str(index),
+                traces=[box_index, progress_index],
+                data=[
+                    go.Mesh3d(
+                        x=frame_mesh["x"],
+                        y=frame_mesh["y"],
+                        z=frame_mesh["z"],
+                        i=frame_mesh["i"],
+                        j=frame_mesh["j"],
+                        k=frame_mesh["k"],
+                        color=_motion_color(sample["passed"], 0.62),
+                        hovertemplate=_motion_text(sample) + "<extra></extra>",
+                    ),
+                    go.Scatter3d(x=list(xs), y=list(ys), z=list(zs)),
+                ],
+            )
+        )
+
+    _set_animation(fig, frames)
+    return len(samples)
+
+
+def _motion_samples(segments: list[dict[str, object]]) -> list[dict[str, object]]:
+    if segments and len(segments) + 1 <= MAX_ANIMATION_STEPS:
+        samples = []
+        first = segments[0]
+        samples.append(
+            {
+                "point": (first["start"][0], first["start"][1], max(first["start"][2], first["end"][2])),
+                "segment": first,
+                "passed": bool(first.get("passed")),
+                "label": str(first.get("label", "Route segment")),
+                "collision_names": first.get("collision_names", []),
+            }
+        )
+        for segment in segments:
+            end = segment["end"]
+            samples.append(
+                {
+                    "point": (end[0], end[1], max(segment["start"][2], end[2])),
+                    "segment": segment,
+                    "passed": bool(segment.get("passed")),
+                    "label": str(segment.get("label", "Route segment")),
+                    "collision_names": segment.get("collision_names", []),
+                }
+            )
+        return samples
+
+    samples = []
+    for segment in segments:
+        start = segment["start"]
+        end = segment["end"]
+        length = math.dist(start, end)
+        steps = max(1, math.ceil(length / ANIMATION_STEP_M))
+        for step in range(steps + 1):
+            t = step / steps
+            point = (
+                start[0] + (end[0] - start[0]) * t,
+                start[1] + (end[1] - start[1]) * t,
+                max(start[2], end[2]),
+            )
+            samples.append(
+                {
+                    "point": point,
+                    "segment": segment,
+                    "passed": bool(segment.get("passed")),
+                    "label": str(segment.get("label", "Route segment")),
+                    "collision_names": segment.get("collision_names", []),
+                }
+            )
+            if len(samples) >= MAX_ANIMATION_STEPS:
+                return samples
+    return samples
+
+
+def _moving_clearance_bounds(point, segment: dict[str, object]):
+    x, y, z = point
+    start = segment["start"]
+    end = segment["end"]
+    along_x = abs(end[0] - start[0]) >= abs(end[1] - start[1])
+    if along_x:
+        half_x = CLEAR_LENGTH_M / 2
+        half_y = MIN_CLEAR_WIDTH_M / 2
+    else:
+        half_x = MIN_CLEAR_WIDTH_M / 2
+        half_y = CLEAR_LENGTH_M / 2
+    return x - half_x, x + half_x, y - half_y, y + half_y, z, z + MIN_CLEAR_HEIGHT_M
+
+
+def _mesh_from_bounds(bounds) -> dict[str, list]:
+    mesh = _empty_box_mesh()
+    _append_box_mesh(mesh, bounds)
+    return mesh
+
+
+def _motion_color(passed: bool, alpha: float) -> str:
+    return f"rgba(47, 191, 113, {alpha})" if passed else f"rgba(255, 51, 51, {alpha})"
+
+
+def _motion_text(sample: dict[str, object]) -> str:
+    status = "passed" if sample["passed"] else "failed"
+    collisions = sample.get("collision_names") or []
+    collision_text = ", ".join(collisions[:4]) if collisions else "no obstacle name at this point"
+    return (
+        f"{html.escape(str(sample['label']))}<br>"
+        f"Moving 3D clearance volume: {status}.<br>"
+        f"Clearance width: {MIN_CLEAR_WIDTH_M:.2f} m.<br>"
+        f"Clearance height: {MIN_CLEAR_HEIGHT_M:.2f} m.<br>"
+        f"Obstacle note: {html.escape(collision_text)}"
+    )
+
+
+def _set_animation(fig, frames) -> None:
+    if not frames:
+        return
+    fig.frames = frames
+    steps = [
+        {
+            "args": [[frame.name], {"frame": {"duration": 0, "redraw": True}, "mode": "immediate", "transition": {"duration": 0}}],
+            "label": str(index),
+            "method": "animate",
+        }
+        for index, frame in enumerate(frames[:: max(1, len(frames) // 12)])
+    ]
+    fig.update_layout(
+        updatemenus=[
+            {
+                "type": "buttons",
+                "showactive": False,
+                "x": 0.02,
+                "y": 1.12,
+                "buttons": [
+                    {
+                        "label": "Play clearance mapping",
+                        "method": "animate",
+                        "args": [None, {"frame": {"duration": 180, "redraw": True}, "fromcurrent": True, "transition": {"duration": 0}}],
+                    },
+                    {
+                        "label": "Pause",
+                        "method": "animate",
+                        "args": [[None], {"frame": {"duration": 0, "redraw": False}, "mode": "immediate", "transition": {"duration": 0}}],
+                    },
+                ],
+            }
+        ],
+        sliders=[
+            {
+                "active": 0,
+                "x": 0.02,
+                "y": 1.06,
+                "len": 0.74,
+                "currentvalue": {"prefix": "Clearance step "},
+                "steps": steps,
+            }
+        ],
+    )
+
+
 def _route_text(segment: dict[str, object], collisions: list[str]) -> str:
     if not collisions and segment["route_pass"]:
         return f"{segment['label']}<br>3D clearance envelope passed."
@@ -340,15 +556,46 @@ def _failure_reason(segment: dict[str, object], collisions: list[str]) -> str:
 
 
 def _viewer_html(fig) -> str:
-    plot = fig.to_html(include_plotlyjs=True, full_html=False)
+    plot = fig.to_html(include_plotlyjs=True, full_html=False, post_script=_loop_animation_script())
     return f"""
 <div style="font-family: Arial, sans-serif; color: #edf2f7; background: #0b0f17; padding: 14px; min-height: 920px;">
   <div style="border: 1px solid #334155; border-radius: 8px; padding: 14px; margin-bottom: 10px; background: #111827; line-height: 1.45;">
     This model shows 3D clearance volumes. Green volumes pass. Red volumes need review.
-    The check uses IfcOpenShell mesh bounding boxes and a wheelchair-sized clearance envelope.
+    Press Play clearance mapping to watch the wheelchair-sized volume move through the same right-angle route used by the 2D plan and voxel simulation. The animation loops until Pause is pressed.
+    The check uses IfcOpenShell mesh bounding boxes and does not invent missing building dimensions.
   </div>
   {plot}
 </div>
+"""
+
+
+def _loop_animation_script() -> str:
+    return """
+const gd = document.getElementById('{plot_id}');
+if (gd && !gd.dataset.loopReady) {
+  gd.dataset.loopReady = 'true';
+  gd.dataset.loopAnimation = 'false';
+  const replay = () => {
+    if (gd.dataset.loopAnimation === 'true') {
+      Plotly.animate(gd, null, {
+        frame: {duration: 180, redraw: true},
+        transition: {duration: 0},
+        fromcurrent: false,
+        mode: 'immediate'
+      });
+    }
+  };
+  gd.addEventListener('click', (event) => {
+    const text = (event.target && event.target.textContent || '').trim().toLowerCase();
+    if (text.includes('play')) {
+      gd.dataset.loopAnimation = 'true';
+    }
+    if (text.includes('pause')) {
+      gd.dataset.loopAnimation = 'false';
+    }
+  }, true);
+  gd.on('plotly_animated', replay);
+}
 """
 
 

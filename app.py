@@ -1,17 +1,17 @@
 from pathlib import Path
+from hashlib import sha1
 
 import pandas as pd
 import streamlit as st
-import streamlit.components.v1 as components
 from rdflib import Graph
 
 from accessibility.checker import check_graph
-from accessibility.change_impact import add_change_option_to_graph
-from accessibility.change_impact import calculate_change_option
-from accessibility.change_impact import change_context
-from accessibility.change_impact import failed_door_options
+from accessibility.change_impact import add_impact_option_to_graph
+from accessibility.change_impact import calculate_impact_option
+from accessibility.change_impact import impact_context
+from accessibility.change_impact import impact_options
+from accessibility.change_impact import impact_rows
 from accessibility.change_impact import make_change_impact_viewer
-from accessibility.change_impact import option_rows
 from accessibility.clearance_3d import make_3d_clearance_viewer
 from accessibility.explainer import answer_question
 from accessibility.explainer import explain_issue
@@ -38,6 +38,16 @@ from accessibility.voxel_clearance import make_voxel_clearance_viewer
 
 
 ACCESSIBILITY_KINDS = {"Door", "Ramp", "Lift", "Corridor", "Accessible toilet", "Route edge"}
+STATIC_VIEW_DIR = Path("static/generated")
+
+
+def show_html(html: str, height: int) -> None:
+    STATIC_VIEW_DIR.mkdir(parents=True, exist_ok=True)
+    name = sha1(html.encode("utf-8")).hexdigest()[:16] + ".html"
+    path = STATIC_VIEW_DIR / name
+    if not path.exists():
+        path.write_text(html, encoding="utf-8")
+    st.iframe(f"app/static/generated/{name}", height=height, width="stretch")
 
 
 class StoredUpload:
@@ -132,9 +142,9 @@ def build_assistant_context(result: dict) -> str:
         lines.append("SPARQL row: " + ", ".join(f"{key}: {value}" for key, value in row.items()) + ".")
     if rdf_graph_stats:
         lines.append("RDF visualisation stats: " + ", ".join(f"{key}: {value}" for key, value in rdf_graph_stats.items()) + ".")
-    impact_context = change_context(result.get("change_option"))
-    if impact_context:
-        lines.append(impact_context)
+    selected_impact_context = impact_context(result.get("change_option"))
+    if selected_impact_context:
+        lines.append(selected_impact_context)
 
     return "\n".join(lines)[:16000]
 
@@ -142,43 +152,45 @@ def build_assistant_context(result: dict) -> str:
 def render_changes_impact_page(result: dict) -> None:
     st.subheader("Changes Impact")
     st.write(
-        "This page simulates what happens when a failed route door is widened. "
-        "It stores the selected change as RDF facts, shows the area and percent impact, and gives the assistant concrete numbers to explain."
+        "This page simulates what happens when a detected wheelchair-accessibility problem is corrected. "
+        "It uses the same SHACL, SPARQL, route, and 3D clearance findings from the check results. "
+        "The selected change is stored as RDF facts, with footprint, volume, plot, and affected-zone values for the assistant to explain."
     )
-    options = failed_door_options(result.get("route_edge_rows", []))
+    if not result.get("clearance_3d_findings"):
+        st.info("Run Detailed 3D Clearance on the Building Model page to include volume-collision findings here.")
+    options = impact_options(result.get("issues", []), result.get("clearance_3d_findings", []))
     if not options:
-        st.info("No failed route door below 0.90 m was found in the current route data.")
+        st.info("No wheelchair-accessibility problem was found in the current check results.")
         return
 
     labels = [item["label"] for item in options]
-    selected = st.selectbox("Failed route door", labels)
+    selected = st.selectbox("Detected problem", labels)
     selected_info = next(item for item in options if item["label"] == selected)
-    current_width = float(selected_info["current_width"])
-    col_a, col_b, col_c = st.columns(3)
+    st.write(f"Source check: {selected_info.get('source', '')}")
+    st.write(f"Current value: {selected_info.get('current_value', 'missing')}")
+    st.write(f"Required value: {selected_info.get('required_value', 'rule value')}")
+    st.write(f"Reason: {selected_info.get('reason', '')}")
+
+    col_a, col_b = st.columns(2)
     with col_a:
-        target_width = st.slider("Target clear door width m", current_width, 1.50, max(0.90, current_width), 0.01)
-    with col_b:
         strategy = st.selectbox("Change strategy", ["expand building outward", "keep building fixed and reduce connected space"])
-    with col_c:
+    with col_b:
         plot_limit = st.number_input("Plot footprint limit m2", min_value=0.0, value=0.0, step=5.0)
 
-    option = calculate_change_option(result["lbd_graph"], result.get("route_edge_rows", []), selected, target_width, strategy, plot_limit)
-    if option is None:
-        st.warning("The selected door could not be linked to the route graph.")
-        return
-    add_change_option_to_graph(result["lbd_graph"], option)
+    option = calculate_impact_option(result["lbd_graph"], selected_info, strategy, plot_limit)
+    add_impact_option_to_graph(result["lbd_graph"], option)
     result["change_option"] = option
     result["change_impact_html"] = make_change_impact_viewer(option)
     st.session_state["check_result"] = result
 
     st.write(option.explanation)
-    st.dataframe(pd.DataFrame(option_rows(option)), use_container_width=True)
+    st.dataframe(pd.DataFrame(impact_rows(option)), width="stretch")
     if option.fits_plot:
         st.write("The selected plot limit can accept this option.")
     else:
         st.write("The selected plot limit cannot accept this outward expansion. Use a fixed-building strategy or choose another accessible route.")
     if result.get("change_impact_html"):
-        components.html(result["change_impact_html"], height=660, scrolling=True)
+        show_html(result["change_impact_html"], height=660)
 
 
 def render_rdf_visualisation_page(result: dict) -> None:
@@ -206,7 +218,7 @@ def render_rdf_visualisation_page(result: dict) -> None:
             f"enriched visible nodes: {stats.get('enriched_visible_nodes', 0)} | "
             f"enriched visible links: {stats.get('enriched_visible_edges', 0)}"
         )
-        components.html(result["rdf_graph_html"], height=1420, scrolling=True)
+        show_html(result["rdf_graph_html"], height=1420)
 
 
 def render_building_model(result: dict) -> None:
@@ -234,7 +246,7 @@ def render_building_model(result: dict) -> None:
             f"obstacle footprints: {stats.get('obstacle_footprints', 0)} | "
             f"clearance width: {stats.get('wheelchair_clear_width_m', '0.90')} m"
         )
-        components.html(result["plan_viewer_html"], height=860, scrolling=True)
+        show_html(result["plan_viewer_html"], height=860)
     else:
         st.info("Build the 2D route plan when you need the Shapely route view.")
 
@@ -259,12 +271,12 @@ def render_building_model(result: dict) -> None:
             f"route edges: {stats.get('route_edges', 0)} | "
             f"failed route edges: {stats.get('failed_route_edges', 0)}"
         )
-        components.html(result["viewer_html"], height=1080, scrolling=True)
+        show_html(result["viewer_html"], height=1080)
     else:
         st.info("Build the 3D route viewer when you need the interactive IFC model.")
 
     st.markdown("### Detailed 3D Clearance")
-    st.write("This slower check draws wheelchair-sized 3D clearance volumes and compares them with obstacle boxes.")
+    st.write("This slower check maps the same route as a moving wheelchair-sized 3D clearance volume and compares it with obstacle boxes.")
     if not result.get("clearance_3d_html"):
         if st.button("Run detailed 3D clearance check"):
             if not result.get("ifc_bytes"):
@@ -286,14 +298,15 @@ def render_building_model(result: dict) -> None:
             f"route segments: {stats.get('route_segments', 0)} | "
             f"failed clearance segments: {stats.get('failed_clearance_segments', 0)} | "
             f"clearance width: {stats.get('clearance_width_m', 0)} m | "
-            f"clearance height: {stats.get('clearance_height_m', 0)} m"
+            f"clearance height: {stats.get('clearance_height_m', 0)} m | "
+            f"animated steps: {stats.get('animated_route_steps', 0)}"
         )
-        components.html(result["clearance_3d_html"], height=980, scrolling=True)
+        show_html(result["clearance_3d_html"], height=1060)
 
     st.markdown("### Voxel Route Simulation")
     st.write(
         "This check divides obstacle geometry into small 3D voxels and moves a wheelchair-sized clearance volume along the route. "
-        "The visible wheelchair/person marker explains the movement; the collision result comes from the clearance volume."
+        "The visible wheelchair and person move along the checked route; the collision result comes from the clearance volume."
     )
     if not result.get("voxel_html"):
         if st.button("Run voxel route simulation"):
@@ -316,9 +329,10 @@ def render_building_model(result: dict) -> None:
             f"checked route segments: {stats.get('checked_route_segments', 0)} | "
             f"failed route segments: {stats.get('failed_route_segments', 0)} | "
             f"Open3D voxel cells: {stats.get('open3d_voxel_cells', 0)} | "
-            f"voxel engine: {stats.get('voxel_engine', 'internal Python grid')}"
+            f"voxel engine: {stats.get('voxel_engine', 'internal Python grid')} | "
+            f"animated steps: {stats.get('animated_route_steps', 0)}"
         )
-        components.html(result["voxel_html"], height=1040, scrolling=True)
+        show_html(result["voxel_html"], height=1100)
 
 
 st.set_page_config(page_title="Accessibility Compliance Checker", layout="wide")
@@ -521,19 +535,19 @@ st.dataframe(
             for item in elements
         ]
     ),
-    use_container_width=True,
+    width="stretch",
 )
 
 st.subheader("Accessibility Compliance Issues")
 if issues:
     rows = issue_rows(issues)
-    st.dataframe(pd.DataFrame(rows), use_container_width=True)
+    st.dataframe(pd.DataFrame(rows), width="stretch")
     for section in SECTION_ORDER:
         section_rows = [row for row in rows if row["Section"] == section]
         with st.expander(f"{section} ({len(section_rows)})", expanded=section == "Accessible route"):
             st.write(section_summary(section))
             if section_rows:
-                st.dataframe(pd.DataFrame(section_rows), use_container_width=True)
+                st.dataframe(pd.DataFrame(section_rows), width="stretch")
             else:
                 st.write("No issue was found in this section.")
 else:
@@ -541,23 +555,23 @@ else:
 
 if result.get("route_edge_rows"):
     st.subheader("Route Edges")
-    st.dataframe(pd.DataFrame(public_route_edge_rows(result["route_edge_rows"])), use_container_width=True)
+    st.dataframe(pd.DataFrame(public_route_edge_rows(result["route_edge_rows"])), width="stretch")
 
 if result.get("geometry_findings"):
     st.subheader("IFC Route Data Quality")
-    st.dataframe(pd.DataFrame([item.__dict__ for item in result["geometry_findings"]]), use_container_width=True)
+    st.dataframe(pd.DataFrame([item.__dict__ for item in result["geometry_findings"]]), width="stretch")
 
 if result.get("route_graph_findings"):
     st.subheader("Route Graph Findings")
-    st.dataframe(pd.DataFrame([item.__dict__ for item in result["route_graph_findings"]]), use_container_width=True)
+    st.dataframe(pd.DataFrame([item.__dict__ for item in result["route_graph_findings"]]), width="stretch")
 
 if result.get("voxel_findings"):
     st.subheader("Voxel Route Findings")
-    st.dataframe(pd.DataFrame([item.__dict__ for item in result["voxel_findings"]]), use_container_width=True)
+    st.dataframe(pd.DataFrame([item.__dict__ for item in result["voxel_findings"]]), width="stretch")
 
 if result.get("local_query_rows"):
     st.subheader("SPARQL Route Checks")
-    st.dataframe(pd.DataFrame(result["local_query_rows"]), use_container_width=True)
+    st.dataframe(pd.DataFrame(result["local_query_rows"]), width="stretch")
 
 st.subheader("RDF Output")
 st.write("The raw IFCtoLBD graph is saved as `raw_lbd_graph.ttl`.")

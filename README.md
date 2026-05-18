@@ -82,7 +82,7 @@ DIN 18040 values are used only as rule thresholds. The app does not fill missing
 ```text
 Check Results     tables for accessibility elements, issues, route edges, SPARQL checks, RDF output, and assistant
 Visualisation     raw IFCtoLBD graph, enriched accessibility-route graph, and RDF downloads
-Changes Impact    door-widening impact simulation with footprint, volume, plot, room, and RDF change facts
+Changes Impact    impact simulation for detected wheelchair-accessibility problems, including route, corridor, ramp, lift, toilet, door, and 3D clearance findings
 Building Model    on-demand 2D route plan, 3D route viewer, detailed 3D clearance model, and voxel route simulation
 ```
 
@@ -94,9 +94,11 @@ Geometry enrichment only adds values calculated from the IFC geometry, for examp
 
 The first run creates the RDF graph, route facts, SPARQL results, SHACL results, and the result tables. The heavier viewers are built on demand from the same RDF graph and IFC geometry when their buttons are pressed. This keeps the first check faster without changing the checked facts.
 
-The Changes Impact page is a reasoning view tied to failed route doors. It shows what happens when a door is widened to satisfy the route width rule. The user can choose whether the building expands outward or the outer footprint stays fixed and a connected space gives up area. The app calculates footprint change, volume change, affected space area, percent change, and whether the entered plot limit can accept the change.
+The Changes Impact page is a reasoning view tied to detected wheelchair-accessibility problems. It can use SHACL issues, local SPARQL route issues, and detailed 3D clearance findings. The user can choose whether the building expands outward or the outer footprint stays fixed and a connected zone gives up area. The app calculates footprint change, volume change, affected-zone area, percent change, and whether the entered plot limit can accept the change.
 
 The selected change is also written into the RDF graph as a change option. That gives the assistant real numbers to explain instead of asking the LLM to guess.
+
+For detailed 3D clearance findings, the impact option uses the same wheelchair-sized clearance volume used in the 3D check: 0.90 m wide, 1.20 m long, and 2.05 m high. It does not pretend to edit the IFC file. It shows the estimated effect of clearing, widening, or rerouting the failed volume zone.
 
 ## Route Viewer Checks
 
@@ -104,7 +106,7 @@ The 2D route plan uses Shapely. Shapely is a geometry library for plan-style che
 
 The 3D route viewer uses IfcOpenShell mesh geometry. It shows route lines, direction arrows, and route issue markers.
 
-The detailed 3D clearance model is run separately because it is slower. It draws a wheelchair-sized clearance volume:
+The detailed 3D clearance model is run separately because it is slower. It draws and animates a wheelchair-sized clearance volume:
 
 ```text
 clearance width 0.90 m
@@ -113,7 +115,9 @@ clearance height 2.05 m
 
 The clearance volume is compared against 3D obstacle bounding boxes. A bounding box is a simple box around a 3D object. This adds height-based checking to the 2D plan check.
 
-The voxel route simulation divides obstacle geometry into small 3D cells called voxels. A voxel is a cube in a 3D grid. The app moves a wheelchair-sized clearance volume along the route and checks whether that volume intersects occupied voxels. The visible wheelchair and person in the viewer explain the movement, but the pass or fail result comes from the clearance volume. The implementation uses the same voxel-grid logic directly in Python and detects Open3D if it is installed in a compatible Python environment.
+The voxel route simulation divides obstacle geometry into small 3D cells called voxels. A voxel is a cube in a 3D grid. The app moves a wheelchair-sized clearance volume along the route and checks whether that volume intersects occupied voxels. The visible wheelchair and person in the viewer move at a readable speed so the checked path can be followed. The pass or fail result still comes from the clearance volume, not from the visual marker. The implementation uses the same voxel-grid logic directly in Python and detects Open3D if it is installed in a compatible Python environment.
+
+The 2D plan, detailed 3D clearance model, and voxel route simulation use the same route idea: space center, door center, next space center. The route is drawn as right-angle path segments, so the plan view and the two 3D checks explain the same movement instead of showing unrelated lines. When the route has up to 1,199 segments, the animation includes every segment once. Larger route graphs are still checked, but the animation is capped so the browser stays responsive.
 
 ## Needed Software
 

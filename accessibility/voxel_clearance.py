@@ -38,6 +38,8 @@ MAX_ROUTE_SEGMENTS = 1200
 MAX_SHOWN_VOXELS = 2200
 MAX_OCCUPIED_VOXELS = 250000
 MAX_OPEN3D_VOXELS = 60000
+MAX_ANIMATION_STEPS = 1200
+ANIMATION_STEP_M = 1.60
 
 OBSTACLE_CLASSES = [
     "IfcWall",
@@ -79,6 +81,7 @@ def make_voxel_clearance_viewer(uploaded_file, graph: Graph) -> tuple[str | None
     failed_segments = 0
     checked_segments = 0
     collision_voxels_total = 0
+    checked_route_segments = []
     findings: list[GeometryFinding] = []
 
     for segment in route_segments[:MAX_ROUTE_SEGMENTS]:
@@ -87,6 +90,7 @@ def make_voxel_clearance_viewer(uploaded_file, graph: Graph) -> tuple[str | None
         test_voxels = _box_voxels(envelope)
         collisions = test_voxels.intersection(occupied_voxels)
         passed = not collisions and segment["route_pass"]
+        checked_route_segments.append({**segment, "passed": passed, "collision_count": len(collisions)})
         if not passed:
             failed_segments += 1
             collision_voxels_total += len(collisions)
@@ -102,7 +106,7 @@ def make_voxel_clearance_viewer(uploaded_file, graph: Graph) -> tuple[str | None
             )
         _add_route_segment(fig, segment, passed, len(collisions))
 
-    _add_wheelchair_trace(fig, route_segments)
+    animated_steps = _add_wheelchair_animation(fig, checked_route_segments)
 
     if checked_segments and failed_segments == 0:
         findings.append(
@@ -158,6 +162,7 @@ def make_voxel_clearance_viewer(uploaded_file, graph: Graph) -> tuple[str | None
         "clearance_width_m": CLEAR_WIDTH_M,
         "clearance_length_m": CLEAR_LENGTH_M,
         "clearance_height_m": CLEAR_HEIGHT_M,
+        "animated_route_steps": animated_steps,
     }
     return _viewer_html(fig), stats, findings
 
@@ -333,28 +338,154 @@ def _add_route_segment(fig, segment: dict[str, object], passed: bool, collision_
     )
 
 
-def _add_wheelchair_trace(fig, route_segments: list[dict[str, object]]) -> None:
-    if not route_segments:
-        return
-    segment = route_segments[0]
-    start = segment["start"]
-    end = segment["end"]
-    direction = math.atan2(end[1] - start[1], end[0] - start[0])
-    x, y, z = start[0], start[1], max(start[2], end[2]) + 0.08
-    parts = _wheelchair_parts(x, y, z, direction)
-    for part in parts:
-        fig.add_trace(part)
+def _add_wheelchair_animation(fig, route_segments: list[dict[str, object]]) -> int:
+    samples = _motion_samples(route_segments)
+    if not samples:
+        return 0
+
+    first = samples[0]
+    trace_indices = []
+    for trace in _wheelchair_parts(first["point"][0], first["point"][1], first["point"][2], first["angle"]):
+        trace_indices.append(len(fig.data))
+        fig.add_trace(trace)
+
+    progress_index = len(fig.data)
     fig.add_trace(
         go.Scatter3d(
-            x=[start[0], end[0]],
-            y=[start[1], end[1]],
-            z=[z + 0.45, z + 0.45],
-            mode="markers+lines",
-            marker={"size": [8, 4], "color": ["#ffd166", "#8ecae6"]},
-            line={"color": "#ffd166", "width": 3, "dash": "dot"},
+            x=[first["point"][0]],
+            y=[first["point"][1]],
+            z=[first["point"][2] + 0.48],
+            mode="lines+markers",
+            marker={"size": 6, "color": "#ffd166"},
+            line={"color": "#ffd166", "width": 4, "dash": "dot"},
             name="Wheelchair simulation path",
-            hovertemplate="The visible wheelchair/person marker follows the route. The pass/fail result comes from the rectangular clearance volume tested against occupied voxels.<extra></extra>",
+            hovertemplate="Animated wheelchair route progress<extra></extra>",
         )
+    )
+
+    xs: list[float] = []
+    ys: list[float] = []
+    zs: list[float] = []
+    frames = []
+    for index, sample in enumerate(samples):
+        point = sample["point"]
+        xs.append(point[0])
+        ys.append(point[1])
+        zs.append(point[2] + 0.48)
+        frame_parts = _wheelchair_parts(point[0], point[1], point[2], sample["angle"])
+        frames.append(
+            go.Frame(
+                name=str(index),
+                traces=trace_indices + [progress_index],
+                data=frame_parts + [go.Scatter3d(x=list(xs), y=list(ys), z=list(zs))],
+            )
+        )
+
+    _set_animation(fig, frames)
+    return len(samples)
+
+
+def _motion_samples(segments: list[dict[str, object]]) -> list[dict[str, object]]:
+    if segments and len(segments) + 1 <= MAX_ANIMATION_STEPS:
+        samples = []
+        first = segments[0]
+        first_start = first["start"]
+        first_end = first["end"]
+        samples.append(
+            {
+                "point": (first_start[0], first_start[1], max(first_start[2], first_end[2]) + 0.08),
+                "angle": math.atan2(first_end[1] - first_start[1], first_end[0] - first_start[0]),
+                "passed": bool(first.get("passed")),
+                "label": str(first.get("label", "Route segment")),
+                "collision_count": int(first.get("collision_count", 0)),
+            }
+        )
+        for segment in segments:
+            start = segment["start"]
+            end = segment["end"]
+            samples.append(
+                {
+                    "point": (end[0], end[1], max(start[2], end[2]) + 0.08),
+                    "angle": math.atan2(end[1] - start[1], end[0] - start[0]),
+                    "passed": bool(segment.get("passed")),
+                    "label": str(segment.get("label", "Route segment")),
+                    "collision_count": int(segment.get("collision_count", 0)),
+                }
+            )
+        return samples
+
+    samples = []
+    for segment in segments:
+        start = segment["start"]
+        end = segment["end"]
+        length = math.dist(start, end)
+        steps = max(1, math.ceil(length / ANIMATION_STEP_M))
+        angle = math.atan2(end[1] - start[1], end[0] - start[0])
+        for step in range(steps + 1):
+            t = step / steps
+            point = (
+                start[0] + (end[0] - start[0]) * t,
+                start[1] + (end[1] - start[1]) * t,
+                max(start[2], end[2]) + 0.08,
+            )
+            samples.append(
+                {
+                    "point": point,
+                    "angle": angle,
+                    "passed": bool(segment.get("passed")),
+                    "label": str(segment.get("label", "Route segment")),
+                    "collision_count": int(segment.get("collision_count", 0)),
+                }
+            )
+            if len(samples) >= MAX_ANIMATION_STEPS:
+                return samples
+    return samples
+
+
+def _set_animation(fig, frames) -> None:
+    if not frames:
+        return
+    fig.frames = frames
+    step_stride = max(1, len(frames) // 12)
+    steps = [
+        {
+            "args": [[frame.name], {"frame": {"duration": 0, "redraw": True}, "mode": "immediate", "transition": {"duration": 0}}],
+            "label": str(index),
+            "method": "animate",
+        }
+        for index, frame in enumerate(frames[::step_stride])
+    ]
+    fig.update_layout(
+        updatemenus=[
+            {
+                "type": "buttons",
+                "showactive": False,
+                "x": 0.02,
+                "y": 1.12,
+                "buttons": [
+                    {
+                        "label": "Play voxel route mapping",
+                        "method": "animate",
+                        "args": [None, {"frame": {"duration": 180, "redraw": True}, "fromcurrent": True, "transition": {"duration": 0}}],
+                    },
+                    {
+                        "label": "Pause",
+                        "method": "animate",
+                        "args": [[None], {"frame": {"duration": 0, "redraw": False}, "mode": "immediate", "transition": {"duration": 0}}],
+                    },
+                ],
+            }
+        ],
+        sliders=[
+            {
+                "active": 0,
+                "x": 0.02,
+                "y": 1.06,
+                "len": 0.74,
+                "currentvalue": {"prefix": "Voxel step "},
+                "steps": steps,
+            }
+        ],
     )
 
 
@@ -399,15 +530,45 @@ def _failure_reason(segment: dict[str, object], collision_count: int) -> str:
 
 
 def _viewer_html(fig) -> str:
-    plot = fig.to_html(include_plotlyjs=True, full_html=False)
+    plot = fig.to_html(include_plotlyjs=True, full_html=False, post_script=_loop_animation_script())
     engine_text = "Open3D is available." if OPEN3D_AVAILABLE else "Open3D is not installed; the app used the same voxel-grid method in pure Python."
     return f"""
 <div style="font-family: Arial, sans-serif; color: #edf2f7; background: #0b0f17; padding: 14px; min-height: 980px;">
   <div style="border: 1px solid #334155; border-radius: 8px; padding: 14px; margin-bottom: 10px; background: #111827; line-height: 1.45;">
-    This model checks a wheelchair-sized clearance volume against occupied 3D voxels. The visible wheelchair and person explain the route movement; the pass/fail result comes from the clearance volume, not from the decorative marker. {engine_text}
+    This model checks a wheelchair-sized clearance volume against occupied 3D voxels. Press Play voxel route mapping to watch the wheelchair and person move along the same right-angle route used by the 2D plan and detailed 3D clearance model. The animation loops until Pause is pressed. The pass/fail result comes from the clearance volume, not from the visible marker. {engine_text}
   </div>
   {plot}
 </div>
+"""
+
+
+def _loop_animation_script() -> str:
+    return """
+const gd = document.getElementById('{plot_id}');
+if (gd && !gd.dataset.loopReady) {
+  gd.dataset.loopReady = 'true';
+  gd.dataset.loopAnimation = 'false';
+  const replay = () => {
+    if (gd.dataset.loopAnimation === 'true') {
+      Plotly.animate(gd, null, {
+        frame: {duration: 180, redraw: true},
+        transition: {duration: 0},
+        fromcurrent: false,
+        mode: 'immediate'
+      });
+    }
+  };
+  gd.addEventListener('click', (event) => {
+    const text = (event.target && event.target.textContent || '').trim().toLowerCase();
+    if (text.includes('play')) {
+      gd.dataset.loopAnimation = 'true';
+    }
+    if (text.includes('pause')) {
+      gd.dataset.loopAnimation = 'false';
+    }
+  }, true);
+  gd.on('plotly_animated', replay);
+}
 """
 
 

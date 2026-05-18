@@ -106,7 +106,7 @@ def make_3d_clearance_viewer(uploaded_file, graph: Graph) -> tuple[str | None, d
         collisions = _colliding_obstacles(envelope, obstacle_boxes)
         collision_names = [item["label"] for item in collisions[:6]]
         passed = not collisions and segment["route_pass"]
-        checked_segments.append({**segment, "passed": passed, "collision_names": collision_names})
+        checked_segments.append({**segment, "passed": passed, "collision_names": collision_names, "summary": _route_summary(segment, passed, collision_names)})
         if passed:
             color = "rgba(47, 191, 113, 0.34)"
             name = "Passed 3D clearance envelope"
@@ -126,7 +126,6 @@ def make_3d_clearance_viewer(uploaded_file, graph: Graph) -> tuple[str | None, d
                 )
             )
         _add_box(fig, envelope, name, color, _route_text(segment, collision_names), showlegend=(index == 0 or (not passed and failed_boxes == 1)))
-        _add_route_line(fig, segment, "#2fbf71" if passed else "#ff3333")
 
     animated_steps = _add_clearance_animation(fig, checked_segments)
 
@@ -154,7 +153,9 @@ def make_3d_clearance_viewer(uploaded_file, graph: Graph) -> tuple[str | None, d
             "zaxis": {"title": "Z", "backgroundcolor": "#0b0f17", "gridcolor": "#253142"},
             "aspectmode": "data",
             "camera": {"eye": {"x": 2.2, "y": -2.45, "z": 1.8}, "up": {"x": 0, "y": 0, "z": 1}},
+            "uirevision": "keep-view",
         },
+        uirevision="keep-view",
         legend={"orientation": "h", "y": 1.02, "x": 0},
     )
 
@@ -349,7 +350,7 @@ def _add_clearance_animation(fig, segments: list[dict[str, object]]) -> int:
         )
     )
 
-    progress_index = len(fig.data)
+    passed_progress_index = len(fig.data)
     fig.add_trace(
         go.Scatter3d(
             x=[first["point"][0]],
@@ -358,25 +359,52 @@ def _add_clearance_animation(fig, segments: list[dict[str, object]]) -> int:
             mode="lines+markers",
             line={"color": "#ffd166", "width": 6},
             marker={"size": 5, "color": "#ffd166"},
-            name="Mapped clearance path",
-            hovertemplate="Animated route progress<extra></extra>",
+            name="Mapped route so far",
+            hovertemplate="Yellow path already checked<extra></extra>",
+        )
+    )
+    failed_progress_index = len(fig.data)
+    fig.add_trace(
+        go.Scatter3d(
+            x=[],
+            y=[],
+            z=[],
+            mode="lines+markers",
+            line={"color": "#ff3333", "width": 8},
+            marker={"size": 6, "color": "#ff3333"},
+            name="Failed mapped route",
+            hovertemplate="Red path failed the clearance check<extra></extra>",
         )
     )
 
-    xs: list[float] = []
-    ys: list[float] = []
-    zs: list[float] = []
+    passed_x: list[float | None] = []
+    passed_y: list[float | None] = []
+    passed_z: list[float | None] = []
+    failed_x: list[float | None] = []
+    failed_y: list[float | None] = []
+    failed_z: list[float | None] = []
     frames = []
     for index, sample in enumerate(samples):
         point = sample["point"]
-        xs.append(point[0])
-        ys.append(point[1])
-        zs.append(point[2] + 0.18)
+        if sample["passed"]:
+            passed_x.append(point[0])
+            passed_y.append(point[1])
+            passed_z.append(point[2] + 0.18)
+            failed_x.append(None)
+            failed_y.append(None)
+            failed_z.append(None)
+        else:
+            passed_x.append(None)
+            passed_y.append(None)
+            passed_z.append(None)
+            failed_x.append(point[0])
+            failed_y.append(point[1])
+            failed_z.append(point[2] + 0.18)
         frame_mesh = _mesh_from_bounds(_moving_clearance_bounds(point, sample["segment"]))
         frames.append(
             go.Frame(
                 name=str(index),
-                traces=[box_index, progress_index],
+                traces=[box_index, passed_progress_index, failed_progress_index],
                 data=[
                     go.Mesh3d(
                         x=frame_mesh["x"],
@@ -388,7 +416,8 @@ def _add_clearance_animation(fig, segments: list[dict[str, object]]) -> int:
                         color=_motion_color(sample["passed"], 0.62),
                         hovertemplate=_motion_text(sample) + "<extra></extra>",
                     ),
-                    go.Scatter3d(x=list(xs), y=list(ys), z=list(zs)),
+                    go.Scatter3d(x=list(passed_x), y=list(passed_y), z=list(passed_z)),
+                    go.Scatter3d(x=list(failed_x), y=list(failed_y), z=list(failed_z), hovertemplate=_motion_text(sample) + "<extra></extra>"),
                 ],
             )
         )
@@ -408,6 +437,7 @@ def _motion_samples(segments: list[dict[str, object]]) -> list[dict[str, object]
                 "passed": bool(first.get("passed")),
                 "label": str(first.get("label", "Route segment")),
                 "collision_names": first.get("collision_names", []),
+                "summary": str(first.get("summary", "")),
             }
         )
         for segment in segments:
@@ -419,6 +449,7 @@ def _motion_samples(segments: list[dict[str, object]]) -> list[dict[str, object]
                     "passed": bool(segment.get("passed")),
                     "label": str(segment.get("label", "Route segment")),
                     "collision_names": segment.get("collision_names", []),
+                    "summary": str(segment.get("summary", "")),
                 }
             )
         return samples
@@ -443,6 +474,7 @@ def _motion_samples(segments: list[dict[str, object]]) -> list[dict[str, object]
                     "passed": bool(segment.get("passed")),
                     "label": str(segment.get("label", "Route segment")),
                     "collision_names": segment.get("collision_names", []),
+                    "summary": str(segment.get("summary", "")),
                 }
             )
             if len(samples) >= MAX_ANIMATION_STEPS:
@@ -475,16 +507,19 @@ def _motion_color(passed: bool, alpha: float) -> str:
 
 
 def _motion_text(sample: dict[str, object]) -> str:
-    status = "passed" if sample["passed"] else "failed"
-    collisions = sample.get("collision_names") or []
-    collision_text = ", ".join(collisions[:4]) if collisions else "no obstacle name at this point"
-    return (
-        f"{html.escape(str(sample['label']))}<br>"
-        f"Moving 3D clearance volume: {status}.<br>"
-        f"Clearance width: {MIN_CLEAR_WIDTH_M:.2f} m.<br>"
-        f"Clearance height: {MIN_CLEAR_HEIGHT_M:.2f} m.<br>"
-        f"Obstacle note: {html.escape(collision_text)}"
-    )
+    summary = sample.get("summary") or _route_summary(sample.get("segment", {}), bool(sample.get("passed")), sample.get("collision_names") or [])
+    return f"{html.escape(str(sample['label']))}<br>{html.escape(str(summary))}"
+
+
+def _route_summary(segment: dict[str, object], passed: bool, collisions: list[str]) -> str:
+    if passed:
+        return "Wheelchair clearance passed here."
+    if collisions:
+        shown = ", ".join(collisions[:3])
+        return f"Wheelchair clearance hits obstacle geometry: {shown}."
+    if not segment.get("route_pass"):
+        return "This route fails because a door width or level change is not acceptable."
+    return "Wheelchair clearance needs review here."
 
 
 def _set_animation(fig, frames) -> None:
@@ -560,8 +595,7 @@ def _viewer_html(fig) -> str:
     return f"""
 <div style="font-family: Arial, sans-serif; color: #edf2f7; background: #0b0f17; padding: 14px; min-height: 920px;">
   <div style="border: 1px solid #334155; border-radius: 8px; padding: 14px; margin-bottom: 10px; background: #111827; line-height: 1.45;">
-    This model shows 3D clearance volumes. Green volumes pass. Red volumes need review.
-    Press Play clearance mapping to watch the wheelchair-sized volume move through the same right-angle route used by the 2D plan and voxel simulation. The animation loops until Pause is pressed.
+    This model shows the moving 3D clearance volume. Press Play clearance mapping to watch the wheelchair-sized volume map the route. Yellow shows the route already checked. Red appears where the checked route fails. The animation loops until Pause is pressed.
     The check uses IfcOpenShell mesh bounding boxes and does not invent missing building dimensions.
   </div>
   {plot}
@@ -575,7 +609,19 @@ const gd = document.getElementById('{plot_id}');
 if (gd && !gd.dataset.loopReady) {
   gd.dataset.loopReady = 'true';
   gd.dataset.loopAnimation = 'false';
+  gd.dataset.camera = '';
+  gd.on('plotly_relayout', (eventData) => {
+    if (eventData['scene.camera']) {
+      gd.dataset.camera = JSON.stringify(eventData['scene.camera']);
+    }
+  });
+  const keepCamera = () => {
+    if (gd.dataset.camera) {
+      Plotly.relayout(gd, {'scene.camera': JSON.parse(gd.dataset.camera)});
+    }
+  };
   const replay = () => {
+    keepCamera();
     if (gd.dataset.loopAnimation === 'true') {
       Plotly.animate(gd, null, {
         frame: {duration: 180, redraw: true},

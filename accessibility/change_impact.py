@@ -283,7 +283,7 @@ def _make_general_impact_viewer(option: ImpactOption) -> str | None:
     growth = max(abs(option.footprint_change_m2) / max(base_depth, 1.0), 0.08)
     compression = max(abs(option.affected_zone_area_change_m2) / max(base_depth, 1.0), 0.08)
 
-    _add_box(fig, (0, base_width, 0, base_depth, 0, 3.0), "Current checked zone", "rgba(148, 163, 184, 0.22)", "Current route, corridor, room, ramp, lift, toilet, or clearance zone")
+    _add_box(fig, (0, base_width, 0, base_depth, 0, 3.0), "Current checked zone", "rgba(148, 163, 184, 0.22)", _impact_short_text(option))
     if option.strategy == "expand building outward":
         _add_box(fig, (base_width, base_width + growth, 0, base_depth, 0, 3.0), "Added zone", "rgba(47, 191, 113, 0.46)", option.explanation)
     else:
@@ -297,7 +297,7 @@ def _make_general_impact_viewer(option: ImpactOption) -> str | None:
             mode="lines+markers",
             line={"color": "#ffd166", "width": 8},
             marker={"size": 5, "color": "#ffd166"},
-            hovertemplate=html.escape(option.explanation) + "<extra></extra>",
+            hovertemplate=html.escape(_impact_short_text(option)) + "<extra></extra>",
             name="Change direction",
         )
     )
@@ -312,7 +312,9 @@ def _make_general_impact_viewer(option: ImpactOption) -> str | None:
             "yaxis": {"title": "Depth", "backgroundcolor": "#0b0f17", "gridcolor": "#253142"},
             "zaxis": {"title": "Height", "backgroundcolor": "#0b0f17", "gridcolor": "#253142"},
             "aspectmode": "data",
+            "uirevision": "keep-view",
         },
+        uirevision="keep-view",
         legend={"orientation": "h", "y": 1.02, "x": 0},
     )
     plot = fig.to_html(include_plotlyjs=True, full_html=False)
@@ -324,6 +326,14 @@ def _make_general_impact_viewer(option: ImpactOption) -> str | None:
   {plot}
 </div>
 """
+
+
+def _impact_short_text(option: ImpactOption) -> str:
+    if option.footprint_change_m2 > 0:
+        return f"{option.rule}: applying this fix needs about {option.footprint_change_m2:.3f} m2 more footprint."
+    if option.affected_zone_area_change_m2 < 0:
+        return f"{option.rule}: applying this fix keeps the footprint but takes about {abs(option.affected_zone_area_change_m2):.3f} m2 from the connected zone."
+    return f"{option.rule}: applying this fix changes the checked element but does not increase the footprint estimate."
 
 
 def _fix_for_issue(issue: Issue) -> str:

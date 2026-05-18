@@ -90,7 +90,8 @@ def make_voxel_clearance_viewer(uploaded_file, graph: Graph) -> tuple[str | None
         test_voxels = _box_voxels(envelope)
         collisions = test_voxels.intersection(occupied_voxels)
         passed = not collisions and segment["route_pass"]
-        checked_route_segments.append({**segment, "passed": passed, "collision_count": len(collisions)})
+        summary = _route_summary(segment, passed, len(collisions))
+        checked_route_segments.append({**segment, "passed": passed, "collision_count": len(collisions), "summary": summary})
         if not passed:
             failed_segments += 1
             collision_voxels_total += len(collisions)
@@ -104,7 +105,6 @@ def make_voxel_clearance_viewer(uploaded_file, graph: Graph) -> tuple[str | None
                     "Remove the obstacle, widen the route, or use another accessible route.",
                 )
             )
-        _add_route_segment(fig, segment, passed, len(collisions))
 
     animated_steps = _add_wheelchair_animation(fig, checked_route_segments)
 
@@ -143,7 +143,9 @@ def make_voxel_clearance_viewer(uploaded_file, graph: Graph) -> tuple[str | None
             "zaxis": {"title": "Z", "backgroundcolor": "#0b0f17", "gridcolor": "#253142"},
             "aspectmode": "data",
             "camera": {"eye": {"x": 2.2, "y": -2.4, "z": 1.8}, "up": {"x": 0, "y": 0, "z": 1}},
+            "uirevision": "keep-view",
         },
+        uirevision="keep-view",
         legend={"orientation": "h", "y": 1.02, "x": 0},
     )
 
@@ -349,7 +351,7 @@ def _add_wheelchair_animation(fig, route_segments: list[dict[str, object]]) -> i
         trace_indices.append(len(fig.data))
         fig.add_trace(trace)
 
-    progress_index = len(fig.data)
+    passed_progress_index = len(fig.data)
     fig.add_trace(
         go.Scatter3d(
             x=[first["point"][0]],
@@ -357,27 +359,58 @@ def _add_wheelchair_animation(fig, route_segments: list[dict[str, object]]) -> i
             z=[first["point"][2] + 0.48],
             mode="lines+markers",
             marker={"size": 6, "color": "#ffd166"},
-            line={"color": "#ffd166", "width": 4, "dash": "dot"},
-            name="Wheelchair simulation path",
-            hovertemplate="Animated wheelchair route progress<extra></extra>",
+            line={"color": "#ffd166", "width": 5},
+            name="Mapped route so far",
+            hovertemplate="Yellow path already checked<extra></extra>",
+        )
+    )
+    failed_progress_index = len(fig.data)
+    fig.add_trace(
+        go.Scatter3d(
+            x=[],
+            y=[],
+            z=[],
+            mode="lines+markers",
+            marker={"size": 6, "color": "#ff3333"},
+            line={"color": "#ff3333", "width": 7},
+            name="Failed mapped route",
+            hovertemplate="Red path failed the wheelchair route check<extra></extra>",
         )
     )
 
-    xs: list[float] = []
-    ys: list[float] = []
-    zs: list[float] = []
+    passed_x: list[float | None] = []
+    passed_y: list[float | None] = []
+    passed_z: list[float | None] = []
+    failed_x: list[float | None] = []
+    failed_y: list[float | None] = []
+    failed_z: list[float | None] = []
     frames = []
     for index, sample in enumerate(samples):
         point = sample["point"]
-        xs.append(point[0])
-        ys.append(point[1])
-        zs.append(point[2] + 0.48)
+        if sample["passed"]:
+            passed_x.append(point[0])
+            passed_y.append(point[1])
+            passed_z.append(point[2] + 0.48)
+            failed_x.append(None)
+            failed_y.append(None)
+            failed_z.append(None)
+        else:
+            passed_x.append(None)
+            passed_y.append(None)
+            passed_z.append(None)
+            failed_x.append(point[0])
+            failed_y.append(point[1])
+            failed_z.append(point[2] + 0.48)
         frame_parts = _wheelchair_parts(point[0], point[1], point[2], sample["angle"])
         frames.append(
             go.Frame(
                 name=str(index),
-                traces=trace_indices + [progress_index],
-                data=frame_parts + [go.Scatter3d(x=list(xs), y=list(ys), z=list(zs))],
+                traces=trace_indices + [passed_progress_index, failed_progress_index],
+                data=frame_parts
+                + [
+                    go.Scatter3d(x=list(passed_x), y=list(passed_y), z=list(passed_z)),
+                    go.Scatter3d(x=list(failed_x), y=list(failed_y), z=list(failed_z), hovertemplate=_motion_text(sample) + "<extra></extra>"),
+                ],
             )
         )
 
@@ -398,6 +431,7 @@ def _motion_samples(segments: list[dict[str, object]]) -> list[dict[str, object]
                 "passed": bool(first.get("passed")),
                 "label": str(first.get("label", "Route segment")),
                 "collision_count": int(first.get("collision_count", 0)),
+                "summary": str(first.get("summary", "")),
             }
         )
         for segment in segments:
@@ -410,6 +444,7 @@ def _motion_samples(segments: list[dict[str, object]]) -> list[dict[str, object]
                     "passed": bool(segment.get("passed")),
                     "label": str(segment.get("label", "Route segment")),
                     "collision_count": int(segment.get("collision_count", 0)),
+                    "summary": str(segment.get("summary", "")),
                 }
             )
         return samples
@@ -435,6 +470,7 @@ def _motion_samples(segments: list[dict[str, object]]) -> list[dict[str, object]
                     "passed": bool(segment.get("passed")),
                     "label": str(segment.get("label", "Route segment")),
                     "collision_count": int(segment.get("collision_count", 0)),
+                    "summary": str(segment.get("summary", "")),
                 }
             )
             if len(samples) >= MAX_ANIMATION_STEPS:
@@ -529,13 +565,28 @@ def _failure_reason(segment: dict[str, object], collision_count: int) -> str:
     return " ".join(reasons) or "The voxel clearance check failed."
 
 
+def _motion_text(sample: dict[str, object]) -> str:
+    summary = sample.get("summary") or _route_summary(sample, bool(sample.get("passed")), int(sample.get("collision_count", 0)))
+    return f"{html.escape(str(sample['label']))}<br>{html.escape(str(summary))}"
+
+
+def _route_summary(segment: dict[str, object], passed: bool, collision_count: int) -> str:
+    if passed:
+        return "Wheelchair route passed here."
+    if collision_count:
+        return f"Wheelchair clearance collides with {collision_count} occupied voxel cells."
+    if not segment.get("route_pass"):
+        return "This route fails because a door width or level change is not acceptable."
+    return "Wheelchair clearance needs review here."
+
+
 def _viewer_html(fig) -> str:
     plot = fig.to_html(include_plotlyjs=True, full_html=False, post_script=_loop_animation_script())
     engine_text = "Open3D is available." if OPEN3D_AVAILABLE else "Open3D is not installed; the app used the same voxel-grid method in pure Python."
     return f"""
 <div style="font-family: Arial, sans-serif; color: #edf2f7; background: #0b0f17; padding: 14px; min-height: 980px;">
   <div style="border: 1px solid #334155; border-radius: 8px; padding: 14px; margin-bottom: 10px; background: #111827; line-height: 1.45;">
-    This model checks a wheelchair-sized clearance volume against occupied 3D voxels. Press Play voxel route mapping to watch the wheelchair and person move along the same right-angle route used by the 2D plan and detailed 3D clearance model. The animation loops until Pause is pressed. The pass/fail result comes from the clearance volume, not from the visible marker. {engine_text}
+    This model checks a wheelchair-sized clearance volume against occupied 3D voxels. Press Play voxel route mapping to watch the wheelchair and person map the route. Yellow shows the route already checked. Red appears where that checked route fails. The animation loops until Pause is pressed. The pass/fail result comes from the clearance volume, not from the visible marker. {engine_text}
   </div>
   {plot}
 </div>
@@ -548,7 +599,19 @@ const gd = document.getElementById('{plot_id}');
 if (gd && !gd.dataset.loopReady) {
   gd.dataset.loopReady = 'true';
   gd.dataset.loopAnimation = 'false';
+  gd.dataset.camera = '';
+  gd.on('plotly_relayout', (eventData) => {
+    if (eventData['scene.camera']) {
+      gd.dataset.camera = JSON.stringify(eventData['scene.camera']);
+    }
+  });
+  const keepCamera = () => {
+    if (gd.dataset.camera) {
+      Plotly.relayout(gd, {'scene.camera': JSON.parse(gd.dataset.camera)});
+    }
+  };
   const replay = () => {
+    keepCamera();
     if (gd.dataset.loopAnimation === 'true') {
       Plotly.animate(gd, null, {
         frame: {duration: 180, redraw: true},

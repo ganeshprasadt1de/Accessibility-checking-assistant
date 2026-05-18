@@ -123,7 +123,9 @@ def make_interactive_model_viewer(uploaded_file, graph: Graph, issues: list[Issu
                 "center": {"x": 0, "y": 0, "z": -0.08},
                 "up": {"x": 0, "y": 0, "z": 1},
             },
+            "uirevision": "keep-view",
         },
+        uirevision="keep-view",
         legend={"orientation": "h", "y": 1.02, "x": 0},
     )
 
@@ -144,7 +146,7 @@ def _issue_maps(graph: Graph, issues: list[Issue]) -> tuple[dict[str, str], dict
     grouped: dict[str, list[str]] = {}
     for issue in issues:
         grouped.setdefault(issue.element_key, []).append(
-            f"{issue.rule}: current value {issue.value}, required {issue.required}. {issue.explanation or issue.message}"
+            _simple_issue_text(issue)
         )
     for local_key, issue_lines in grouped.items():
         subject = subject_by_local.get(local_key)
@@ -156,6 +158,14 @@ def _issue_maps(graph: Graph, issues: list[Issue]) -> tuple[dict[str, str], dict
         if global_id is not None:
             issue_by_global_id[str(global_id)] = text
     return issue_by_subject, issue_by_global_id
+
+
+def _simple_issue_text(issue: Issue) -> str:
+    value = str(issue.value)
+    required = str(issue.required)
+    if value == "missing":
+        return f"{issue.rule}: required data is missing, so this element needs manual review."
+    return f"{issue.rule}: {value} was found, but {required} is required."
 
 
 def _viewer_elements(model):
@@ -312,11 +322,7 @@ def _route_issue_text(row, issue_text: str | None) -> str:
     step_free = str(row.stepFree)
     if str(row["pass"]) == "true":
         width_text = "missing" if width is None else f"{width:.3f} m"
-        return (
-            f"Status: passed.<br>"
-            f"Door: {door}.<br>"
-            f"Door width: {width_text}. Level change: {level:.3f} m. Step-free: {step_free}."
-        )
+        return f"{door}<br>Wheelchair route passed. Door width is {width_text}, level change is {level:.3f} m."
 
     reasons = []
     if width is None:
@@ -329,12 +335,7 @@ def _route_issue_text(row, issue_text: str | None) -> str:
         reasons.append(issue_text)
     if not reasons:
         reasons.append("this route failed one of the stored route checks")
-    return (
-        f"Status: failed.<br>"
-        f"Door: {door}.<br>"
-        f"Reason: {'; '.join(html.escape(reason) for reason in reasons)}.<br>"
-        f"Fix: widen the door, remove the level change, or add a compliant ramp/lift route."
-    )
+    return f"{door}<br>Wheelchair route needs review because {'; '.join(html.escape(reason) for reason in reasons)}."
 
 
 def _empty_arrows():

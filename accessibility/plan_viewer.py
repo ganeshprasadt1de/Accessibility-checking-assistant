@@ -113,6 +113,7 @@ def make_2d_route_plan(uploaded_file, graph: Graph) -> tuple[str | None, dict[st
     failed_edges = 0
     drawn_edges = 0
     arrows = []
+    animated_segments = []
     for edge in route_edges[:MAX_ROUTE_EDGES]:
         def score_segment(start, end):
             route_strip = _segment_clearance_strip(start, end)
@@ -126,39 +127,11 @@ def make_2d_route_plan(uploaded_file, graph: Graph) -> tuple[str | None, dict[st
         drawn_edges += 1
         color = "#ff3333" if failed else "#2fbf71"
         text = _route_text(edge, hit_labels)
-        fig.add_trace(
-            go.Scatter(
-                x=[point[0] for point in points],
-                y=[point[1] for point in points],
-                mode="lines+markers",
-                line={"color": color, "width": 3, "shape": "linear"},
-                marker={"size": 5, "color": color},
-                text=[text for _point in points],
-                hovertemplate="%{text}<extra></extra>",
-                name="Failed 2D route" if failed else "Passed 2D route",
-                showlegend=drawn_edges <= 2,
-            )
-        )
         for start, end in path_segments(points):
             arrows.append((start, end, color))
+            animated_segments.append({"start": start, "end": end, "passed": not failed, "text": text})
 
-    for start, end, color in arrows[:350]:
-        fig.add_annotation(
-            x=end[0],
-            y=end[1],
-            ax=start[0],
-            ay=start[1],
-            xref="x",
-            yref="y",
-            axref="x",
-            ayref="y",
-            showarrow=True,
-            arrowhead=3,
-            arrowsize=1.1,
-            arrowwidth=1.6,
-            arrowcolor=color,
-            opacity=0.82,
-        )
+    _add_route_animation(fig, animated_segments)
 
     fig.update_layout(
         height=760,
@@ -168,6 +141,7 @@ def make_2d_route_plan(uploaded_file, graph: Graph) -> tuple[str | None, dict[st
         font={"color": "#edf2f7"},
         xaxis={"title": "X", "gridcolor": "#253142", "zeroline": False, "scaleanchor": "y", "scaleratio": 1},
         yaxis={"title": "Y", "gridcolor": "#253142", "zeroline": False},
+        uirevision="keep-view",
         legend={"orientation": "h", "y": 1.02, "x": 0},
     )
     stats = {
@@ -289,6 +263,114 @@ def _path_intersections(points, footprints, door) -> list[str]:
     return sorted(set(labels))
 
 
+def _add_route_animation(fig, segments: list[dict[str, object]]) -> None:
+    if not segments:
+        return
+    first = segments[0]["start"]
+    moving_index = len(fig.data)
+    fig.add_trace(
+        go.Scatter(
+            x=[first[0]],
+            y=[first[1]],
+            mode="markers",
+            marker={"size": 10, "color": "#ffd166"},
+            name="Wheelchair position",
+            hovertemplate="Wheelchair route mapper<extra></extra>",
+        )
+    )
+    passed_index = len(fig.data)
+    fig.add_trace(
+        go.Scatter(
+            x=[first[0]],
+            y=[first[1]],
+            mode="lines+markers",
+            line={"color": "#ffd166", "width": 4},
+            marker={"size": 5, "color": "#ffd166"},
+            name="Mapped route so far",
+            hovertemplate="Yellow path already checked<extra></extra>",
+        )
+    )
+    failed_index = len(fig.data)
+    fig.add_trace(
+        go.Scatter(
+            x=[],
+            y=[],
+            mode="lines+markers",
+            line={"color": "#ff3333", "width": 5},
+            marker={"size": 5, "color": "#ff3333"},
+            name="Failed mapped route",
+            hovertemplate="Red path failed the wheelchair route check<extra></extra>",
+        )
+    )
+
+    passed_x: list[float | None] = []
+    passed_y: list[float | None] = []
+    failed_x: list[float | None] = []
+    failed_y: list[float | None] = []
+    frames = []
+    index = 0
+    for segment in segments:
+        start = segment["start"]
+        end = segment["end"]
+        points = [start, end]
+        for point in points:
+            if segment["passed"]:
+                passed_x.append(point[0])
+                passed_y.append(point[1])
+                failed_x.append(None)
+                failed_y.append(None)
+            else:
+                passed_x.append(None)
+                passed_y.append(None)
+                failed_x.append(point[0])
+                failed_y.append(point[1])
+            frames.append(
+                go.Frame(
+                    name=str(index),
+                    traces=[moving_index, passed_index, failed_index],
+                    data=[
+                        go.Scatter(x=[point[0]], y=[point[1]], hovertemplate=segment["text"] + "<extra></extra>"),
+                        go.Scatter(x=list(passed_x), y=list(passed_y)),
+                        go.Scatter(x=list(failed_x), y=list(failed_y), hovertemplate=segment["text"] + "<extra></extra>"),
+                    ],
+                )
+            )
+            index += 1
+            if index >= 900:
+                break
+        if index >= 900:
+            break
+    _set_animation(fig, frames)
+
+
+def _set_animation(fig, frames) -> None:
+    if not frames:
+        return
+    fig.frames = frames
+    fig.update_layout(
+        updatemenus=[
+            {
+                "type": "buttons",
+                "showactive": False,
+                "x": 0.02,
+                "y": 1.12,
+                "buttons": [
+                    {
+                        "label": "Play 2D route mapping",
+                        "method": "animate",
+                        "args": [None, {"frame": {"duration": 160, "redraw": True}, "fromcurrent": True, "transition": {"duration": 0}}],
+                    },
+                    {
+                        "label": "Pause",
+                        "method": "animate",
+                        "args": [[None], {"frame": {"duration": 0, "redraw": False}, "mode": "immediate", "transition": {"duration": 0}}],
+                    },
+                ],
+            }
+        ],
+    )
+
+
 def _hits_obstacle(route_strip, obstacle, door) -> bool:
     if not route_strip.intersects(obstacle):
         return False
@@ -302,26 +384,51 @@ def _hits_obstacle(route_strip, obstacle, door) -> bool:
 
 def _route_text(edge, hit_labels: list[str]) -> str:
     if not hit_labels and edge["route_pass"]:
-        return f"{html.escape(edge['label'])}<br>2D clearance strip passed."
+        return f"{html.escape(edge['label'])}<br>Wheelchair route passed in the 2D plan."
     reasons = []
     if hit_labels:
         shown = ", ".join(html.escape(label) for label in hit_labels[:5])
         extra = "" if len(hit_labels) <= 5 else f", and {len(hit_labels) - 5} more"
-        reasons.append(f"clearance strip intersects {len(hit_labels)} obstacle footprints: {shown}{extra}")
+        reasons.append(f"the wheelchair clearance strip touches obstacle footprints: {shown}{extra}")
     if not edge["route_pass"]:
-        reasons.append("stored route edge failed width or level-change checks")
-    return f"{html.escape(edge['label'])}<br>2D accessible route needs review: {'; '.join(reasons)}."
+        reasons.append("a door width or level change is not acceptable")
+    return f"{html.escape(edge['label'])}<br>Wheelchair route needs review because {'; '.join(reasons)}."
 
 
 def _viewer_html(fig) -> str:
-    plot = fig.to_html(include_plotlyjs=True, full_html=False)
+    plot = fig.to_html(include_plotlyjs=True, full_html=False, post_script=_loop_animation_script())
     return f"""
 <div style="font-family: Arial, sans-serif; color: #edf2f7; background: #0b0f17; padding: 14px; min-height: 800px;">
   <div style="border: 1px solid #334155; border-radius: 8px; padding: 14px; margin-bottom: 10px; background: #111827; line-height: 1.45;">
-    This 2D plan uses Shapely obstacle footprints and a 0.90 m clearance strip along each right-angle route. Wall intersections at the route door opening are allowed. Green paths passed. Red paths need review.
+    This 2D plan uses Shapely obstacle footprints and a 0.90 m clearance strip. Press Play 2D route mapping to watch the wheelchair route being checked. Yellow shows the route already checked. Red appears where that checked route fails. Wall intersections at the route door opening are allowed.
   </div>
   {plot}
 </div>
+"""
+
+
+def _loop_animation_script() -> str:
+    return """
+const gd = document.getElementById('{plot_id}');
+if (gd && !gd.dataset.loopReady) {
+  gd.dataset.loopReady = 'true';
+  gd.dataset.loopAnimation = 'false';
+  gd.addEventListener('click', (event) => {
+    const text = (event.target && event.target.textContent || '').trim().toLowerCase();
+    if (text.includes('play')) gd.dataset.loopAnimation = 'true';
+    if (text.includes('pause')) gd.dataset.loopAnimation = 'false';
+  });
+  gd.on('plotly_animated', () => {
+    if (gd.dataset.loopAnimation === 'true') {
+      Plotly.animate(gd, null, {
+        frame: {duration: 160, redraw: true},
+        transition: {duration: 0},
+        fromcurrent: false,
+        mode: 'immediate'
+      });
+    }
+  });
+}
 """
 
 

@@ -81,10 +81,12 @@ The LLM does not decide if something passes or fails. SHACL, SPARQL, IfcOpenShel
 Check Results     tables for accessibility elements, issues, route edges, SPARQL checks, RDF output, and assistant
 Visualisation     raw IFCtoLBD graph, enriched accessibility-route graph, and RDF downloads
 Changes Impact    door-widening impact simulation with footprint, volume, plot, room, and RDF change facts
-Building Model    2D route plan, 3D route viewer, detailed 3D clearance model, and voxel route simulation
+Building Model    on-demand 2D route plan, 3D route viewer, detailed 3D clearance model, and voxel route simulation
 ```
 
 The visualisation page does not draw every triple from a large IFC file. It shows focused graph views so the browser stays usable. The full RDF data is still available through the Turtle downloads.
+
+The first run creates the RDF graph, route facts, SPARQL results, SHACL results, and the result tables. The heavier viewers are built on demand from the same RDF graph and IFC geometry when their buttons are pressed. This keeps the first check faster without changing the checked facts.
 
 The Changes Impact page is a reasoning view tied to failed route doors. It shows what happens when a door is widened to satisfy the route width rule. The user can choose whether the building expands outward or the outer footprint stays fixed and a connected space gives up area. The app calculates footprint change, volume change, affected space area, percent change, and whether the entered plot limit can accept the change.
 

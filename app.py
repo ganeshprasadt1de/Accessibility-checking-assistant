@@ -209,6 +209,18 @@ def render_building_model(result: dict) -> None:
 
     st.markdown("### 2D Shapely Route Plan")
     st.write("This plan uses Shapely obstacle footprints and a 0.90 m clearance strip along right-angle route paths through door points. Wall intersections at the door opening are allowed.")
+    if not result.get("plan_viewer_html"):
+        if st.button("Build 2D route plan"):
+            if not result.get("ifc_bytes"):
+                st.error("Run the main check again so the IFC data is available.")
+            else:
+                with st.spinner("Building 2D route plan..."):
+                    stored_upload = StoredUpload(result["ifc_bytes"])
+                    plan_viewer_html, plan_viewer_stats = make_2d_route_plan(stored_upload, result["lbd_graph"])
+                    result["plan_viewer_html"] = plan_viewer_html
+                    result["plan_viewer_stats"] = plan_viewer_stats
+                    st.session_state["check_result"] = result
+                st.rerun()
     if result.get("plan_viewer_html"):
         stats = result.get("plan_viewer_stats", {})
         st.caption(
@@ -219,10 +231,22 @@ def render_building_model(result: dict) -> None:
         )
         components.html(result["plan_viewer_html"], height=860, scrolling=True)
     else:
-        st.info("The 2D route plan could not be created for this IFC file.")
+        st.info("Build the 2D route plan when you need the Shapely route view.")
 
     st.markdown("### 3D Route And Issue Viewer")
     st.write("This model shows IFC geometry, accessible route lines, arrows, and elements with route issues.")
+    if not result.get("viewer_html"):
+        if st.button("Build 3D route viewer"):
+            if not result.get("ifc_bytes"):
+                st.error("Run the main check again so the IFC data is available.")
+            else:
+                with st.spinner("Building 3D route viewer..."):
+                    stored_upload = StoredUpload(result["ifc_bytes"])
+                    viewer_html, viewer_stats = make_interactive_model_viewer(stored_upload, result["lbd_graph"], result["issues"])
+                    result["viewer_html"] = viewer_html
+                    result["viewer_stats"] = viewer_stats
+                    st.session_state["check_result"] = result
+                st.rerun()
     if result.get("viewer_html"):
         stats = result.get("viewer_stats", {})
         st.caption(
@@ -232,7 +256,7 @@ def render_building_model(result: dict) -> None:
         )
         components.html(result["viewer_html"], height=1080, scrolling=True)
     else:
-        st.info("The 3D route viewer could not be created for this IFC file.")
+        st.info("Build the 3D route viewer when you need the interactive IFC model.")
 
     st.markdown("### Detailed 3D Clearance")
     st.write("This slower check draws wheelchair-sized 3D clearance volumes and compares them with obstacle boxes.")
@@ -381,9 +405,9 @@ if run_button:
         issue.explanation = explain_issue(issue, use_llm=False)
     progress.progress(88)
 
-    status.write("Building route viewers...")
-    plan_viewer_html, plan_viewer_stats = make_2d_route_plan(uploaded_file, lbd_graph)
-    viewer_html, viewer_stats = make_interactive_model_viewer(uploaded_file, lbd_graph, issues)
+    status.write("Saving RDF output...")
+    save_graph(raw_lbd_graph, Path("raw_lbd_graph.ttl"))
+    save_graph(lbd_graph, Path("lbd_graph.ttl"))
     progress.progress(100)
     status.write("Accessibility check finished.")
 
@@ -399,10 +423,10 @@ if run_button:
         "route_edge_rows": route_edge_rows,
         "route_graph_findings": route_graph_findings,
         "local_query_rows": local_query_rows,
-        "plan_viewer_html": plan_viewer_html,
-        "plan_viewer_stats": plan_viewer_stats,
-        "viewer_html": viewer_html,
-        "viewer_stats": viewer_stats,
+        "plan_viewer_html": None,
+        "plan_viewer_stats": {},
+        "viewer_html": None,
+        "viewer_stats": {},
         "clearance_3d_html": None,
         "clearance_3d_stats": {},
         "clearance_3d_findings": [],
@@ -425,8 +449,6 @@ if "check_result" not in st.session_state:
     st.stop()
 
 result = st.session_state["check_result"]
-save_graph(result["raw_lbd_graph"], Path("raw_lbd_graph.ttl"))
-save_graph(result["lbd_graph"], Path("lbd_graph.ttl"))
 
 if page == "Changes Impact":
     render_changes_impact_page(result)

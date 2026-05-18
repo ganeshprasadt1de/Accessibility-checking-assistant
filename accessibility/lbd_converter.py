@@ -15,6 +15,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 TOOLS_DIR = PROJECT_ROOT / ".tools" / "ifctolbd"
 LIB_DIR = TOOLS_DIR / "java_libraries"
 CLI_CLASS = "org.linkedbuildingdata.ifc2lbd.IFCtoLBDConverter_CLI"
+_CACHED_LIBRARIES: list[Path] | None = None
 
 
 def convert_ifc_to_lbd(uploaded_file, config: dict[str, Any]) -> tuple[Graph | None, str]:
@@ -72,13 +73,19 @@ def convert_ifc_to_lbd(uploaded_file, config: dict[str, Any]) -> tuple[Graph | N
 
 
 def _prepare_libraries(config: dict[str, Any]) -> list[Path]:
+    global _CACHED_LIBRARIES
+    if _CACHED_LIBRARIES:
+        return _CACHED_LIBRARIES
+
     jar_paths = _configured_jars(config)
     if jar_paths:
+        _CACHED_LIBRARIES = jar_paths
         return jar_paths
 
     if LIB_DIR.exists():
         jars = sorted(LIB_DIR.glob("*.jar"))
         if jars:
+            _CACHED_LIBRARIES = jars
             return jars
 
     zip_path = _resolve_path(config.get("zip_path", "IFCtoLBD-master.zip"))
@@ -98,7 +105,8 @@ def _prepare_libraries(config: dict[str, Any]) -> list[Path]:
             with archive.open(member) as source, target.open("wb") as destination:
                 shutil.copyfileobj(source, destination)
 
-    return sorted(LIB_DIR.glob("*.jar"))
+    _CACHED_LIBRARIES = sorted(LIB_DIR.glob("*.jar"))
+    return _CACHED_LIBRARIES
 
 
 def _configured_jars(config: dict[str, Any]) -> list[Path]:

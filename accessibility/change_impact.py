@@ -25,9 +25,13 @@ class ChangeOption:
     key: str
     label: str
     route_edge: str
+    route_edge_node: str
     door_label: str
+    door_node: str
     from_space: str
+    from_space_node: str
     to_space: str
+    to_space_node: str
     current_door_width_m: float
     target_door_width_m: float
     width_increase_m: float
@@ -59,9 +63,13 @@ def failed_door_options(route_edge_rows: list[dict[str, str]]) -> list[dict[str,
             {
                 "label": f"{row.get('Door', 'Door')} | {row.get('From space', '')} -> {row.get('To space', '')}",
                 "route_edge": row.get("Route edge", ""),
+                "route_edge_node": row.get("Route edge node", ""),
                 "door_label": row.get("Door", "Door"),
+                "door_node": row.get("Door node", ""),
                 "from_space": row.get("From space", ""),
+                "from_space_node": row.get("From space node", ""),
                 "to_space": row.get("To space", ""),
+                "to_space_node": row.get("To space node", ""),
                 "current_width": f"{width:.3f}",
             }
         )
@@ -90,10 +98,10 @@ def calculate_change_option(
     target_width = max(target_width_m, current_width)
     width_increase = max(target_width - current_width, 0.0)
     old_footprint = _building_footprint(graph)
-    route_length = _route_length(graph, selected.get("Route edge", ""))
+    route_length = _route_length(graph, selected.get("Route edge node", ""), selected.get("Route edge", ""))
     impacted_area = width_increase * route_length
     affected_space = selected.get("To space") or selected.get("From space") or "connected space"
-    affected_area = _space_area_by_label(graph, affected_space)
+    affected_area = _space_area(graph, selected.get("To space node", ""), affected_space)
 
     if strategy == "expand building outward":
         footprint_change = impacted_area
@@ -132,9 +140,13 @@ def calculate_change_option(
         key=key,
         label=f"Change option {key}",
         route_edge=selected.get("Route edge", ""),
+        route_edge_node=selected.get("Route edge node", ""),
         door_label=selected.get("Door", "Door"),
+        door_node=selected.get("Door node", ""),
         from_space=selected.get("From space", ""),
+        from_space_node=selected.get("From space node", ""),
         to_space=selected.get("To space", ""),
+        to_space_node=selected.get("To space node", ""),
         current_door_width_m=round(current_width, 4),
         target_door_width_m=round(target_width, 4),
         width_increase_m=round(width_increase, 4),
@@ -161,6 +173,16 @@ def add_change_option_to_graph(graph: Graph, option: ChangeOption) -> None:
     subject = CHANGE[option.key]
     graph.add((subject, RDF.type, ACC.ChangeOption))
     graph.add((subject, RDFS.label, Literal(option.label)))
+    for predicate, value in [
+        (ACC.affectsRouteEdge, option.route_edge_node),
+        (ACC.affectsDoor, option.door_node),
+        (ACC.affectsFromSpace, option.from_space_node),
+        (ACC.affectsToSpace, option.to_space_node),
+    ]:
+        if value:
+            target = URIRef(value)
+            graph.add((subject, predicate, target))
+            graph.add((target, ACC.hasChangeOption, subject))
     graph.add((subject, ACC.strategy, Literal(option.strategy)))
     graph.add((subject, ACC.affectedDoorLabel, Literal(option.door_label)))
     graph.add((subject, ACC.fromSpaceLabel, Literal(option.from_space)))
@@ -278,7 +300,14 @@ def _building_footprint(graph: Graph) -> float:
     return total or 1.0
 
 
-def _space_area_by_label(graph: Graph, label: str) -> float:
+def _space_area(graph: Graph, node_uri: str, label: str) -> float:
+    if node_uri:
+        value = graph.value(URIRef(node_uri), ACC.footprintAreaM2)
+        if value is not None:
+            try:
+                return float(value)
+            except (TypeError, ValueError):
+                pass
     query = """
 PREFIX acc: <http://example.org/accessibility#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -296,7 +325,18 @@ WHERE {
     return 0.0
 
 
-def _route_length(graph: Graph, route_edge_label: str) -> float:
+def _route_length(graph: Graph, route_edge_node: str, route_edge_label: str) -> float:
+    if route_edge_node:
+        edge = URIRef(route_edge_node)
+        from_space = graph.value(edge, ACC.fromSpace)
+        to_space = graph.value(edge, ACC.toSpace)
+        if from_space is not None and to_space is not None:
+            start = _xy(graph, from_space)
+            end = _xy(graph, to_space)
+            if start is not None and end is not None:
+                dx = start[0] - end[0]
+                dy = start[1] - end[1]
+                return max((dx * dx + dy * dy) ** 0.5, 1.0)
     query = """
 PREFIX acc: <http://example.org/accessibility#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -315,6 +355,14 @@ WHERE {
         dy = float(row.fy) - float(row.ty)
         return max((dx * dx + dy * dy) ** 0.5, 1.0)
     return 1.0
+
+
+def _xy(graph: Graph, subject: URIRef) -> tuple[float, float] | None:
+    x = graph.value(subject, ACC.centerX)
+    y = graph.value(subject, ACC.centerY)
+    if x is None or y is None:
+        return None
+    return float(x), float(y)
 
 
 def _change_key(label: str, target_width: float, strategy: str) -> str:

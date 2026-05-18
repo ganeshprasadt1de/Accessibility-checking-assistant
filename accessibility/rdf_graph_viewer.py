@@ -49,6 +49,21 @@ ENRICHED_PREDICATES = {
     "doorCenterX",
     "doorCenterY",
     "doorCenterZ",
+    "affectsRouteEdge",
+    "affectsDoor",
+    "affectsFromSpace",
+    "affectsToSpace",
+    "hasChangeOption",
+    "currentDoorWidthM",
+    "targetDoorWidthM",
+    "widthIncreaseM",
+    "oldFootprintM2",
+    "newFootprintM2",
+    "footprintChangeM2",
+    "footprintChangePercent",
+    "affectedSpaceAreaBeforeM2",
+    "affectedSpaceAreaAfterM2",
+    "fitsPlot",
 }
 
 
@@ -83,9 +98,16 @@ def _raw_graph_data(graph: Graph) -> dict[str, list[dict[str, object]]]:
             elif predicate == RDFS.label:
                 continue
             elif _keep_raw_predicate(predicate, obj):
-                obj_label = _literal_label(obj) if isinstance(obj, Literal) else labels.get(obj, _short(obj))
-                builder.add_node(obj, obj_label, _node_group(obj, typed_subjects))
-                builder.add_edge(subject, obj, _short(predicate))
+                if isinstance(obj, Literal):
+                    obj_node = _literal_node_key(subject, predicate, obj)
+                    obj_label = f"{_short(predicate)}: {_literal_label(obj)}"
+                    obj_group = "value"
+                else:
+                    obj_node = obj
+                    obj_label = labels.get(obj, _short(obj))
+                    obj_group = _node_group(obj, typed_subjects)
+                builder.add_node(obj_node, obj_label, obj_group)
+                builder.add_edge(subject, obj_node, _short(predicate))
             if builder.edge_count >= MAX_RAW_EDGES:
                 break
 
@@ -107,9 +129,16 @@ def _enriched_graph_data(graph: Graph, issues: list[Issue]) -> dict[str, list[di
             break
         group = "issue-element" if subject in issue_subjects else "geometry"
         builder.add_node(subject, labels.get(subject, _short(subject)), group)
-        obj_group = "value" if isinstance(obj, Literal) else "route"
-        builder.add_node(obj, _literal_label(obj) if isinstance(obj, Literal) else labels.get(obj, _short(obj)), obj_group)
-        builder.add_edge(subject, obj, pred_name)
+        if isinstance(obj, Literal):
+            obj_node = _literal_node_key(subject, predicate, obj)
+            obj_group = "value"
+            obj_label = f"{pred_name}: {_literal_label(obj)}"
+        else:
+            obj_node = obj
+            obj_group = "route"
+            obj_label = labels.get(obj, _short(obj))
+        builder.add_node(obj_node, obj_label, obj_group)
+        builder.add_edge(subject, obj_node, pred_name)
 
     for issue in issues[:350]:
         subject = subject_by_short.get(issue.element_key)
@@ -204,6 +233,10 @@ def _literal_label(value: Literal) -> str:
 
 def _node_id(node) -> str:
     return str(node)
+
+
+def _literal_node_key(subject, predicate, value: Literal) -> str:
+    return f"literal::{_node_id(subject)}::{_short(predicate)}::{str(value)}"
 
 
 def _short(value) -> str:

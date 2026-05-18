@@ -76,6 +76,11 @@ def issue_rows(issues):
     ]
 
 
+def public_route_edge_rows(rows: list[dict[str, str]]) -> list[dict[str, str]]:
+    hidden = {"Route edge node", "From space node", "To space node", "Door node"}
+    return [{key: value for key, value in row.items() if key not in hidden} for row in rows]
+
+
 def build_assistant_context(result: dict) -> str:
     lines = []
     elements = route_elements(result.get("elements", []))
@@ -536,7 +541,7 @@ else:
 
 if result.get("route_edge_rows"):
     st.subheader("Route Edges")
-    st.dataframe(pd.DataFrame(result["route_edge_rows"]), use_container_width=True)
+    st.dataframe(pd.DataFrame(public_route_edge_rows(result["route_edge_rows"])), use_container_width=True)
 
 if result.get("geometry_findings"):
     st.subheader("IFC Route Data Quality")

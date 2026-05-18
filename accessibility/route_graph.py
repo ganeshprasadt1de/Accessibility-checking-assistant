@@ -146,9 +146,13 @@ def _route_edge(graph: Graph, subjects: dict[str, URIRef], door, space_a, space_
 
     return {
         "Route edge": label,
+        "Route edge node": str(edge_subject),
         "From space": _label(space_a),
+        "From space node": str(space_a_subject),
         "To space": _label(space_b),
+        "To space node": str(space_b_subject),
         "Door": _label(door),
+        "Door node": str(door_subject),
         "Door width m": "missing" if door_width is None else f"{door_width:.3f}",
         "Level change m": f"{level_change:.3f}",
         "Step-free": str(step_free).lower(),

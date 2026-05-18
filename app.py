@@ -331,6 +331,12 @@ with st.sidebar:
         st.rerun()
     for message in st.session_state.get("service_messages", []):
         st.caption(message)
+    st.markdown("---")
+    st.markdown("**Team**")
+    st.caption("Ganesh Prasad Tamminedi")
+    st.caption("Simon Knorr")
+    st.caption("Yang Yu")
+    st.caption("Yaoqiao Sha")
 
 if run_button:
     if uploaded_file is None:

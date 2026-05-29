@@ -10,7 +10,7 @@ MIDTERM_ROOT = ROOT.parent
 
 @dataclass(frozen=True)
 class RuleLimits:
-    """Simple indoor wheelchair route limits used by the prototype."""
+    """Indoor wheelchair route limits used by the checker."""
 
     door_width_m: float = 0.90
     corridor_width_m: float = 1.50

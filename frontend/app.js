@@ -161,7 +161,7 @@ function localAssistantAnswer() {
   const failedRoutes = appData.routeEdges.filter((edge) => edge.status === "fail").length;
   const result =
     issues === 0 && failedRoutes === 0
-      ? "All generated indoor routes pass the current prototype checks."
+      ? "All generated indoor routes pass the current indoor checks."
       : `The checker found ${issues} issues and ${failedRoutes} failed route edges.`;
   return `${result} It checks door width, route width, turning space, stair blockers, ramp width, and ramp slope. By floor: ${floors}.`;
 }
@@ -265,7 +265,7 @@ function buildEnrichedGraphData() {
     addNode(issueId, issue.short_text, "issue", issueDetails(issue));
     edges.push({ from: issue.element_guid, to: issueId, label: "has issue" });
     const requirementId = `requirement:${issue.rule_id}:${issue.required}`;
-    addNode(requirementId, `${issue.rule_id}: ${valueWithUnit(issue.required, issue.unit)}`, "requirement", "prototype rule value, not measured data");
+    addNode(requirementId, `${issue.rule_id}: ${valueWithUnit(issue.required, issue.unit)}`, "requirement", "rule value, not measured data");
     edges.push({ from: issueId, to: requirementId, label: "must satisfy" });
   }
   return { nodes, edges };
@@ -1077,9 +1077,9 @@ function buildFloorScenario() {
     status: chosenRoute
       ? visualFailedRoutes
         ? `Starting from ${startText}. The stair approach is shown as blocked, then the other door routes continue.`
-        : `Starting from ${startText}. All generated routes on this floor pass the prototype checks.`
+        : `Starting from ${startText}. All generated routes on this floor pass the indoor checks.`
       : "No door-to-door route edges were generated for this floor.",
-    source: "Prototype indoor rules: door width, route width, turning space, stair blockers, ramp width and slope.",
+    source: "Indoor rules: door width, route width, turning space, stair blockers, ramp width and slope.",
     fail: Boolean(chosenRoute && chosenRoute.status === "fail"),
     blockAt: chosenRoute?.status === "fail" ? 0.72 : 1,
     routePaths,

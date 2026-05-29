@@ -30,7 +30,7 @@ def write_json_package(
             "missingGeometryCount": len(missing_geometry),
             "ifctolbd": ifctolbd_note,
             "shacl": shacl_summary,
-            "ruleSource": "Indoor wheelchair prototype rules: door width, route width, turning space, stair blockers, and ramp width/slope",
+            "ruleSource": "Indoor wheelchair rules: door width, route width, turning space, stair blockers, and ramp width/slope",
         },
         "rules": RULE_LIMITS.__dict__,
         "elements": [_element_dict(e) for e in elements],
@@ -42,7 +42,7 @@ def write_json_package(
         "missingGeometry": missing_geometry,
         "sources": {
             "measurements": "IfcOpenShell geometry or explicit IFC properties",
-            "rules": "Focused indoor wheelchair prototype rules",
+            "rules": "Indoor wheelchair route rules",
             "routes": "precomputed door graph from IFC geometry",
         },
     }

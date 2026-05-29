@@ -13,7 +13,7 @@
       "resultCount": 0,
       "message": "Conforms: True. Constraint violations: 0. Full report is in shacl_report.ttl."
     },
-    "ruleSource": "Indoor wheelchair prototype rules: door width, route width, turning space, stair blockers, and ramp width/slope"
+    "ruleSource": "Indoor wheelchair rules: door width, route width, turning space, stair blockers, and ramp width/slope"
   },
   "rules": {
     "door_width_m": 0.9,
@@ -46195,7 +46195,7 @@
   "missingGeometry": [],
   "sources": {
     "measurements": "IfcOpenShell geometry or explicit IFC properties",
-    "rules": "Focused indoor wheelchair prototype rules",
+    "rules": "Indoor wheelchair route rules",
     "routes": "precomputed door graph from IFC geometry"
   }
 }

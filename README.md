@@ -8,7 +8,7 @@ The app reads an IFC file, splits the building by floor, checks wheelchair route
 
 ## What The App Checks
 
-The first prototype checks these rules:
+The app checks these indoor wheelchair route rules:
 
 - door or opening clear width must be at least 0.90 m
 - main indoor route width should be at least 1.50 m
@@ -17,6 +17,12 @@ The first prototype checks these rules:
 - ramps must be at least 1.20 m wide and at most 6 percent slope
 
 The app is only for indoor route checks. It does not check toilets, lifts, outdoor paths, fire safety, or full legal approval.
+
+Stairs are shown separately from door-to-door routes:
+
+- door and corridor routes stay green when their path does not enter the stair area
+- stair approaches are shown as blocked because stairs are not wheelchair routes
+- on upper floors and basement, the simulation starts from the stair landing before checking routes to doors
 
 ## What You Can See In The Website
 
@@ -35,14 +41,17 @@ Visualisation:
 Building Model:
 
 - 3D building view
+- stairs shown in red
 - clickable doors
 - routes connected to the selected door
+- blocked stair approach path for the selected door
 
 Wheelchair Simulation:
 
 - floor dropdown
 - isometric floor view
 - small wheelchair user
+- stair landing start on basement and upper floors
 - green route when it passes
 - red route when it fails
 
@@ -55,6 +64,7 @@ IFC file
 -> building elements and geometry
 -> floor-by-floor route graph
 -> wheelchair rule checks
+-> stair approach issue checks
 -> website data
 -> browser view
 ```

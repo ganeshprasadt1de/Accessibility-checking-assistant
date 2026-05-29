@@ -67,13 +67,13 @@ def deterministic_answer(question: str, context: dict) -> str:
         for floor in floors
     )
     if issue_count == 0 and failed_edges == 0:
-        result = "All generated indoor routes pass the current prototype checks."
+        result = "All generated indoor routes pass the current indoor checks."
     else:
         result = f"The checker found {issue_count} issues and {failed_edges} failed route edges."
     return (
         f"{result} The model has {summary.get('doorCount')} doors and {summary.get('routeEdgeCount')} route edges. "
         f"By floor: {floor_text}. "
-        "The prototype checks door width, route width, turning space, stair blockers, and ramp width or slope. "
+        "The checker checks door width, route width, turning space, stair blockers, and ramp width or slope. "
         f"The main rule values are {rules.get('door_width_m')} m door width, {rules.get('corridor_width_m')} m route width, "
         f"{rules.get('turning_space_m')} m turning space, {rules.get('ramp_width_m')} m ramp width, and {rules.get('ramp_slope_percent')} percent ramp slope."
     )

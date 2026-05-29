@@ -1063,12 +1063,13 @@ function buildFloorScenario() {
   const failedEdges = floorEdges.filter((edge) => edge.status === "fail");
   const transform = createFloorTransform(floorElements);
   const startDoors = chooseFloorStartDoors(floor, floorDoors, floorEdges);
-  const routePaths = [...buildStairApproachRoutes(startDoors, floorElements, transform), ...buildSimulationRoutesFromStarts(startDoors, floorEdges, transform)];
+  const floorStart = chooseFloorStartPoint(floor, startDoors, floorElements, floorEdges);
+  const routePaths = [...buildStairApproachRoutes(floorStart, floorElements, transform), ...buildSimulationRoutesFromStarts(startDoors, floorEdges, transform, floorStart)];
   const chosenRoute = routePaths[0];
   const path = routePaths[0]?.path || [new THREE.Vector3(-5, 0.08, 0), new THREE.Vector3(5, 0.08, 0)];
   const reasonCounts = countReasons(floorEdges);
   const floorFailReason = topReasonText(reasonCounts);
-  const startText = startDoors.map((door) => cleanElementName(door.name || door.label)).join(", ") || "no start door";
+  const startText = floorStart?.label || startDoors.map((door) => cleanElementName(door.name || door.label)).join(", ") || "no start point";
   const visualFailedRoutes = routePaths.filter((route) => route.status === "fail").length;
   const blockerText = failedEdges.length ? floorFailReason : visualFailedRoutes ? "stair blocks route" : "none";
   return {
@@ -1101,30 +1102,58 @@ function buildFloorScenario() {
   };
 }
 
-function buildStairApproachRoutes(startDoors, floorElements, transform) {
-  const stairs = floorElements.filter((element) => element.ifcType === "IfcStair" && element.bboxMin && element.bboxMax);
-  if (!startDoors.length || !stairs.length) return [];
-  const routes = [];
-  for (const startDoor of startDoors) {
-    if (!startDoor.center) continue;
-    const startPoint = transform.point(startDoor.center);
-    const stair = stairs
-      .map((item) => {
-        const center = [(item.bboxMin[0] + item.bboxMax[0]) / 2, (item.bboxMin[1] + item.bboxMax[1]) / 2, (item.bboxMin[2] + item.bboxMax[2]) / 2];
-        return { item, center, distance: Math.hypot(center[0] - startDoor.center[0], center[1] - startDoor.center[1]) };
-      })
-      .sort((a, b) => a.distance - b.distance)[0];
-    const stairPoint = transform.point(stair.center);
-    const midPoint = new THREE.Vector3(startPoint.x, startPoint.y, stairPoint.z);
-    routes.push({
-      key: `${startDoor.guid}:stair:${stair.item.guid}`,
-      edgeId: "stair approach",
-      status: "fail",
-      reason: "stair blocks route",
-      blockAt: 0.88,
-      path: [startPoint, midPoint, stairPoint],
-    });
+function chooseFloorStartPoint(floor, startDoors, floorElements, floorEdges) {
+  const entranceFloor = guessEntranceFloor();
+  const stairs = floorElements.filter((element) => element.ifcType === "IfcStair" && element.center && element.bboxMin && element.bboxMax);
+  if (floor.name !== entranceFloor && stairs.length) {
+    const stair = stairs[0];
+    return {
+      label: "stair landing",
+      point: stairLandingPoint(stair, floorEdges),
+    };
   }
+  const door = startDoors[0];
+  return door?.center ? { label: cleanElementName(door.name || door.label), point: door.center } : null;
+}
+
+function stairLandingPoint(stair, floorEdges) {
+  const candidates = [];
+  for (const edge of floorEdges) {
+    for (const point of edge.path || []) {
+      const insideStairX = point[0] >= stair.bboxMin[0] - 0.2 && point[0] <= stair.bboxMax[0] + 0.2;
+      const beforeStair = point[1] <= stair.bboxMin[1] - 0.25;
+      if (insideStairX && beforeStair) {
+        candidates.push(point);
+      }
+    }
+  }
+  if (candidates.length) {
+    return candidates.sort((a, b) => Math.abs(a[1] - stair.bboxMin[1]) - Math.abs(b[1] - stair.bboxMin[1]) || Math.abs(a[0] - stair.center[0]) - Math.abs(b[0] - stair.center[0]))[0];
+  }
+  return [stair.center[0], stair.bboxMin[1] - 1.2, stair.center[2]];
+}
+
+function buildStairApproachRoutes(floorStart, floorElements, transform) {
+  const stairs = floorElements.filter((element) => element.ifcType === "IfcStair" && element.bboxMin && element.bboxMax);
+  if (!floorStart?.point || !stairs.length) return [];
+  const routes = [];
+  const startPoint = transform.point(floorStart.point);
+  const stair = stairs
+    .map((item) => {
+      const center = [(item.bboxMin[0] + item.bboxMax[0]) / 2, (item.bboxMin[1] + item.bboxMax[1]) / 2, (item.bboxMin[2] + item.bboxMax[2]) / 2];
+      return { item, center, distance: Math.hypot(center[0] - floorStart.point[0], center[1] - floorStart.point[1]) };
+    })
+    .sort((a, b) => a.distance - b.distance)[0];
+  const stairPoint = transform.point(stair.center);
+  const midPoint = new THREE.Vector3(startPoint.x, startPoint.y, stairPoint.z);
+  routes.push({
+    key: `stair:${stair.item.guid}`,
+    edgeId: "stair approach",
+    status: "fail",
+    reason: "stair blocks route",
+    blockAt: 0.88,
+    path: [startPoint, midPoint, stairPoint],
+  });
   return routes;
 }
 
@@ -1166,7 +1195,7 @@ function chooseFloorStartDoors(floor, floorDoors, floorEdges) {
   return fallback ? [fallback] : [];
 }
 
-function buildSimulationRoutesFromStarts(startDoors, floorEdges, transform) {
+function buildSimulationRoutesFromStarts(startDoors, floorEdges, transform, floorStart) {
   const edgeById = new Map(floorEdges.map((edge) => [edge.edgeId, edge]));
   const routes = [];
   const seen = new Set();
@@ -1174,6 +1203,7 @@ function buildSimulationRoutesFromStarts(startDoors, floorEdges, transform) {
     const passRoutes = appData.accessibleRoutesByDoor?.[startDoor.guid] || [];
     for (const route of passRoutes) {
       const item = routePathFromEdgeIds(startDoor.guid, route.edge_ids || [], edgeById, transform, "pass", "clear", route.target_guid);
+      prependFloorStart(item, floorStart, transform);
       if (item && !seen.has(item.key)) {
         seen.add(item.key);
         routes.push(item);
@@ -1184,19 +1214,21 @@ function buildSimulationRoutesFromStarts(startDoors, floorEdges, transform) {
     if (!startDoors.some((door) => door.guid === edge.startGuid || door.guid === edge.endGuid)) continue;
     const startGuid = startDoors.some((door) => door.guid === edge.startGuid) ? edge.startGuid : edge.endGuid;
     const item = routePathFromEdgeIds(startGuid, [edge.edgeId], edgeById, transform, "fail", edge.reasons?.[0] ? reasonText(edge.reasons[0]) : "blocked", null);
-    if (item && !seen.has(item.key)) {
-      seen.add(item.key);
-      routes.push(item);
-    }
-  }
-  for (const edge of floorEdges) {
-    const item = routePathFromEdgeIds(edge.startGuid, [edge.edgeId], edgeById, transform, edge.status, edge.reasons?.[0] ? reasonText(edge.reasons[0]) : "clear", edge.endGuid);
+    prependFloorStart(item, floorStart, transform);
     if (item && !seen.has(item.key)) {
       seen.add(item.key);
       routes.push(item);
     }
   }
   return routes;
+}
+
+function prependFloorStart(route, floorStart, transform) {
+  if (!route?.path?.length || !floorStart?.point) return;
+  const start = transform.point(floorStart.point);
+  if (route.path[0].distanceTo(start) > 0.03) {
+    route.path = [start, ...route.path];
+  }
 }
 
 function routePathFromEdgeIds(startGuid, edgeIds, edgeById, transform, status, reason, targetGuid) {

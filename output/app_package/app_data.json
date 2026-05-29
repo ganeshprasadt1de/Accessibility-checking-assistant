@@ -3,15 +3,15 @@
     "elementCount": 312,
     "doorCount": 77,
     "routeEdgeCount": 313,
-    "issueCount": 0,
+    "issueCount": 12,
     "missingGeometryCount": 0,
     "ifctolbd": "Java or Maven not found, used IFC-derived fallback LBD graph",
     "shacl": {
       "available": true,
-      "conforms": true,
+      "conforms": false,
       "source": "SHACL SPARQL constraints through pySHACL",
-      "resultCount": 0,
-      "message": "Conforms: True. Constraint violations: 0. Full report is in shacl_report.ttl."
+      "resultCount": 12,
+      "message": "Conforms: False. Constraint violations: 12. Full report is in shacl_report.ttl."
     },
     "ruleSource": "Indoor wheelchair prototype rules: door width, route width, turning space, stair blockers, and ramp width/slope"
   },
@@ -9094,7 +9094,176 @@
       "extra": {}
     }
   ],
-  "issues": [],
+  "issues": [
+    {
+      "issue_id": "I0001",
+      "element_guid": "0uPiF9LkPAqeB8f54Uy3_C",
+      "element_label": "IfcSpace 221",
+      "element_type": "IfcSpace",
+      "rule_id": "stair_block",
+      "severity": "fail",
+      "measured": 4.6405700329221355,
+      "required": null,
+      "unit": "m",
+      "source": "Indoor route path check",
+      "short_text": "stair blocks route",
+      "details": "Route edge E00037 failed: stair_block."
+    },
+    {
+      "issue_id": "I0002",
+      "element_guid": "0uPiF9LkPAqeB8f54Uy3_C",
+      "element_label": "IfcSpace 221",
+      "element_type": "IfcSpace",
+      "rule_id": "stair_block",
+      "severity": "fail",
+      "measured": 4.640170173402136,
+      "required": null,
+      "unit": "m",
+      "source": "Indoor route path check",
+      "short_text": "stair blocks route",
+      "details": "Route edge E00038 failed: stair_block."
+    },
+    {
+      "issue_id": "I0003",
+      "element_guid": "0uPiF9LkPAqeB8f54Uy3_C",
+      "element_label": "IfcSpace 221",
+      "element_type": "IfcSpace",
+      "rule_id": "stair_block",
+      "severity": "fail",
+      "measured": 5.840570066940781,
+      "required": null,
+      "unit": "m",
+      "source": "Indoor route path check",
+      "short_text": "stair blocks route",
+      "details": "Route edge E00039 failed: stair_block."
+    },
+    {
+      "issue_id": "I0004",
+      "element_guid": "1RP4kkhTDFJuLugWfrM_1s",
+      "element_label": "IfcSpace 117",
+      "element_type": "IfcSpace",
+      "rule_id": "stair_block",
+      "severity": "fail",
+      "measured": 10.840170173402136,
+      "required": null,
+      "unit": "m",
+      "source": "Indoor route path check",
+      "short_text": "stair blocks route",
+      "details": "Route edge E00040 failed: stair_block."
+    },
+    {
+      "issue_id": "I0005",
+      "element_guid": "1RP4kkhTDFJuLugWfrM_1s",
+      "element_label": "IfcSpace 117",
+      "element_type": "IfcSpace",
+      "rule_id": "stair_block",
+      "severity": "fail",
+      "measured": 10.840570032922136,
+      "required": null,
+      "unit": "m",
+      "source": "Indoor route path check",
+      "short_text": "stair blocks route",
+      "details": "Route edge E00041 failed: stair_block."
+    },
+    {
+      "issue_id": "I0006",
+      "element_guid": "1RP4kkhTDFJuLugWfrM_1s",
+      "element_label": "IfcSpace 117",
+      "element_type": "IfcSpace",
+      "rule_id": "stair_block",
+      "severity": "fail",
+      "measured": 5.840570066940782,
+      "required": null,
+      "unit": "m",
+      "source": "Indoor route path check",
+      "short_text": "stair blocks route",
+      "details": "Route edge E00042 failed: stair_block."
+    },
+    {
+      "issue_id": "I0007",
+      "element_guid": "2mSYEw1YLDvhMYvUr3eREJ",
+      "element_label": "IfcSpace 321",
+      "element_type": "IfcSpace",
+      "rule_id": "stair_block",
+      "severity": "fail",
+      "measured": 4.6405700329221355,
+      "required": null,
+      "unit": "m",
+      "source": "Indoor route path check",
+      "short_text": "stair blocks route",
+      "details": "Route edge E00100 failed: stair_block."
+    },
+    {
+      "issue_id": "I0008",
+      "element_guid": "2mSYEw1YLDvhMYvUr3eREJ",
+      "element_label": "IfcSpace 321",
+      "element_type": "IfcSpace",
+      "rule_id": "stair_block",
+      "severity": "fail",
+      "measured": 5.840570066940781,
+      "required": null,
+      "unit": "m",
+      "source": "Indoor route path check",
+      "short_text": "stair blocks route",
+      "details": "Route edge E00101 failed: stair_block."
+    },
+    {
+      "issue_id": "I0009",
+      "element_guid": "2mSYEw1YLDvhMYvUr3eREJ",
+      "element_label": "IfcSpace 321",
+      "element_type": "IfcSpace",
+      "rule_id": "stair_block",
+      "severity": "fail",
+      "measured": 4.640170173402136,
+      "required": null,
+      "unit": "m",
+      "source": "Indoor route path check",
+      "short_text": "stair blocks route",
+      "details": "Route edge E00102 failed: stair_block."
+    },
+    {
+      "issue_id": "I0010",
+      "element_guid": "3Gz7u_d1P7IA35Wmtg48Rc",
+      "element_label": "IfcSpace 016",
+      "element_type": "IfcSpace",
+      "rule_id": "stair_block",
+      "severity": "fail",
+      "measured": 4.640170173402136,
+      "required": null,
+      "unit": "m",
+      "source": "Indoor route path check",
+      "short_text": "stair blocks route",
+      "details": "Route edge E00148 failed: stair_block."
+    },
+    {
+      "issue_id": "I0011",
+      "element_guid": "3Gz7u_d1P7IA35Wmtg48Rc",
+      "element_label": "IfcSpace 016",
+      "element_type": "IfcSpace",
+      "rule_id": "stair_block",
+      "severity": "fail",
+      "measured": 5.840570066940782,
+      "required": null,
+      "unit": "m",
+      "source": "Indoor route path check",
+      "short_text": "stair blocks route",
+      "details": "Route edge E00149 failed: stair_block."
+    },
+    {
+      "issue_id": "I0012",
+      "element_guid": "3Gz7u_d1P7IA35Wmtg48Rc",
+      "element_label": "IfcSpace 016",
+      "element_type": "IfcSpace",
+      "rule_id": "stair_block",
+      "severity": "fail",
+      "measured": 4.6405700329221355,
+      "required": null,
+      "unit": "m",
+      "source": "Indoor route path check",
+      "short_text": "stair blocks route",
+      "details": "Route edge E00150 failed: stair_block."
+    }
+  ],
   "routeEdges": [
     {
       "edgeId": "E00001",
@@ -10604,8 +10773,10 @@
       "startGuid": "0aFvTq1m96zgWbjq4TXV_5",
       "endGuid": "1MlsdMSb17ygNfEs7N22qC",
       "distanceM": 4.6405700329221355,
-      "status": "pass",
-      "reasons": [],
+      "status": "fail",
+      "reasons": [
+        "stair_block"
+      ],
       "path": [
         [
           21.5,
@@ -10647,8 +10818,10 @@
       "startGuid": "0aFvTq1m96zgWbjq4TXV_5",
       "endGuid": "1p4YfqvYLCyfRRiNruiahD",
       "distanceM": 4.640170173402136,
-      "status": "pass",
-      "reasons": [],
+      "status": "fail",
+      "reasons": [
+        "stair_block"
+      ],
       "path": [
         [
           21.5,
@@ -10690,8 +10863,10 @@
       "startGuid": "1MlsdMSb17ygNfEs7N22qC",
       "endGuid": "1p4YfqvYLCyfRRiNruiahD",
       "distanceM": 5.840570066940781,
-      "status": "pass",
-      "reasons": [],
+      "status": "fail",
+      "reasons": [
+        "stair_block"
+      ],
       "path": [
         [
           23.835,
@@ -10728,8 +10903,10 @@
       "startGuid": "18PQUIFELEARLM4c0brquf",
       "endGuid": "1_hrYGMATEmeNbEHgfoKxd",
       "distanceM": 10.840170173402136,
-      "status": "pass",
-      "reasons": [],
+      "status": "fail",
+      "reasons": [
+        "stair_block"
+      ],
       "path": [
         [
           21.0,
@@ -10766,8 +10943,10 @@
       "startGuid": "18PQUIFELEARLM4c0brquf",
       "endGuid": "31UFds84f5oAxxal4G6S8P",
       "distanceM": 10.840570032922136,
-      "status": "pass",
-      "reasons": [],
+      "status": "fail",
+      "reasons": [
+        "stair_block"
+      ],
       "path": [
         [
           21.0,
@@ -10804,8 +10983,10 @@
       "startGuid": "1_hrYGMATEmeNbEHgfoKxd",
       "endGuid": "31UFds84f5oAxxal4G6S8P",
       "distanceM": 5.840570066940782,
-      "status": "pass",
-      "reasons": [],
+      "status": "fail",
+      "reasons": [
+        "stair_block"
+      ],
       "path": [
         [
           18.165,
@@ -13203,8 +13384,10 @@
       "startGuid": "2N6esOMjP29AvhRLQ1Jz3$",
       "endGuid": "2rfNFYnCT2WAXMkqZ5PiDc",
       "distanceM": 4.6405700329221355,
-      "status": "pass",
-      "reasons": [],
+      "status": "fail",
+      "reasons": [
+        "stair_block"
+      ],
       "path": [
         [
           23.835,
@@ -13246,8 +13429,10 @@
       "startGuid": "2N6esOMjP29AvhRLQ1Jz3$",
       "endGuid": "3XIgDIN6vBjxvjdvI7ngjF",
       "distanceM": 5.840570066940781,
-      "status": "pass",
-      "reasons": [],
+      "status": "fail",
+      "reasons": [
+        "stair_block"
+      ],
       "path": [
         [
           23.835,
@@ -13284,8 +13469,10 @@
       "startGuid": "2rfNFYnCT2WAXMkqZ5PiDc",
       "endGuid": "3XIgDIN6vBjxvjdvI7ngjF",
       "distanceM": 4.640170173402136,
-      "status": "pass",
-      "reasons": [],
+      "status": "fail",
+      "reasons": [
+        "stair_block"
+      ],
       "path": [
         [
           21.5,
@@ -15212,8 +15399,10 @@
       "startGuid": "2pe3RqZ0j8ogoAvp7iGUAH",
       "endGuid": "3rmqVs9ZL3qgw1cva2u9Fv",
       "distanceM": 4.640170173402136,
-      "status": "pass",
-      "reasons": [],
+      "status": "fail",
+      "reasons": [
+        "stair_block"
+      ],
       "path": [
         [
           18.165,
@@ -15255,8 +15444,10 @@
       "startGuid": "2pe3RqZ0j8ogoAvp7iGUAH",
       "endGuid": "3sXEZFiePFsxi_o7909$c3",
       "distanceM": 5.840570066940782,
-      "status": "pass",
-      "reasons": [],
+      "status": "fail",
+      "reasons": [
+        "stair_block"
+      ],
       "path": [
         [
           18.165,
@@ -15293,8 +15484,10 @@
       "startGuid": "3rmqVs9ZL3qgw1cva2u9Fv",
       "endGuid": "3sXEZFiePFsxi_o7909$c3",
       "distanceM": 4.6405700329221355,
-      "status": "pass",
-      "reasons": [],
+      "status": "fail",
+      "reasons": [
+        "stair_block"
+      ],
       "path": [
         [
           21.5,
@@ -33694,22 +33887,6 @@
         ]
       },
       {
-        "target_guid": "3rmqVs9ZL3qgw1cva2u9Fv",
-        "distance_m": 8.483208750811142,
-        "edge_ids": [
-          "E00265",
-          "E00148"
-        ]
-      },
-      {
-        "target_guid": "3sXEZFiePFsxi_o7909$c3",
-        "distance_m": 9.683608644349789,
-        "edge_ids": [
-          "E00265",
-          "E00149"
-        ]
-      },
-      {
         "target_guid": "31Gx3VvgP1fvwL2I0a9YtY",
         "distance_m": 9.921486779456458,
         "edge_ids": [
@@ -33731,46 +33908,10 @@
         ]
       },
       {
-        "target_guid": "1lf5dxZ1LE_xJj$eJu8Rhu",
-        "distance_m": 13.52664718440187,
-        "edge_ids": [
-          "E00265",
-          "E00149",
-          "E00097"
-        ]
-      },
-      {
-        "target_guid": "123VQUHCn26ei6whtqvtKu",
-        "distance_m": 13.526647184401872,
-        "edge_ids": [
-          "E00265",
-          "E00149",
-          "E00095"
-        ]
-      },
-      {
         "target_guid": "3NTkL25Pb8Y8HEKKJUt_B_",
         "distance_m": 15.921486779456458,
         "edge_ids": [
           "E00268"
-        ]
-      },
-      {
-        "target_guid": "0Ti0dr3tHAq8uzw2luJtyI",
-        "distance_m": 16.063709607929937,
-        "edge_ids": [
-          "E00265",
-          "E00149",
-          "E00092"
-        ]
-      },
-      {
-        "target_guid": "2$tv64Cn5DZx8YisuS365o",
-        "distance_m": 16.526647184401874,
-        "edge_ids": [
-          "E00265",
-          "E00149",
-          "E00098"
         ]
       },
       {
@@ -33818,26 +33959,10 @@
         ]
       },
       {
-        "target_guid": "3rmqVs9ZL3qgw1cva2u9Fv",
-        "distance_m": 9.88320889420185,
-        "edge_ids": [
-          "E00237",
-          "E00148"
-        ]
-      },
-      {
         "target_guid": "2MHPtmLzv5OhZf$6Z1Y75J",
         "distance_m": 10.12148677945646,
         "edge_ids": [
           "E00236"
-        ]
-      },
-      {
-        "target_guid": "3sXEZFiePFsxi_o7909$c3",
-        "distance_m": 11.083608787740497,
-        "edge_ids": [
-          "E00237",
-          "E00149"
         ]
       },
       {
@@ -33855,46 +33980,10 @@
         ]
       },
       {
-        "target_guid": "1lf5dxZ1LE_xJj$eJu8Rhu",
-        "distance_m": 14.926647327792578,
-        "edge_ids": [
-          "E00237",
-          "E00149",
-          "E00097"
-        ]
-      },
-      {
-        "target_guid": "123VQUHCn26ei6whtqvtKu",
-        "distance_m": 14.92664732779258,
-        "edge_ids": [
-          "E00237",
-          "E00149",
-          "E00095"
-        ]
-      },
-      {
         "target_guid": "1nDSxVMDT3hh2Ql2HEz6Lg",
         "distance_m": 15.921486779456458,
         "edge_ids": [
           "E00234"
-        ]
-      },
-      {
-        "target_guid": "0Ti0dr3tHAq8uzw2luJtyI",
-        "distance_m": 17.463709751320643,
-        "edge_ids": [
-          "E00237",
-          "E00149",
-          "E00092"
-        ]
-      },
-      {
-        "target_guid": "2$tv64Cn5DZx8YisuS365o",
-        "distance_m": 17.92664732779258,
-        "edge_ids": [
-          "E00237",
-          "E00149",
-          "E00098"
         ]
       }
     ],
@@ -33961,58 +34050,6 @@
         "edge_ids": [
           "E00244"
         ]
-      },
-      {
-        "target_guid": "3rmqVs9ZL3qgw1cva2u9Fv",
-        "distance_m": 18.88320889420185,
-        "edge_ids": [
-          "E00244",
-          "E00148"
-        ]
-      },
-      {
-        "target_guid": "3sXEZFiePFsxi_o7909$c3",
-        "distance_m": 20.0836087877405,
-        "edge_ids": [
-          "E00244",
-          "E00149"
-        ]
-      },
-      {
-        "target_guid": "123VQUHCn26ei6whtqvtKu",
-        "distance_m": 23.92664732779258,
-        "edge_ids": [
-          "E00244",
-          "E00149",
-          "E00095"
-        ]
-      },
-      {
-        "target_guid": "1lf5dxZ1LE_xJj$eJu8Rhu",
-        "distance_m": 23.92664732779258,
-        "edge_ids": [
-          "E00244",
-          "E00149",
-          "E00097"
-        ]
-      },
-      {
-        "target_guid": "0Ti0dr3tHAq8uzw2luJtyI",
-        "distance_m": 26.463709751320646,
-        "edge_ids": [
-          "E00244",
-          "E00149",
-          "E00092"
-        ]
-      },
-      {
-        "target_guid": "2$tv64Cn5DZx8YisuS365o",
-        "distance_m": 26.92664732779258,
-        "edge_ids": [
-          "E00244",
-          "E00149",
-          "E00098"
-        ]
       }
     ],
     "31Gx3VvgP1fvwL2I0a9YtY": [
@@ -34078,58 +34115,6 @@
         "edge_ids": [
           "E00263"
         ]
-      },
-      {
-        "target_guid": "3rmqVs9ZL3qgw1cva2u9Fv",
-        "distance_m": 15.883208721834073,
-        "edge_ids": [
-          "E00263",
-          "E00148"
-        ]
-      },
-      {
-        "target_guid": "3sXEZFiePFsxi_o7909$c3",
-        "distance_m": 17.083608615372718,
-        "edge_ids": [
-          "E00263",
-          "E00149"
-        ]
-      },
-      {
-        "target_guid": "1lf5dxZ1LE_xJj$eJu8Rhu",
-        "distance_m": 20.9266471554248,
-        "edge_ids": [
-          "E00263",
-          "E00149",
-          "E00097"
-        ]
-      },
-      {
-        "target_guid": "123VQUHCn26ei6whtqvtKu",
-        "distance_m": 20.926647155424803,
-        "edge_ids": [
-          "E00263",
-          "E00149",
-          "E00095"
-        ]
-      },
-      {
-        "target_guid": "0Ti0dr3tHAq8uzw2luJtyI",
-        "distance_m": 23.463709578952866,
-        "edge_ids": [
-          "E00263",
-          "E00149",
-          "E00092"
-        ]
-      },
-      {
-        "target_guid": "2$tv64Cn5DZx8YisuS365o",
-        "distance_m": 23.926647155424803,
-        "edge_ids": [
-          "E00263",
-          "E00149",
-          "E00098"
-        ]
       }
     ],
     "0Xbk1qGZnCY9arQDkkuJ8L": [
@@ -34190,62 +34175,10 @@
         ]
       },
       {
-        "target_guid": "3rmqVs9ZL3qgw1cva2u9Fv",
-        "distance_m": 12.88320889420185,
-        "edge_ids": [
-          "E00229",
-          "E00148"
-        ]
-      },
-      {
         "target_guid": "1nDSxVMDT3hh2Ql2HEz6Lg",
         "distance_m": 12.921486779456458,
         "edge_ids": [
           "E00226"
-        ]
-      },
-      {
-        "target_guid": "3sXEZFiePFsxi_o7909$c3",
-        "distance_m": 14.083608787740499,
-        "edge_ids": [
-          "E00229",
-          "E00149"
-        ]
-      },
-      {
-        "target_guid": "123VQUHCn26ei6whtqvtKu",
-        "distance_m": 17.92664732779258,
-        "edge_ids": [
-          "E00229",
-          "E00149",
-          "E00095"
-        ]
-      },
-      {
-        "target_guid": "1lf5dxZ1LE_xJj$eJu8Rhu",
-        "distance_m": 17.92664732779258,
-        "edge_ids": [
-          "E00229",
-          "E00149",
-          "E00097"
-        ]
-      },
-      {
-        "target_guid": "0Ti0dr3tHAq8uzw2luJtyI",
-        "distance_m": 20.463709751320646,
-        "edge_ids": [
-          "E00229",
-          "E00149",
-          "E00092"
-        ]
-      },
-      {
-        "target_guid": "2$tv64Cn5DZx8YisuS365o",
-        "distance_m": 20.92664732779258,
-        "edge_ids": [
-          "E00229",
-          "E00149",
-          "E00098"
         ]
       }
     ],
@@ -34312,58 +34245,6 @@
         "edge_ids": [
           "E00264"
         ]
-      },
-      {
-        "target_guid": "3rmqVs9ZL3qgw1cva2u9Fv",
-        "distance_m": 21.883208718598606,
-        "edge_ids": [
-          "E00264",
-          "E00148"
-        ]
-      },
-      {
-        "target_guid": "3sXEZFiePFsxi_o7909$c3",
-        "distance_m": 23.08360861213725,
-        "edge_ids": [
-          "E00264",
-          "E00149"
-        ]
-      },
-      {
-        "target_guid": "123VQUHCn26ei6whtqvtKu",
-        "distance_m": 26.926647152189332,
-        "edge_ids": [
-          "E00264",
-          "E00149",
-          "E00095"
-        ]
-      },
-      {
-        "target_guid": "1lf5dxZ1LE_xJj$eJu8Rhu",
-        "distance_m": 26.926647152189332,
-        "edge_ids": [
-          "E00264",
-          "E00149",
-          "E00097"
-        ]
-      },
-      {
-        "target_guid": "0Ti0dr3tHAq8uzw2luJtyI",
-        "distance_m": 29.4637095757174,
-        "edge_ids": [
-          "E00264",
-          "E00149",
-          "E00092"
-        ]
-      },
-      {
-        "target_guid": "2$tv64Cn5DZx8YisuS365o",
-        "distance_m": 29.926647152189332,
-        "edge_ids": [
-          "E00264",
-          "E00149",
-          "E00098"
-        ]
       }
     ],
     "1nDSxVMDT3hh2Ql2HEz6Lg": [
@@ -34428,58 +34309,6 @@
         "distance_m": 18.643038720799716,
         "edge_ids": [
           "E00250"
-        ]
-      },
-      {
-        "target_guid": "3rmqVs9ZL3qgw1cva2u9Fv",
-        "distance_m": 23.283208894201852,
-        "edge_ids": [
-          "E00250",
-          "E00148"
-        ]
-      },
-      {
-        "target_guid": "3sXEZFiePFsxi_o7909$c3",
-        "distance_m": 24.483608787740497,
-        "edge_ids": [
-          "E00250",
-          "E00149"
-        ]
-      },
-      {
-        "target_guid": "123VQUHCn26ei6whtqvtKu",
-        "distance_m": 28.32664732779258,
-        "edge_ids": [
-          "E00250",
-          "E00149",
-          "E00095"
-        ]
-      },
-      {
-        "target_guid": "1lf5dxZ1LE_xJj$eJu8Rhu",
-        "distance_m": 28.32664732779258,
-        "edge_ids": [
-          "E00250",
-          "E00149",
-          "E00097"
-        ]
-      },
-      {
-        "target_guid": "0Ti0dr3tHAq8uzw2luJtyI",
-        "distance_m": 30.863709751320645,
-        "edge_ids": [
-          "E00250",
-          "E00149",
-          "E00092"
-        ]
-      },
-      {
-        "target_guid": "2$tv64Cn5DZx8YisuS365o",
-        "distance_m": 31.32664732779258,
-        "edge_ids": [
-          "E00250",
-          "E00149",
-          "E00098"
         ]
       }
     ],
@@ -34546,58 +34375,6 @@
         "edge_ids": [
           "E00259"
         ]
-      },
-      {
-        "target_guid": "3rmqVs9ZL3qgw1cva2u9Fv",
-        "distance_m": 17.48320889420185,
-        "edge_ids": [
-          "E00259",
-          "E00148"
-        ]
-      },
-      {
-        "target_guid": "3sXEZFiePFsxi_o7909$c3",
-        "distance_m": 18.683608787740496,
-        "edge_ids": [
-          "E00259",
-          "E00149"
-        ]
-      },
-      {
-        "target_guid": "1lf5dxZ1LE_xJj$eJu8Rhu",
-        "distance_m": 22.526647327792578,
-        "edge_ids": [
-          "E00259",
-          "E00149",
-          "E00097"
-        ]
-      },
-      {
-        "target_guid": "123VQUHCn26ei6whtqvtKu",
-        "distance_m": 22.52664732779258,
-        "edge_ids": [
-          "E00259",
-          "E00149",
-          "E00095"
-        ]
-      },
-      {
-        "target_guid": "0Ti0dr3tHAq8uzw2luJtyI",
-        "distance_m": 25.063709751320644,
-        "edge_ids": [
-          "E00259",
-          "E00149",
-          "E00092"
-        ]
-      },
-      {
-        "target_guid": "2$tv64Cn5DZx8YisuS365o",
-        "distance_m": 25.52664732779258,
-        "edge_ids": [
-          "E00259",
-          "E00149",
-          "E00098"
-        ]
       }
     ],
     "29qQ5ECrL6nQEhooPP__BH": [
@@ -34651,22 +34428,6 @@
         ]
       },
       {
-        "target_guid": "3rmqVs9ZL3qgw1cva2u9Fv",
-        "distance_m": 11.483208894201852,
-        "edge_ids": [
-          "E00255",
-          "E00148"
-        ]
-      },
-      {
-        "target_guid": "3sXEZFiePFsxi_o7909$c3",
-        "distance_m": 12.683608787740496,
-        "edge_ids": [
-          "E00255",
-          "E00149"
-        ]
-      },
-      {
         "target_guid": "3NTkL25Pb8Y8HEKKJUt_B_",
         "distance_m": 12.921486779456457,
         "edge_ids": [
@@ -34679,164 +34440,9 @@
         "edge_ids": [
           "E00248"
         ]
-      },
-      {
-        "target_guid": "1lf5dxZ1LE_xJj$eJu8Rhu",
-        "distance_m": 16.526647327792578,
-        "edge_ids": [
-          "E00255",
-          "E00149",
-          "E00097"
-        ]
-      },
-      {
-        "target_guid": "123VQUHCn26ei6whtqvtKu",
-        "distance_m": 16.52664732779258,
-        "edge_ids": [
-          "E00255",
-          "E00149",
-          "E00095"
-        ]
-      },
-      {
-        "target_guid": "0Ti0dr3tHAq8uzw2luJtyI",
-        "distance_m": 19.063709751320644,
-        "edge_ids": [
-          "E00255",
-          "E00149",
-          "E00092"
-        ]
-      },
-      {
-        "target_guid": "2$tv64Cn5DZx8YisuS365o",
-        "distance_m": 19.52664732779258,
-        "edge_ids": [
-          "E00255",
-          "E00149",
-          "E00098"
-        ]
       }
     ],
-    "3rmqVs9ZL3qgw1cva2u9Fv": [
-      {
-        "target_guid": "2pe3RqZ0j8ogoAvp7iGUAH",
-        "distance_m": 4.640170173402136,
-        "edge_ids": [
-          "E00148"
-        ]
-      },
-      {
-        "target_guid": "3sXEZFiePFsxi_o7909$c3",
-        "distance_m": 4.6405700329221355,
-        "edge_ids": [
-          "E00150"
-        ]
-      },
-      {
-        "target_guid": "3qloCPnZDEQBom1ZjBlwJP",
-        "distance_m": 8.483208750811142,
-        "edge_ids": [
-          "E00148",
-          "E00265"
-        ]
-      },
-      {
-        "target_guid": "1lf5dxZ1LE_xJj$eJu8Rhu",
-        "distance_m": 8.483608572974218,
-        "edge_ids": [
-          "E00150",
-          "E00097"
-        ]
-      },
-      {
-        "target_guid": "123VQUHCn26ei6whtqvtKu",
-        "distance_m": 8.48360857297422,
-        "edge_ids": [
-          "E00150",
-          "E00095"
-        ]
-      },
-      {
-        "target_guid": "0_flqizUv5_A_EGt7DzP3T",
-        "distance_m": 9.88320889420185,
-        "edge_ids": [
-          "E00148",
-          "E00237"
-        ]
-      },
-      {
-        "target_guid": "0Ti0dr3tHAq8uzw2luJtyI",
-        "distance_m": 11.020670996502282,
-        "edge_ids": [
-          "E00150",
-          "E00092"
-        ]
-      },
-      {
-        "target_guid": "29qQ5ECrL6nQEhooPP__BH",
-        "distance_m": 11.483208894201852,
-        "edge_ids": [
-          "E00148",
-          "E00255"
-        ]
-      },
-      {
-        "target_guid": "2$tv64Cn5DZx8YisuS365o",
-        "distance_m": 11.48360857297422,
-        "edge_ids": [
-          "E00150",
-          "E00098"
-        ]
-      },
-      {
-        "target_guid": "0Xbk1qGZnCY9arQDkkuJ8L",
-        "distance_m": 12.88320889420185,
-        "edge_ids": [
-          "E00148",
-          "E00229"
-        ]
-      },
-      {
-        "target_guid": "31Gx3VvgP1fvwL2I0a9YtY",
-        "distance_m": 15.883208721834073,
-        "edge_ids": [
-          "E00148",
-          "E00263"
-        ]
-      },
-      {
-        "target_guid": "2MHPtmLzv5OhZf$6Z1Y75J",
-        "distance_m": 17.48320889420185,
-        "edge_ids": [
-          "E00148",
-          "E00259"
-        ]
-      },
-      {
-        "target_guid": "17n0YjYkvEshOmsrIPLGOb",
-        "distance_m": 18.88320889420185,
-        "edge_ids": [
-          "E00148",
-          "E00244"
-        ]
-      },
-      {
-        "target_guid": "3NTkL25Pb8Y8HEKKJUt_B_",
-        "distance_m": 21.883208718598606,
-        "edge_ids": [
-          "E00148",
-          "E00264"
-        ]
-      },
-      {
-        "target_guid": "1nDSxVMDT3hh2Ql2HEz6Lg",
-        "distance_m": 23.283208894201852,
-        "edge_ids": [
-          "E00148",
-          "E00250"
-        ]
-      }
-    ],
+    "3rmqVs9ZL3qgw1cva2u9Fv": [],
     "1lf5dxZ1LE_xJj$eJu8Rhu": [
       {
         "target_guid": "123VQUHCn26ei6whtqvtKu",
@@ -34864,103 +34470,6 @@
         "distance_m": 5.521486779456458,
         "edge_ids": [
           "E00096"
-        ]
-      },
-      {
-        "target_guid": "3rmqVs9ZL3qgw1cva2u9Fv",
-        "distance_m": 8.483608572974218,
-        "edge_ids": [
-          "E00097",
-          "E00150"
-        ]
-      },
-      {
-        "target_guid": "2pe3RqZ0j8ogoAvp7iGUAH",
-        "distance_m": 9.683608606992864,
-        "edge_ids": [
-          "E00097",
-          "E00149"
-        ]
-      },
-      {
-        "target_guid": "3qloCPnZDEQBom1ZjBlwJP",
-        "distance_m": 13.52664718440187,
-        "edge_ids": [
-          "E00097",
-          "E00149",
-          "E00265"
-        ]
-      },
-      {
-        "target_guid": "0_flqizUv5_A_EGt7DzP3T",
-        "distance_m": 14.92664732779258,
-        "edge_ids": [
-          "E00097",
-          "E00149",
-          "E00237"
-        ]
-      },
-      {
-        "target_guid": "29qQ5ECrL6nQEhooPP__BH",
-        "distance_m": 16.52664732779258,
-        "edge_ids": [
-          "E00097",
-          "E00149",
-          "E00255"
-        ]
-      },
-      {
-        "target_guid": "0Xbk1qGZnCY9arQDkkuJ8L",
-        "distance_m": 17.92664732779258,
-        "edge_ids": [
-          "E00097",
-          "E00149",
-          "E00229"
-        ]
-      },
-      {
-        "target_guid": "31Gx3VvgP1fvwL2I0a9YtY",
-        "distance_m": 20.926647155424803,
-        "edge_ids": [
-          "E00097",
-          "E00149",
-          "E00263"
-        ]
-      },
-      {
-        "target_guid": "2MHPtmLzv5OhZf$6Z1Y75J",
-        "distance_m": 22.52664732779258,
-        "edge_ids": [
-          "E00097",
-          "E00149",
-          "E00259"
-        ]
-      },
-      {
-        "target_guid": "17n0YjYkvEshOmsrIPLGOb",
-        "distance_m": 23.92664732779258,
-        "edge_ids": [
-          "E00097",
-          "E00149",
-          "E00244"
-        ]
-      },
-      {
-        "target_guid": "3NTkL25Pb8Y8HEKKJUt_B_",
-        "distance_m": 26.926647152189332,
-        "edge_ids": [
-          "E00097",
-          "E00149",
-          "E00264"
-        ]
-      },
-      {
-        "target_guid": "1nDSxVMDT3hh2Ql2HEz6Lg",
-        "distance_m": 28.32664732779258,
-        "edge_ids": [
-          "E00097",
-          "E00149",
-          "E00250"
         ]
       }
     ],
@@ -34992,103 +34501,6 @@
         "edge_ids": [
           "E00098"
         ]
-      },
-      {
-        "target_guid": "3rmqVs9ZL3qgw1cva2u9Fv",
-        "distance_m": 11.48360857297422,
-        "edge_ids": [
-          "E00098",
-          "E00150"
-        ]
-      },
-      {
-        "target_guid": "2pe3RqZ0j8ogoAvp7iGUAH",
-        "distance_m": 12.683608606992866,
-        "edge_ids": [
-          "E00098",
-          "E00149"
-        ]
-      },
-      {
-        "target_guid": "3qloCPnZDEQBom1ZjBlwJP",
-        "distance_m": 16.526647184401874,
-        "edge_ids": [
-          "E00098",
-          "E00149",
-          "E00265"
-        ]
-      },
-      {
-        "target_guid": "0_flqizUv5_A_EGt7DzP3T",
-        "distance_m": 17.92664732779258,
-        "edge_ids": [
-          "E00098",
-          "E00149",
-          "E00237"
-        ]
-      },
-      {
-        "target_guid": "29qQ5ECrL6nQEhooPP__BH",
-        "distance_m": 19.52664732779258,
-        "edge_ids": [
-          "E00098",
-          "E00149",
-          "E00255"
-        ]
-      },
-      {
-        "target_guid": "0Xbk1qGZnCY9arQDkkuJ8L",
-        "distance_m": 20.92664732779258,
-        "edge_ids": [
-          "E00098",
-          "E00149",
-          "E00229"
-        ]
-      },
-      {
-        "target_guid": "31Gx3VvgP1fvwL2I0a9YtY",
-        "distance_m": 23.926647155424803,
-        "edge_ids": [
-          "E00098",
-          "E00149",
-          "E00263"
-        ]
-      },
-      {
-        "target_guid": "2MHPtmLzv5OhZf$6Z1Y75J",
-        "distance_m": 25.52664732779258,
-        "edge_ids": [
-          "E00098",
-          "E00149",
-          "E00259"
-        ]
-      },
-      {
-        "target_guid": "17n0YjYkvEshOmsrIPLGOb",
-        "distance_m": 26.92664732779258,
-        "edge_ids": [
-          "E00098",
-          "E00149",
-          "E00244"
-        ]
-      },
-      {
-        "target_guid": "3NTkL25Pb8Y8HEKKJUt_B_",
-        "distance_m": 29.926647152189336,
-        "edge_ids": [
-          "E00098",
-          "E00149",
-          "E00264"
-        ]
-      },
-      {
-        "target_guid": "1nDSxVMDT3hh2Ql2HEz6Lg",
-        "distance_m": 31.326647327792582,
-        "edge_ids": [
-          "E00098",
-          "E00149",
-          "E00250"
-        ]
       }
     ],
     "123VQUHCn26ei6whtqvtKu": [
@@ -35118,103 +34530,6 @@
         "distance_m": 5.52148677945646,
         "edge_ids": [
           "E00094"
-        ]
-      },
-      {
-        "target_guid": "3rmqVs9ZL3qgw1cva2u9Fv",
-        "distance_m": 8.48360857297422,
-        "edge_ids": [
-          "E00095",
-          "E00150"
-        ]
-      },
-      {
-        "target_guid": "2pe3RqZ0j8ogoAvp7iGUAH",
-        "distance_m": 9.683608606992866,
-        "edge_ids": [
-          "E00095",
-          "E00149"
-        ]
-      },
-      {
-        "target_guid": "3qloCPnZDEQBom1ZjBlwJP",
-        "distance_m": 13.526647184401874,
-        "edge_ids": [
-          "E00095",
-          "E00149",
-          "E00265"
-        ]
-      },
-      {
-        "target_guid": "0_flqizUv5_A_EGt7DzP3T",
-        "distance_m": 14.92664732779258,
-        "edge_ids": [
-          "E00095",
-          "E00149",
-          "E00237"
-        ]
-      },
-      {
-        "target_guid": "29qQ5ECrL6nQEhooPP__BH",
-        "distance_m": 16.52664732779258,
-        "edge_ids": [
-          "E00095",
-          "E00149",
-          "E00255"
-        ]
-      },
-      {
-        "target_guid": "0Xbk1qGZnCY9arQDkkuJ8L",
-        "distance_m": 17.92664732779258,
-        "edge_ids": [
-          "E00095",
-          "E00149",
-          "E00229"
-        ]
-      },
-      {
-        "target_guid": "31Gx3VvgP1fvwL2I0a9YtY",
-        "distance_m": 20.926647155424803,
-        "edge_ids": [
-          "E00095",
-          "E00149",
-          "E00263"
-        ]
-      },
-      {
-        "target_guid": "2MHPtmLzv5OhZf$6Z1Y75J",
-        "distance_m": 22.52664732779258,
-        "edge_ids": [
-          "E00095",
-          "E00149",
-          "E00259"
-        ]
-      },
-      {
-        "target_guid": "17n0YjYkvEshOmsrIPLGOb",
-        "distance_m": 23.92664732779258,
-        "edge_ids": [
-          "E00095",
-          "E00149",
-          "E00244"
-        ]
-      },
-      {
-        "target_guid": "3NTkL25Pb8Y8HEKKJUt_B_",
-        "distance_m": 26.926647152189336,
-        "edge_ids": [
-          "E00095",
-          "E00149",
-          "E00264"
-        ]
-      },
-      {
-        "target_guid": "1nDSxVMDT3hh2Ql2HEz6Lg",
-        "distance_m": 28.326647327792582,
-        "edge_ids": [
-          "E00095",
-          "E00149",
-          "E00250"
         ]
       }
     ],
@@ -35246,103 +34561,6 @@
         "edge_ids": [
           "E00092"
         ]
-      },
-      {
-        "target_guid": "3rmqVs9ZL3qgw1cva2u9Fv",
-        "distance_m": 11.020670996502282,
-        "edge_ids": [
-          "E00092",
-          "E00150"
-        ]
-      },
-      {
-        "target_guid": "2pe3RqZ0j8ogoAvp7iGUAH",
-        "distance_m": 12.22067103052093,
-        "edge_ids": [
-          "E00092",
-          "E00149"
-        ]
-      },
-      {
-        "target_guid": "3qloCPnZDEQBom1ZjBlwJP",
-        "distance_m": 16.063709607929937,
-        "edge_ids": [
-          "E00092",
-          "E00149",
-          "E00265"
-        ]
-      },
-      {
-        "target_guid": "0_flqizUv5_A_EGt7DzP3T",
-        "distance_m": 17.463709751320643,
-        "edge_ids": [
-          "E00092",
-          "E00149",
-          "E00237"
-        ]
-      },
-      {
-        "target_guid": "29qQ5ECrL6nQEhooPP__BH",
-        "distance_m": 19.063709751320644,
-        "edge_ids": [
-          "E00092",
-          "E00149",
-          "E00255"
-        ]
-      },
-      {
-        "target_guid": "0Xbk1qGZnCY9arQDkkuJ8L",
-        "distance_m": 20.463709751320643,
-        "edge_ids": [
-          "E00092",
-          "E00149",
-          "E00229"
-        ]
-      },
-      {
-        "target_guid": "31Gx3VvgP1fvwL2I0a9YtY",
-        "distance_m": 23.463709578952866,
-        "edge_ids": [
-          "E00092",
-          "E00149",
-          "E00263"
-        ]
-      },
-      {
-        "target_guid": "2MHPtmLzv5OhZf$6Z1Y75J",
-        "distance_m": 25.063709751320644,
-        "edge_ids": [
-          "E00092",
-          "E00149",
-          "E00259"
-        ]
-      },
-      {
-        "target_guid": "17n0YjYkvEshOmsrIPLGOb",
-        "distance_m": 26.463709751320643,
-        "edge_ids": [
-          "E00092",
-          "E00149",
-          "E00244"
-        ]
-      },
-      {
-        "target_guid": "3NTkL25Pb8Y8HEKKJUt_B_",
-        "distance_m": 29.4637095757174,
-        "edge_ids": [
-          "E00092",
-          "E00149",
-          "E00264"
-        ]
-      },
-      {
-        "target_guid": "1nDSxVMDT3hh2Ql2HEz6Lg",
-        "distance_m": 30.863709751320645,
-        "edge_ids": [
-          "E00092",
-          "E00149",
-          "E00250"
-        ]
       }
     ],
     "2pe3RqZ0j8ogoAvp7iGUAH": [
@@ -35354,24 +34572,10 @@
         ]
       },
       {
-        "target_guid": "3rmqVs9ZL3qgw1cva2u9Fv",
-        "distance_m": 4.640170173402136,
-        "edge_ids": [
-          "E00148"
-        ]
-      },
-      {
         "target_guid": "0_flqizUv5_A_EGt7DzP3T",
         "distance_m": 5.2430387207997144,
         "edge_ids": [
           "E00237"
-        ]
-      },
-      {
-        "target_guid": "3sXEZFiePFsxi_o7909$c3",
-        "distance_m": 5.840570066940782,
-        "edge_ids": [
-          "E00149"
         ]
       },
       {
@@ -35389,42 +34593,10 @@
         ]
       },
       {
-        "target_guid": "1lf5dxZ1LE_xJj$eJu8Rhu",
-        "distance_m": 9.683608606992864,
-        "edge_ids": [
-          "E00149",
-          "E00097"
-        ]
-      },
-      {
-        "target_guid": "123VQUHCn26ei6whtqvtKu",
-        "distance_m": 9.683608606992866,
-        "edge_ids": [
-          "E00149",
-          "E00095"
-        ]
-      },
-      {
         "target_guid": "31Gx3VvgP1fvwL2I0a9YtY",
         "distance_m": 11.243038548431937,
         "edge_ids": [
           "E00263"
-        ]
-      },
-      {
-        "target_guid": "0Ti0dr3tHAq8uzw2luJtyI",
-        "distance_m": 12.22067103052093,
-        "edge_ids": [
-          "E00149",
-          "E00092"
-        ]
-      },
-      {
-        "target_guid": "2$tv64Cn5DZx8YisuS365o",
-        "distance_m": 12.683608606992866,
-        "edge_ids": [
-          "E00149",
-          "E00098"
         ]
       },
       {
@@ -35472,20 +34644,6 @@
         ]
       },
       {
-        "target_guid": "3rmqVs9ZL3qgw1cva2u9Fv",
-        "distance_m": 4.6405700329221355,
-        "edge_ids": [
-          "E00150"
-        ]
-      },
-      {
-        "target_guid": "2pe3RqZ0j8ogoAvp7iGUAH",
-        "distance_m": 5.840570066940782,
-        "edge_ids": [
-          "E00149"
-        ]
-      },
-      {
         "target_guid": "0Ti0dr3tHAq8uzw2luJtyI",
         "distance_m": 6.380100963580148,
         "edge_ids": [
@@ -35498,216 +34656,9 @@
         "edge_ids": [
           "E00098"
         ]
-      },
-      {
-        "target_guid": "3qloCPnZDEQBom1ZjBlwJP",
-        "distance_m": 9.683608644349789,
-        "edge_ids": [
-          "E00149",
-          "E00265"
-        ]
-      },
-      {
-        "target_guid": "0_flqizUv5_A_EGt7DzP3T",
-        "distance_m": 11.083608787740497,
-        "edge_ids": [
-          "E00149",
-          "E00237"
-        ]
-      },
-      {
-        "target_guid": "29qQ5ECrL6nQEhooPP__BH",
-        "distance_m": 12.683608787740496,
-        "edge_ids": [
-          "E00149",
-          "E00255"
-        ]
-      },
-      {
-        "target_guid": "0Xbk1qGZnCY9arQDkkuJ8L",
-        "distance_m": 14.083608787740499,
-        "edge_ids": [
-          "E00149",
-          "E00229"
-        ]
-      },
-      {
-        "target_guid": "31Gx3VvgP1fvwL2I0a9YtY",
-        "distance_m": 17.083608615372718,
-        "edge_ids": [
-          "E00149",
-          "E00263"
-        ]
-      },
-      {
-        "target_guid": "2MHPtmLzv5OhZf$6Z1Y75J",
-        "distance_m": 18.683608787740496,
-        "edge_ids": [
-          "E00149",
-          "E00259"
-        ]
-      },
-      {
-        "target_guid": "17n0YjYkvEshOmsrIPLGOb",
-        "distance_m": 20.0836087877405,
-        "edge_ids": [
-          "E00149",
-          "E00244"
-        ]
-      },
-      {
-        "target_guid": "3NTkL25Pb8Y8HEKKJUt_B_",
-        "distance_m": 23.08360861213725,
-        "edge_ids": [
-          "E00149",
-          "E00264"
-        ]
-      },
-      {
-        "target_guid": "1nDSxVMDT3hh2Ql2HEz6Lg",
-        "distance_m": 24.483608787740497,
-        "edge_ids": [
-          "E00149",
-          "E00250"
-        ]
       }
     ],
-    "18PQUIFELEARLM4c0brquf": [
-      {
-        "target_guid": "1_hrYGMATEmeNbEHgfoKxd",
-        "distance_m": 10.840170173402136,
-        "edge_ids": [
-          "E00040"
-        ]
-      },
-      {
-        "target_guid": "31UFds84f5oAxxal4G6S8P",
-        "distance_m": 10.840570032922136,
-        "edge_ids": [
-          "E00041"
-        ]
-      },
-      {
-        "target_guid": "2FYBB$DerEng8G$eISvGgZ",
-        "distance_m": 14.683208750811142,
-        "edge_ids": [
-          "E00040",
-          "E00165"
-        ]
-      },
-      {
-        "target_guid": "1njbY3IMb4IedX5fLGTCRc",
-        "distance_m": 14.683208750811144,
-        "edge_ids": [
-          "E00040",
-          "E00164"
-        ]
-      },
-      {
-        "target_guid": "2ZDRA4lYXAawe3WLk$RpXy",
-        "distance_m": 14.683608572974219,
-        "edge_ids": [
-          "E00041",
-          "E00023"
-        ]
-      },
-      {
-        "target_guid": "0YIVuBlyXF3PI_fXw2b_vJ",
-        "distance_m": 16.08320889420185,
-        "edge_ids": [
-          "E00040",
-          "E00152"
-        ]
-      },
-      {
-        "target_guid": "3c7FFURCHAIuL_Uqfwogkh",
-        "distance_m": 17.68360857297422,
-        "edge_ids": [
-          "E00041",
-          "E00032"
-        ]
-      },
-      {
-        "target_guid": "2SfY7UTIz1E82rEMOUSWux",
-        "distance_m": 20.683208723275325,
-        "edge_ids": [
-          "E00040",
-          "E00166"
-        ]
-      },
-      {
-        "target_guid": "1FCKjvOWnEAv7x1dg2f7BI",
-        "distance_m": 20.683608572974215,
-        "edge_ids": [
-          "E00041",
-          "E00012"
-        ]
-      },
-      {
-        "target_guid": "20nncC0vDDp9h64AX6XevC",
-        "distance_m": 20.683608572974215,
-        "edge_ids": [
-          "E00041",
-          "E00018"
-        ]
-      },
-      {
-        "target_guid": "2k6vBG3yn9hRJUYx$GK5vo",
-        "distance_m": 22.08360857297422,
-        "edge_ids": [
-          "E00041",
-          "E00027"
-        ]
-      },
-      {
-        "target_guid": "3QI0Za4AD7g9EDuOxKtL4z",
-        "distance_m": 23.683608572974215,
-        "edge_ids": [
-          "E00041",
-          "E00031"
-        ]
-      },
-      {
-        "target_guid": "2pX0sc7rf06usjFMq1TsGs",
-        "distance_m": 25.083208719829322,
-        "edge_ids": [
-          "E00040",
-          "E00168"
-        ]
-      },
-      {
-        "target_guid": "0nixpH$hD2$xLwip3vL96O",
-        "distance_m": 26.68320889420185,
-        "edge_ids": [
-          "E00040",
-          "E00158"
-        ]
-      },
-      {
-        "target_guid": "3nS8Xe8c5BpfdWxU$cBkvz",
-        "distance_m": 26.683608572974215,
-        "edge_ids": [
-          "E00041",
-          "E00033"
-        ]
-      },
-      {
-        "target_guid": "2d24khq3H2EhLI7osiekrD",
-        "distance_m": 29.48320871817345,
-        "edge_ids": [
-          "E00040",
-          "E00167"
-        ]
-      },
-      {
-        "target_guid": "0p1Mt3h7nDeQ1Q4N9eEl9H",
-        "distance_m": 29.48360857297422,
-        "edge_ids": [
-          "E00041",
-          "E00005"
-        ]
-      }
-    ],
+    "18PQUIFELEARLM4c0brquf": [],
     "2d24khq3H2EhLI7osiekrD": [
       {
         "target_guid": "0nixpH$hD2$xLwip3vL96O",
@@ -35756,94 +34707,6 @@
         "distance_m": 18.643038544771315,
         "edge_ids": [
           "E00167"
-        ]
-      },
-      {
-        "target_guid": "31UFds84f5oAxxal4G6S8P",
-        "distance_m": 24.483608611712096,
-        "edge_ids": [
-          "E00167",
-          "E00042"
-        ]
-      },
-      {
-        "target_guid": "2ZDRA4lYXAawe3WLk$RpXy",
-        "distance_m": 28.326647151764178,
-        "edge_ids": [
-          "E00167",
-          "E00042",
-          "E00023"
-        ]
-      },
-      {
-        "target_guid": "18PQUIFELEARLM4c0brquf",
-        "distance_m": 29.48320871817345,
-        "edge_ids": [
-          "E00167",
-          "E00040"
-        ]
-      },
-      {
-        "target_guid": "3c7FFURCHAIuL_Uqfwogkh",
-        "distance_m": 31.326647151764178,
-        "edge_ids": [
-          "E00167",
-          "E00042",
-          "E00032"
-        ]
-      },
-      {
-        "target_guid": "1FCKjvOWnEAv7x1dg2f7BI",
-        "distance_m": 34.32664715176418,
-        "edge_ids": [
-          "E00167",
-          "E00042",
-          "E00012"
-        ]
-      },
-      {
-        "target_guid": "20nncC0vDDp9h64AX6XevC",
-        "distance_m": 34.32664715176418,
-        "edge_ids": [
-          "E00167",
-          "E00042",
-          "E00018"
-        ]
-      },
-      {
-        "target_guid": "2k6vBG3yn9hRJUYx$GK5vo",
-        "distance_m": 35.72664715176418,
-        "edge_ids": [
-          "E00167",
-          "E00042",
-          "E00027"
-        ]
-      },
-      {
-        "target_guid": "3QI0Za4AD7g9EDuOxKtL4z",
-        "distance_m": 37.32664715176418,
-        "edge_ids": [
-          "E00167",
-          "E00042",
-          "E00031"
-        ]
-      },
-      {
-        "target_guid": "3nS8Xe8c5BpfdWxU$cBkvz",
-        "distance_m": 40.32664715176418,
-        "edge_ids": [
-          "E00167",
-          "E00042",
-          "E00033"
-        ]
-      },
-      {
-        "target_guid": "0p1Mt3h7nDeQ1Q4N9eEl9H",
-        "distance_m": 43.126647151764175,
-        "edge_ids": [
-          "E00167",
-          "E00042",
-          "E00005"
         ]
       }
     ],
@@ -35896,94 +34759,6 @@
         "edge_ids": [
           "E00158"
         ]
-      },
-      {
-        "target_guid": "31UFds84f5oAxxal4G6S8P",
-        "distance_m": 21.683608787740496,
-        "edge_ids": [
-          "E00158",
-          "E00042"
-        ]
-      },
-      {
-        "target_guid": "2ZDRA4lYXAawe3WLk$RpXy",
-        "distance_m": 25.526647327792578,
-        "edge_ids": [
-          "E00158",
-          "E00042",
-          "E00023"
-        ]
-      },
-      {
-        "target_guid": "18PQUIFELEARLM4c0brquf",
-        "distance_m": 26.68320889420185,
-        "edge_ids": [
-          "E00158",
-          "E00040"
-        ]
-      },
-      {
-        "target_guid": "3c7FFURCHAIuL_Uqfwogkh",
-        "distance_m": 28.526647327792578,
-        "edge_ids": [
-          "E00158",
-          "E00042",
-          "E00032"
-        ]
-      },
-      {
-        "target_guid": "1FCKjvOWnEAv7x1dg2f7BI",
-        "distance_m": 31.526647327792574,
-        "edge_ids": [
-          "E00158",
-          "E00042",
-          "E00012"
-        ]
-      },
-      {
-        "target_guid": "20nncC0vDDp9h64AX6XevC",
-        "distance_m": 31.526647327792574,
-        "edge_ids": [
-          "E00158",
-          "E00042",
-          "E00018"
-        ]
-      },
-      {
-        "target_guid": "2k6vBG3yn9hRJUYx$GK5vo",
-        "distance_m": 32.92664732779258,
-        "edge_ids": [
-          "E00158",
-          "E00042",
-          "E00027"
-        ]
-      },
-      {
-        "target_guid": "3QI0Za4AD7g9EDuOxKtL4z",
-        "distance_m": 34.526647327792574,
-        "edge_ids": [
-          "E00158",
-          "E00042",
-          "E00031"
-        ]
-      },
-      {
-        "target_guid": "3nS8Xe8c5BpfdWxU$cBkvz",
-        "distance_m": 37.526647327792574,
-        "edge_ids": [
-          "E00158",
-          "E00042",
-          "E00033"
-        ]
-      },
-      {
-        "target_guid": "0p1Mt3h7nDeQ1Q4N9eEl9H",
-        "distance_m": 40.32664732779258,
-        "edge_ids": [
-          "E00158",
-          "E00042",
-          "E00005"
-        ]
       }
     ],
     "2SfY7UTIz1E82rEMOUSWux": [
@@ -36035,94 +34810,6 @@
         "edge_ids": [
           "E00176"
         ]
-      },
-      {
-        "target_guid": "31UFds84f5oAxxal4G6S8P",
-        "distance_m": 15.68360861681397,
-        "edge_ids": [
-          "E00166",
-          "E00042"
-        ]
-      },
-      {
-        "target_guid": "2ZDRA4lYXAawe3WLk$RpXy",
-        "distance_m": 19.52664715686605,
-        "edge_ids": [
-          "E00166",
-          "E00042",
-          "E00023"
-        ]
-      },
-      {
-        "target_guid": "18PQUIFELEARLM4c0brquf",
-        "distance_m": 20.683208723275325,
-        "edge_ids": [
-          "E00166",
-          "E00040"
-        ]
-      },
-      {
-        "target_guid": "3c7FFURCHAIuL_Uqfwogkh",
-        "distance_m": 22.52664715686605,
-        "edge_ids": [
-          "E00166",
-          "E00042",
-          "E00032"
-        ]
-      },
-      {
-        "target_guid": "1FCKjvOWnEAv7x1dg2f7BI",
-        "distance_m": 25.526647156866048,
-        "edge_ids": [
-          "E00166",
-          "E00042",
-          "E00012"
-        ]
-      },
-      {
-        "target_guid": "20nncC0vDDp9h64AX6XevC",
-        "distance_m": 25.526647156866048,
-        "edge_ids": [
-          "E00166",
-          "E00042",
-          "E00018"
-        ]
-      },
-      {
-        "target_guid": "2k6vBG3yn9hRJUYx$GK5vo",
-        "distance_m": 26.926647156866053,
-        "edge_ids": [
-          "E00166",
-          "E00042",
-          "E00027"
-        ]
-      },
-      {
-        "target_guid": "3QI0Za4AD7g9EDuOxKtL4z",
-        "distance_m": 28.526647156866048,
-        "edge_ids": [
-          "E00166",
-          "E00042",
-          "E00031"
-        ]
-      },
-      {
-        "target_guid": "3nS8Xe8c5BpfdWxU$cBkvz",
-        "distance_m": 31.526647156866048,
-        "edge_ids": [
-          "E00166",
-          "E00042",
-          "E00033"
-        ]
-      },
-      {
-        "target_guid": "0p1Mt3h7nDeQ1Q4N9eEl9H",
-        "distance_m": 34.32664715686605,
-        "edge_ids": [
-          "E00166",
-          "E00042",
-          "E00005"
-        ]
       }
     ],
     "2FYBB$DerEng8G$eISvGgZ": [
@@ -36155,27 +34842,10 @@
         ]
       },
       {
-        "target_guid": "31UFds84f5oAxxal4G6S8P",
-        "distance_m": 9.683608644349787,
-        "edge_ids": [
-          "E00165",
-          "E00042"
-        ]
-      },
-      {
         "target_guid": "2pX0sc7rf06usjFMq1TsGs",
         "distance_m": 12.921486779456457,
         "edge_ids": [
           "E00175"
-        ]
-      },
-      {
-        "target_guid": "2ZDRA4lYXAawe3WLk$RpXy",
-        "distance_m": 13.52664718440187,
-        "edge_ids": [
-          "E00165",
-          "E00042",
-          "E00023"
         ]
       },
       {
@@ -36186,81 +34856,10 @@
         ]
       },
       {
-        "target_guid": "18PQUIFELEARLM4c0brquf",
-        "distance_m": 14.683208750811142,
-        "edge_ids": [
-          "E00165",
-          "E00040"
-        ]
-      },
-      {
-        "target_guid": "3c7FFURCHAIuL_Uqfwogkh",
-        "distance_m": 16.52664718440187,
-        "edge_ids": [
-          "E00165",
-          "E00042",
-          "E00032"
-        ]
-      },
-      {
         "target_guid": "2d24khq3H2EhLI7osiekrD",
         "distance_m": 17.321486779456457,
         "edge_ids": [
           "E00174"
-        ]
-      },
-      {
-        "target_guid": "1FCKjvOWnEAv7x1dg2f7BI",
-        "distance_m": 19.526647184401867,
-        "edge_ids": [
-          "E00165",
-          "E00042",
-          "E00012"
-        ]
-      },
-      {
-        "target_guid": "20nncC0vDDp9h64AX6XevC",
-        "distance_m": 19.526647184401867,
-        "edge_ids": [
-          "E00165",
-          "E00042",
-          "E00018"
-        ]
-      },
-      {
-        "target_guid": "2k6vBG3yn9hRJUYx$GK5vo",
-        "distance_m": 20.926647184401872,
-        "edge_ids": [
-          "E00165",
-          "E00042",
-          "E00027"
-        ]
-      },
-      {
-        "target_guid": "3QI0Za4AD7g9EDuOxKtL4z",
-        "distance_m": 22.526647184401867,
-        "edge_ids": [
-          "E00165",
-          "E00042",
-          "E00031"
-        ]
-      },
-      {
-        "target_guid": "3nS8Xe8c5BpfdWxU$cBkvz",
-        "distance_m": 25.526647184401867,
-        "edge_ids": [
-          "E00165",
-          "E00042",
-          "E00033"
-        ]
-      },
-      {
-        "target_guid": "0p1Mt3h7nDeQ1Q4N9eEl9H",
-        "distance_m": 28.32664718440187,
-        "edge_ids": [
-          "E00165",
-          "E00042",
-          "E00005"
         ]
       }
     ],
@@ -36294,27 +34893,10 @@
         ]
       },
       {
-        "target_guid": "31UFds84f5oAxxal4G6S8P",
-        "distance_m": 9.683608644349789,
-        "edge_ids": [
-          "E00164",
-          "E00042"
-        ]
-      },
-      {
         "target_guid": "2pX0sc7rf06usjFMq1TsGs",
         "distance_m": 12.921486779456458,
         "edge_ids": [
           "E00172"
-        ]
-      },
-      {
-        "target_guid": "2ZDRA4lYXAawe3WLk$RpXy",
-        "distance_m": 13.52664718440187,
-        "edge_ids": [
-          "E00164",
-          "E00042",
-          "E00023"
         ]
       },
       {
@@ -36325,81 +34907,10 @@
         ]
       },
       {
-        "target_guid": "18PQUIFELEARLM4c0brquf",
-        "distance_m": 14.683208750811144,
-        "edge_ids": [
-          "E00164",
-          "E00040"
-        ]
-      },
-      {
-        "target_guid": "3c7FFURCHAIuL_Uqfwogkh",
-        "distance_m": 16.52664718440187,
-        "edge_ids": [
-          "E00164",
-          "E00042",
-          "E00032"
-        ]
-      },
-      {
         "target_guid": "2d24khq3H2EhLI7osiekrD",
         "distance_m": 17.321486779456457,
         "edge_ids": [
           "E00171"
-        ]
-      },
-      {
-        "target_guid": "1FCKjvOWnEAv7x1dg2f7BI",
-        "distance_m": 19.526647184401867,
-        "edge_ids": [
-          "E00164",
-          "E00042",
-          "E00012"
-        ]
-      },
-      {
-        "target_guid": "20nncC0vDDp9h64AX6XevC",
-        "distance_m": 19.526647184401867,
-        "edge_ids": [
-          "E00164",
-          "E00042",
-          "E00018"
-        ]
-      },
-      {
-        "target_guid": "2k6vBG3yn9hRJUYx$GK5vo",
-        "distance_m": 20.926647184401872,
-        "edge_ids": [
-          "E00164",
-          "E00042",
-          "E00027"
-        ]
-      },
-      {
-        "target_guid": "3QI0Za4AD7g9EDuOxKtL4z",
-        "distance_m": 22.526647184401867,
-        "edge_ids": [
-          "E00164",
-          "E00042",
-          "E00031"
-        ]
-      },
-      {
-        "target_guid": "3nS8Xe8c5BpfdWxU$cBkvz",
-        "distance_m": 25.526647184401867,
-        "edge_ids": [
-          "E00164",
-          "E00042",
-          "E00033"
-        ]
-      },
-      {
-        "target_guid": "0p1Mt3h7nDeQ1Q4N9eEl9H",
-        "distance_m": 28.32664718440187,
-        "edge_ids": [
-          "E00164",
-          "E00042",
-          "E00005"
         ]
       }
     ],
@@ -36433,14 +34944,6 @@
         ]
       },
       {
-        "target_guid": "31UFds84f5oAxxal4G6S8P",
-        "distance_m": 11.083608787740497,
-        "edge_ids": [
-          "E00152",
-          "E00042"
-        ]
-      },
-      {
         "target_guid": "2pX0sc7rf06usjFMq1TsGs",
         "distance_m": 11.52148677945646,
         "edge_ids": [
@@ -36455,90 +34958,10 @@
         ]
       },
       {
-        "target_guid": "2ZDRA4lYXAawe3WLk$RpXy",
-        "distance_m": 14.92664732779258,
-        "edge_ids": [
-          "E00152",
-          "E00042",
-          "E00023"
-        ]
-      },
-      {
         "target_guid": "2d24khq3H2EhLI7osiekrD",
         "distance_m": 15.921486779456458,
         "edge_ids": [
           "E00156"
-        ]
-      },
-      {
-        "target_guid": "18PQUIFELEARLM4c0brquf",
-        "distance_m": 16.08320889420185,
-        "edge_ids": [
-          "E00152",
-          "E00040"
-        ]
-      },
-      {
-        "target_guid": "3c7FFURCHAIuL_Uqfwogkh",
-        "distance_m": 17.92664732779258,
-        "edge_ids": [
-          "E00152",
-          "E00042",
-          "E00032"
-        ]
-      },
-      {
-        "target_guid": "1FCKjvOWnEAv7x1dg2f7BI",
-        "distance_m": 20.926647327792573,
-        "edge_ids": [
-          "E00152",
-          "E00042",
-          "E00012"
-        ]
-      },
-      {
-        "target_guid": "20nncC0vDDp9h64AX6XevC",
-        "distance_m": 20.926647327792573,
-        "edge_ids": [
-          "E00152",
-          "E00042",
-          "E00018"
-        ]
-      },
-      {
-        "target_guid": "2k6vBG3yn9hRJUYx$GK5vo",
-        "distance_m": 22.32664732779258,
-        "edge_ids": [
-          "E00152",
-          "E00042",
-          "E00027"
-        ]
-      },
-      {
-        "target_guid": "3QI0Za4AD7g9EDuOxKtL4z",
-        "distance_m": 23.926647327792573,
-        "edge_ids": [
-          "E00152",
-          "E00042",
-          "E00031"
-        ]
-      },
-      {
-        "target_guid": "3nS8Xe8c5BpfdWxU$cBkvz",
-        "distance_m": 26.926647327792573,
-        "edge_ids": [
-          "E00152",
-          "E00042",
-          "E00033"
-        ]
-      },
-      {
-        "target_guid": "0p1Mt3h7nDeQ1Q4N9eEl9H",
-        "distance_m": 29.726647327792577,
-        "edge_ids": [
-          "E00152",
-          "E00042",
-          "E00005"
         ]
       }
     ],
@@ -36590,94 +35013,6 @@
         "distance_m": 14.243038546427186,
         "edge_ids": [
           "E00168"
-        ]
-      },
-      {
-        "target_guid": "31UFds84f5oAxxal4G6S8P",
-        "distance_m": 20.083608613367968,
-        "edge_ids": [
-          "E00168",
-          "E00042"
-        ]
-      },
-      {
-        "target_guid": "2ZDRA4lYXAawe3WLk$RpXy",
-        "distance_m": 23.92664715342005,
-        "edge_ids": [
-          "E00168",
-          "E00042",
-          "E00023"
-        ]
-      },
-      {
-        "target_guid": "18PQUIFELEARLM4c0brquf",
-        "distance_m": 25.083208719829322,
-        "edge_ids": [
-          "E00168",
-          "E00040"
-        ]
-      },
-      {
-        "target_guid": "3c7FFURCHAIuL_Uqfwogkh",
-        "distance_m": 26.92664715342005,
-        "edge_ids": [
-          "E00168",
-          "E00042",
-          "E00032"
-        ]
-      },
-      {
-        "target_guid": "1FCKjvOWnEAv7x1dg2f7BI",
-        "distance_m": 29.926647153420046,
-        "edge_ids": [
-          "E00168",
-          "E00042",
-          "E00012"
-        ]
-      },
-      {
-        "target_guid": "20nncC0vDDp9h64AX6XevC",
-        "distance_m": 29.926647153420046,
-        "edge_ids": [
-          "E00168",
-          "E00042",
-          "E00018"
-        ]
-      },
-      {
-        "target_guid": "2k6vBG3yn9hRJUYx$GK5vo",
-        "distance_m": 31.32664715342005,
-        "edge_ids": [
-          "E00168",
-          "E00042",
-          "E00027"
-        ]
-      },
-      {
-        "target_guid": "3QI0Za4AD7g9EDuOxKtL4z",
-        "distance_m": 32.92664715342005,
-        "edge_ids": [
-          "E00168",
-          "E00042",
-          "E00031"
-        ]
-      },
-      {
-        "target_guid": "3nS8Xe8c5BpfdWxU$cBkvz",
-        "distance_m": 35.92664715342005,
-        "edge_ids": [
-          "E00168",
-          "E00042",
-          "E00033"
-        ]
-      },
-      {
-        "target_guid": "0p1Mt3h7nDeQ1Q4N9eEl9H",
-        "distance_m": 38.726647153420046,
-        "edge_ids": [
-          "E00168",
-          "E00042",
-          "E00005"
         ]
       }
     ],
@@ -36737,85 +35072,6 @@
         "edge_ids": [
           "E00005"
         ]
-      },
-      {
-        "target_guid": "1_hrYGMATEmeNbEHgfoKxd",
-        "distance_m": 24.483608606992863,
-        "edge_ids": [
-          "E00005",
-          "E00042"
-        ]
-      },
-      {
-        "target_guid": "2FYBB$DerEng8G$eISvGgZ",
-        "distance_m": 28.326647184401867,
-        "edge_ids": [
-          "E00005",
-          "E00042",
-          "E00165"
-        ]
-      },
-      {
-        "target_guid": "1njbY3IMb4IedX5fLGTCRc",
-        "distance_m": 28.32664718440187,
-        "edge_ids": [
-          "E00005",
-          "E00042",
-          "E00164"
-        ]
-      },
-      {
-        "target_guid": "18PQUIFELEARLM4c0brquf",
-        "distance_m": 29.48360857297422,
-        "edge_ids": [
-          "E00005",
-          "E00041"
-        ]
-      },
-      {
-        "target_guid": "0YIVuBlyXF3PI_fXw2b_vJ",
-        "distance_m": 29.726647327792577,
-        "edge_ids": [
-          "E00005",
-          "E00042",
-          "E00152"
-        ]
-      },
-      {
-        "target_guid": "2SfY7UTIz1E82rEMOUSWux",
-        "distance_m": 34.32664715686605,
-        "edge_ids": [
-          "E00005",
-          "E00042",
-          "E00166"
-        ]
-      },
-      {
-        "target_guid": "2pX0sc7rf06usjFMq1TsGs",
-        "distance_m": 38.726647153420046,
-        "edge_ids": [
-          "E00005",
-          "E00042",
-          "E00168"
-        ]
-      },
-      {
-        "target_guid": "0nixpH$hD2$xLwip3vL96O",
-        "distance_m": 40.32664732779258,
-        "edge_ids": [
-          "E00005",
-          "E00042",
-          "E00158"
-        ]
-      },
-      {
-        "target_guid": "2d24khq3H2EhLI7osiekrD",
-        "distance_m": 43.126647151764175,
-        "edge_ids": [
-          "E00005",
-          "E00042",
-          "E00167"
-        ]
       }
     ],
     "3nS8Xe8c5BpfdWxU$cBkvz": [
@@ -36873,85 +35129,6 @@
         "distance_m": 15.843038540052078,
         "edge_ids": [
           "E00033"
-        ]
-      },
-      {
-        "target_guid": "1_hrYGMATEmeNbEHgfoKxd",
-        "distance_m": 21.68360860699286,
-        "edge_ids": [
-          "E00033",
-          "E00042"
-        ]
-      },
-      {
-        "target_guid": "2FYBB$DerEng8G$eISvGgZ",
-        "distance_m": 25.526647184401863,
-        "edge_ids": [
-          "E00033",
-          "E00042",
-          "E00165"
-        ]
-      },
-      {
-        "target_guid": "1njbY3IMb4IedX5fLGTCRc",
-        "distance_m": 25.526647184401867,
-        "edge_ids": [
-          "E00033",
-          "E00042",
-          "E00164"
-        ]
-      },
-      {
-        "target_guid": "18PQUIFELEARLM4c0brquf",
-        "distance_m": 26.683608572974215,
-        "edge_ids": [
-          "E00033",
-          "E00041"
-        ]
-      },
-      {
-        "target_guid": "0YIVuBlyXF3PI_fXw2b_vJ",
-        "distance_m": 26.926647327792573,
-        "edge_ids": [
-          "E00033",
-          "E00042",
-          "E00152"
-        ]
-      },
-      {
-        "target_guid": "2SfY7UTIz1E82rEMOUSWux",
-        "distance_m": 31.526647156866048,
-        "edge_ids": [
-          "E00033",
-          "E00042",
-          "E00166"
-        ]
-      },
-      {
-        "target_guid": "2pX0sc7rf06usjFMq1TsGs",
-        "distance_m": 35.92664715342005,
-        "edge_ids": [
-          "E00033",
-          "E00042",
-          "E00168"
-        ]
-      },
-      {
-        "target_guid": "0nixpH$hD2$xLwip3vL96O",
-        "distance_m": 37.526647327792574,
-        "edge_ids": [
-          "E00033",
-          "E00042",
-          "E00158"
-        ]
-      },
-      {
-        "target_guid": "2d24khq3H2EhLI7osiekrD",
-        "distance_m": 40.32664715176418,
-        "edge_ids": [
-          "E00033",
-          "E00042",
-          "E00167"
         ]
       }
     ],
@@ -37011,85 +35188,6 @@
         "edge_ids": [
           "E00031"
         ]
-      },
-      {
-        "target_guid": "1_hrYGMATEmeNbEHgfoKxd",
-        "distance_m": 18.68360860699286,
-        "edge_ids": [
-          "E00031",
-          "E00042"
-        ]
-      },
-      {
-        "target_guid": "2FYBB$DerEng8G$eISvGgZ",
-        "distance_m": 22.526647184401863,
-        "edge_ids": [
-          "E00031",
-          "E00042",
-          "E00165"
-        ]
-      },
-      {
-        "target_guid": "1njbY3IMb4IedX5fLGTCRc",
-        "distance_m": 22.526647184401867,
-        "edge_ids": [
-          "E00031",
-          "E00042",
-          "E00164"
-        ]
-      },
-      {
-        "target_guid": "18PQUIFELEARLM4c0brquf",
-        "distance_m": 23.683608572974215,
-        "edge_ids": [
-          "E00031",
-          "E00041"
-        ]
-      },
-      {
-        "target_guid": "0YIVuBlyXF3PI_fXw2b_vJ",
-        "distance_m": 23.926647327792573,
-        "edge_ids": [
-          "E00031",
-          "E00042",
-          "E00152"
-        ]
-      },
-      {
-        "target_guid": "2SfY7UTIz1E82rEMOUSWux",
-        "distance_m": 28.526647156866048,
-        "edge_ids": [
-          "E00031",
-          "E00042",
-          "E00166"
-        ]
-      },
-      {
-        "target_guid": "2pX0sc7rf06usjFMq1TsGs",
-        "distance_m": 32.92664715342005,
-        "edge_ids": [
-          "E00031",
-          "E00042",
-          "E00168"
-        ]
-      },
-      {
-        "target_guid": "0nixpH$hD2$xLwip3vL96O",
-        "distance_m": 34.526647327792574,
-        "edge_ids": [
-          "E00031",
-          "E00042",
-          "E00158"
-        ]
-      },
-      {
-        "target_guid": "2d24khq3H2EhLI7osiekrD",
-        "distance_m": 37.32664715176418,
-        "edge_ids": [
-          "E00031",
-          "E00042",
-          "E00167"
-        ]
       }
     ],
     "20nncC0vDDp9h64AX6XevC": [
@@ -37148,85 +35246,6 @@
         "edge_ids": [
           "E00002"
         ]
-      },
-      {
-        "target_guid": "1_hrYGMATEmeNbEHgfoKxd",
-        "distance_m": 15.683608606992859,
-        "edge_ids": [
-          "E00018",
-          "E00042"
-        ]
-      },
-      {
-        "target_guid": "2FYBB$DerEng8G$eISvGgZ",
-        "distance_m": 19.526647184401863,
-        "edge_ids": [
-          "E00018",
-          "E00042",
-          "E00165"
-        ]
-      },
-      {
-        "target_guid": "1njbY3IMb4IedX5fLGTCRc",
-        "distance_m": 19.526647184401867,
-        "edge_ids": [
-          "E00018",
-          "E00042",
-          "E00164"
-        ]
-      },
-      {
-        "target_guid": "18PQUIFELEARLM4c0brquf",
-        "distance_m": 20.683608572974215,
-        "edge_ids": [
-          "E00018",
-          "E00041"
-        ]
-      },
-      {
-        "target_guid": "0YIVuBlyXF3PI_fXw2b_vJ",
-        "distance_m": 20.926647327792573,
-        "edge_ids": [
-          "E00018",
-          "E00042",
-          "E00152"
-        ]
-      },
-      {
-        "target_guid": "2SfY7UTIz1E82rEMOUSWux",
-        "distance_m": 25.526647156866048,
-        "edge_ids": [
-          "E00018",
-          "E00042",
-          "E00166"
-        ]
-      },
-      {
-        "target_guid": "2pX0sc7rf06usjFMq1TsGs",
-        "distance_m": 29.926647153420046,
-        "edge_ids": [
-          "E00018",
-          "E00042",
-          "E00168"
-        ]
-      },
-      {
-        "target_guid": "0nixpH$hD2$xLwip3vL96O",
-        "distance_m": 31.526647327792574,
-        "edge_ids": [
-          "E00018",
-          "E00042",
-          "E00158"
-        ]
-      },
-      {
-        "target_guid": "2d24khq3H2EhLI7osiekrD",
-        "distance_m": 34.32664715176418,
-        "edge_ids": [
-          "E00018",
-          "E00042",
-          "E00167"
-        ]
       }
     ],
     "3c7FFURCHAIuL_Uqfwogkh": [
@@ -37280,89 +35299,10 @@
         ]
       },
       {
-        "target_guid": "1_hrYGMATEmeNbEHgfoKxd",
-        "distance_m": 12.683608606992864,
-        "edge_ids": [
-          "E00032",
-          "E00042"
-        ]
-      },
-      {
         "target_guid": "0p1Mt3h7nDeQ1Q4N9eEl9H",
         "distance_m": 14.32148677945646,
         "edge_ids": [
           "E00007"
-        ]
-      },
-      {
-        "target_guid": "1njbY3IMb4IedX5fLGTCRc",
-        "distance_m": 16.52664718440187,
-        "edge_ids": [
-          "E00032",
-          "E00042",
-          "E00164"
-        ]
-      },
-      {
-        "target_guid": "2FYBB$DerEng8G$eISvGgZ",
-        "distance_m": 16.52664718440187,
-        "edge_ids": [
-          "E00032",
-          "E00042",
-          "E00165"
-        ]
-      },
-      {
-        "target_guid": "18PQUIFELEARLM4c0brquf",
-        "distance_m": 17.68360857297422,
-        "edge_ids": [
-          "E00032",
-          "E00041"
-        ]
-      },
-      {
-        "target_guid": "0YIVuBlyXF3PI_fXw2b_vJ",
-        "distance_m": 17.92664732779258,
-        "edge_ids": [
-          "E00032",
-          "E00042",
-          "E00152"
-        ]
-      },
-      {
-        "target_guid": "2SfY7UTIz1E82rEMOUSWux",
-        "distance_m": 22.526647156866055,
-        "edge_ids": [
-          "E00032",
-          "E00042",
-          "E00166"
-        ]
-      },
-      {
-        "target_guid": "2pX0sc7rf06usjFMq1TsGs",
-        "distance_m": 26.92664715342005,
-        "edge_ids": [
-          "E00032",
-          "E00042",
-          "E00168"
-        ]
-      },
-      {
-        "target_guid": "0nixpH$hD2$xLwip3vL96O",
-        "distance_m": 28.52664732779258,
-        "edge_ids": [
-          "E00032",
-          "E00042",
-          "E00158"
-        ]
-      },
-      {
-        "target_guid": "2d24khq3H2EhLI7osiekrD",
-        "distance_m": 31.326647151764178,
-        "edge_ids": [
-          "E00032",
-          "E00042",
-          "E00167"
         ]
       }
     ],
@@ -37396,14 +35336,6 @@
         ]
       },
       {
-        "target_guid": "1_hrYGMATEmeNbEHgfoKxd",
-        "distance_m": 9.683608606992864,
-        "edge_ids": [
-          "E00023",
-          "E00042"
-        ]
-      },
-      {
         "target_guid": "2k6vBG3yn9hRJUYx$GK5vo",
         "distance_m": 9.92148677945646,
         "edge_ids": [
@@ -37418,24 +35350,6 @@
         ]
       },
       {
-        "target_guid": "1njbY3IMb4IedX5fLGTCRc",
-        "distance_m": 13.52664718440187,
-        "edge_ids": [
-          "E00023",
-          "E00042",
-          "E00164"
-        ]
-      },
-      {
-        "target_guid": "2FYBB$DerEng8G$eISvGgZ",
-        "distance_m": 13.52664718440187,
-        "edge_ids": [
-          "E00023",
-          "E00042",
-          "E00165"
-        ]
-      },
-      {
         "target_guid": "3nS8Xe8c5BpfdWxU$cBkvz",
         "distance_m": 14.521486779456456,
         "edge_ids": [
@@ -37443,63 +35357,10 @@
         ]
       },
       {
-        "target_guid": "18PQUIFELEARLM4c0brquf",
-        "distance_m": 14.683608572974219,
-        "edge_ids": [
-          "E00023",
-          "E00041"
-        ]
-      },
-      {
-        "target_guid": "0YIVuBlyXF3PI_fXw2b_vJ",
-        "distance_m": 14.92664732779258,
-        "edge_ids": [
-          "E00023",
-          "E00042",
-          "E00152"
-        ]
-      },
-      {
         "target_guid": "0p1Mt3h7nDeQ1Q4N9eEl9H",
         "distance_m": 17.32148677945646,
         "edge_ids": [
           "E00003"
-        ]
-      },
-      {
-        "target_guid": "2SfY7UTIz1E82rEMOUSWux",
-        "distance_m": 19.526647156866055,
-        "edge_ids": [
-          "E00023",
-          "E00042",
-          "E00166"
-        ]
-      },
-      {
-        "target_guid": "2pX0sc7rf06usjFMq1TsGs",
-        "distance_m": 23.92664715342005,
-        "edge_ids": [
-          "E00023",
-          "E00042",
-          "E00168"
-        ]
-      },
-      {
-        "target_guid": "0nixpH$hD2$xLwip3vL96O",
-        "distance_m": 25.52664732779258,
-        "edge_ids": [
-          "E00023",
-          "E00042",
-          "E00158"
-        ]
-      },
-      {
-        "target_guid": "2d24khq3H2EhLI7osiekrD",
-        "distance_m": 28.326647151764178,
-        "edge_ids": [
-          "E00023",
-          "E00042",
-          "E00167"
         ]
       }
     ],
@@ -37559,85 +35420,6 @@
         "edge_ids": [
           "E00001"
         ]
-      },
-      {
-        "target_guid": "1_hrYGMATEmeNbEHgfoKxd",
-        "distance_m": 15.683608606992859,
-        "edge_ids": [
-          "E00012",
-          "E00042"
-        ]
-      },
-      {
-        "target_guid": "2FYBB$DerEng8G$eISvGgZ",
-        "distance_m": 19.526647184401863,
-        "edge_ids": [
-          "E00012",
-          "E00042",
-          "E00165"
-        ]
-      },
-      {
-        "target_guid": "1njbY3IMb4IedX5fLGTCRc",
-        "distance_m": 19.526647184401867,
-        "edge_ids": [
-          "E00012",
-          "E00042",
-          "E00164"
-        ]
-      },
-      {
-        "target_guid": "18PQUIFELEARLM4c0brquf",
-        "distance_m": 20.683608572974215,
-        "edge_ids": [
-          "E00012",
-          "E00041"
-        ]
-      },
-      {
-        "target_guid": "0YIVuBlyXF3PI_fXw2b_vJ",
-        "distance_m": 20.926647327792573,
-        "edge_ids": [
-          "E00012",
-          "E00042",
-          "E00152"
-        ]
-      },
-      {
-        "target_guid": "2SfY7UTIz1E82rEMOUSWux",
-        "distance_m": 25.526647156866048,
-        "edge_ids": [
-          "E00012",
-          "E00042",
-          "E00166"
-        ]
-      },
-      {
-        "target_guid": "2pX0sc7rf06usjFMq1TsGs",
-        "distance_m": 29.926647153420046,
-        "edge_ids": [
-          "E00012",
-          "E00042",
-          "E00168"
-        ]
-      },
-      {
-        "target_guid": "0nixpH$hD2$xLwip3vL96O",
-        "distance_m": 31.526647327792574,
-        "edge_ids": [
-          "E00012",
-          "E00042",
-          "E00158"
-        ]
-      },
-      {
-        "target_guid": "2d24khq3H2EhLI7osiekrD",
-        "distance_m": 34.32664715176418,
-        "edge_ids": [
-          "E00012",
-          "E00042",
-          "E00167"
-        ]
       }
     ],
     "2k6vBG3yn9hRJUYx$GK5vo": [
@@ -37696,85 +35478,6 @@
         "edge_ids": [
           "E00027"
         ]
-      },
-      {
-        "target_guid": "1_hrYGMATEmeNbEHgfoKxd",
-        "distance_m": 17.083608606992865,
-        "edge_ids": [
-          "E00027",
-          "E00042"
-        ]
-      },
-      {
-        "target_guid": "2FYBB$DerEng8G$eISvGgZ",
-        "distance_m": 20.92664718440187,
-        "edge_ids": [
-          "E00027",
-          "E00042",
-          "E00165"
-        ]
-      },
-      {
-        "target_guid": "1njbY3IMb4IedX5fLGTCRc",
-        "distance_m": 20.926647184401872,
-        "edge_ids": [
-          "E00027",
-          "E00042",
-          "E00164"
-        ]
-      },
-      {
-        "target_guid": "18PQUIFELEARLM4c0brquf",
-        "distance_m": 22.08360857297422,
-        "edge_ids": [
-          "E00027",
-          "E00041"
-        ]
-      },
-      {
-        "target_guid": "0YIVuBlyXF3PI_fXw2b_vJ",
-        "distance_m": 22.32664732779258,
-        "edge_ids": [
-          "E00027",
-          "E00042",
-          "E00152"
-        ]
-      },
-      {
-        "target_guid": "2SfY7UTIz1E82rEMOUSWux",
-        "distance_m": 26.926647156866053,
-        "edge_ids": [
-          "E00027",
-          "E00042",
-          "E00166"
-        ]
-      },
-      {
-        "target_guid": "2pX0sc7rf06usjFMq1TsGs",
-        "distance_m": 31.32664715342005,
-        "edge_ids": [
-          "E00027",
-          "E00042",
-          "E00168"
-        ]
-      },
-      {
-        "target_guid": "0nixpH$hD2$xLwip3vL96O",
-        "distance_m": 32.92664732779258,
-        "edge_ids": [
-          "E00027",
-          "E00042",
-          "E00158"
-        ]
-      },
-      {
-        "target_guid": "2d24khq3H2EhLI7osiekrD",
-        "distance_m": 35.72664715176418,
-        "edge_ids": [
-          "E00027",
-          "E00042",
-          "E00167"
-        ]
       }
     ],
     "1_hrYGMATEmeNbEHgfoKxd": [
@@ -37800,40 +35503,10 @@
         ]
       },
       {
-        "target_guid": "31UFds84f5oAxxal4G6S8P",
-        "distance_m": 5.840570066940782,
-        "edge_ids": [
-          "E00042"
-        ]
-      },
-      {
-        "target_guid": "2ZDRA4lYXAawe3WLk$RpXy",
-        "distance_m": 9.683608606992864,
-        "edge_ids": [
-          "E00042",
-          "E00023"
-        ]
-      },
-      {
         "target_guid": "2SfY7UTIz1E82rEMOUSWux",
         "distance_m": 9.843038549873189,
         "edge_ids": [
           "E00166"
-        ]
-      },
-      {
-        "target_guid": "18PQUIFELEARLM4c0brquf",
-        "distance_m": 10.840170173402136,
-        "edge_ids": [
-          "E00040"
-        ]
-      },
-      {
-        "target_guid": "3c7FFURCHAIuL_Uqfwogkh",
-        "distance_m": 12.683608606992864,
-        "edge_ids": [
-          "E00042",
-          "E00032"
         ]
       },
       {
@@ -37844,22 +35517,6 @@
         ]
       },
       {
-        "target_guid": "1FCKjvOWnEAv7x1dg2f7BI",
-        "distance_m": 15.683608606992859,
-        "edge_ids": [
-          "E00042",
-          "E00012"
-        ]
-      },
-      {
-        "target_guid": "20nncC0vDDp9h64AX6XevC",
-        "distance_m": 15.683608606992859,
-        "edge_ids": [
-          "E00042",
-          "E00018"
-        ]
-      },
-      {
         "target_guid": "0nixpH$hD2$xLwip3vL96O",
         "distance_m": 15.843038720799715,
         "edge_ids": [
@@ -37867,42 +35524,10 @@
         ]
       },
       {
-        "target_guid": "2k6vBG3yn9hRJUYx$GK5vo",
-        "distance_m": 17.083608606992865,
-        "edge_ids": [
-          "E00042",
-          "E00027"
-        ]
-      },
-      {
         "target_guid": "2d24khq3H2EhLI7osiekrD",
         "distance_m": 18.643038544771315,
         "edge_ids": [
           "E00167"
-        ]
-      },
-      {
-        "target_guid": "3QI0Za4AD7g9EDuOxKtL4z",
-        "distance_m": 18.68360860699286,
-        "edge_ids": [
-          "E00042",
-          "E00031"
-        ]
-      },
-      {
-        "target_guid": "3nS8Xe8c5BpfdWxU$cBkvz",
-        "distance_m": 21.68360860699286,
-        "edge_ids": [
-          "E00042",
-          "E00033"
-        ]
-      },
-      {
-        "target_guid": "0p1Mt3h7nDeQ1Q4N9eEl9H",
-        "distance_m": 24.483608606992863,
-        "edge_ids": [
-          "E00042",
-          "E00005"
         ]
       }
     ],
@@ -37915,33 +35540,10 @@
         ]
       },
       {
-        "target_guid": "1_hrYGMATEmeNbEHgfoKxd",
-        "distance_m": 5.840570066940782,
-        "edge_ids": [
-          "E00042"
-        ]
-      },
-      {
         "target_guid": "3c7FFURCHAIuL_Uqfwogkh",
         "distance_m": 6.843038540052082,
         "edge_ids": [
           "E00032"
-        ]
-      },
-      {
-        "target_guid": "2FYBB$DerEng8G$eISvGgZ",
-        "distance_m": 9.683608644349787,
-        "edge_ids": [
-          "E00042",
-          "E00165"
-        ]
-      },
-      {
-        "target_guid": "1njbY3IMb4IedX5fLGTCRc",
-        "distance_m": 9.683608644349789,
-        "edge_ids": [
-          "E00042",
-          "E00164"
         ]
       },
       {
@@ -37956,21 +35558,6 @@
         "distance_m": 9.843038540052078,
         "edge_ids": [
           "E00018"
-        ]
-      },
-      {
-        "target_guid": "18PQUIFELEARLM4c0brquf",
-        "distance_m": 10.840570032922136,
-        "edge_ids": [
-          "E00041"
-        ]
-      },
-      {
-        "target_guid": "0YIVuBlyXF3PI_fXw2b_vJ",
-        "distance_m": 11.083608787740497,
-        "edge_ids": [
-          "E00042",
-          "E00152"
         ]
       },
       {
@@ -37988,14 +35575,6 @@
         ]
       },
       {
-        "target_guid": "2SfY7UTIz1E82rEMOUSWux",
-        "distance_m": 15.68360861681397,
-        "edge_ids": [
-          "E00042",
-          "E00166"
-        ]
-      },
-      {
         "target_guid": "3nS8Xe8c5BpfdWxU$cBkvz",
         "distance_m": 15.843038540052078,
         "edge_ids": [
@@ -38007,30 +35586,6 @@
         "distance_m": 18.643038540052082,
         "edge_ids": [
           "E00005"
-        ]
-      },
-      {
-        "target_guid": "2pX0sc7rf06usjFMq1TsGs",
-        "distance_m": 20.083608613367968,
-        "edge_ids": [
-          "E00042",
-          "E00168"
-        ]
-      },
-      {
-        "target_guid": "0nixpH$hD2$xLwip3vL96O",
-        "distance_m": 21.683608787740496,
-        "edge_ids": [
-          "E00042",
-          "E00158"
-        ]
-      },
-      {
-        "target_guid": "2d24khq3H2EhLI7osiekrD",
-        "distance_m": 24.483608611712096,
-        "edge_ids": [
-          "E00042",
-          "E00167"
         ]
       }
     ],
@@ -38064,22 +35619,6 @@
         ]
       },
       {
-        "target_guid": "0aFvTq1m96zgWbjq4TXV_5",
-        "distance_m": 8.483208894201852,
-        "edge_ids": [
-          "E00061",
-          "E00038"
-        ]
-      },
-      {
-        "target_guid": "1MlsdMSb17ygNfEs7N22qC",
-        "distance_m": 9.683608787740496,
-        "edge_ids": [
-          "E00061",
-          "E00039"
-        ]
-      },
-      {
         "target_guid": "36$lV978n70fzaOS1aGkQb",
         "distance_m": 9.921486779456458,
         "edge_ids": [
@@ -38101,33 +35640,6 @@
         ]
       },
       {
-        "target_guid": "1gw9pvArXFYfZkbYdrwJwh",
-        "distance_m": 13.526647327792578,
-        "edge_ids": [
-          "E00061",
-          "E00039",
-          "E00197"
-        ]
-      },
-      {
-        "target_guid": "32UdM49pfAMxiX5WyXhCuy",
-        "distance_m": 13.526647327792578,
-        "edge_ids": [
-          "E00061",
-          "E00039",
-          "E00200"
-        ]
-      },
-      {
-        "target_guid": "1d9QvK4Qv1Iem3fiUhniQB",
-        "distance_m": 14.926647327792576,
-        "edge_ids": [
-          "E00061",
-          "E00039",
-          "E00196"
-        ]
-      },
-      {
         "target_guid": "2dmNSROS54DQzD5NyEFXm$",
         "distance_m": 15.921486779456458,
         "edge_ids": [
@@ -38135,74 +35647,10 @@
         ]
       },
       {
-        "target_guid": "35jd8lu1fDJAuZoKl4ldDk",
-        "distance_m": 16.526647327792578,
-        "edge_ids": [
-          "E00061",
-          "E00039",
-          "E00201"
-        ]
-      },
-      {
         "target_guid": "0vTIWG60z84eKitb_eWAIR",
         "distance_m": 17.321486779456457,
         "edge_ids": [
           "E00053"
-        ]
-      },
-      {
-        "target_guid": "00RjztLorCQgcGEHv7fY3g",
-        "distance_m": 19.526647327792574,
-        "edge_ids": [
-          "E00061",
-          "E00039",
-          "E00180"
-        ]
-      },
-      {
-        "target_guid": "2tu8_KoLfDpho5M9F1jtqL",
-        "distance_m": 22.526647327792574,
-        "edge_ids": [
-          "E00061",
-          "E00039",
-          "E00199"
-        ]
-      },
-      {
-        "target_guid": "0JdG5rMQr10RkgztM3HqwA",
-        "distance_m": 23.410737862827794,
-        "edge_ids": [
-          "E00061",
-          "E00039",
-          "E00196",
-          "E00099"
-        ]
-      },
-      {
-        "target_guid": "1BWbpTElb4dAcW2J6oyRrZ",
-        "distance_m": 23.82664732779258,
-        "edge_ids": [
-          "E00061",
-          "E00039",
-          "E00188"
-        ]
-      },
-      {
-        "target_guid": "3ZJxNn9Nz6HQakewV2F393",
-        "distance_m": 25.526647327792574,
-        "edge_ids": [
-          "E00061",
-          "E00039",
-          "E00202"
-        ]
-      },
-      {
-        "target_guid": "2sSHD6n39BZQnSaHjLYpnc",
-        "distance_m": 28.32664732779258,
-        "edge_ids": [
-          "E00061",
-          "E00039",
-          "E00198"
         ]
       }
     ],
@@ -38243,26 +35691,10 @@
         ]
       },
       {
-        "target_guid": "0aFvTq1m96zgWbjq4TXV_5",
-        "distance_m": 9.883208736037217,
-        "edge_ids": [
-          "E00072",
-          "E00038"
-        ]
-      },
-      {
         "target_guid": "3qz8vRMKXCHubRHdl$maGl",
         "distance_m": 10.121486779456458,
         "edge_ids": [
           "E00088"
-        ]
-      },
-      {
-        "target_guid": "1MlsdMSb17ygNfEs7N22qC",
-        "distance_m": 11.083608629575863,
-        "edge_ids": [
-          "E00072",
-          "E00039"
         ]
       },
       {
@@ -38280,101 +35712,10 @@
         ]
       },
       {
-        "target_guid": "1gw9pvArXFYfZkbYdrwJwh",
-        "distance_m": 14.926647169627945,
-        "edge_ids": [
-          "E00072",
-          "E00039",
-          "E00197"
-        ]
-      },
-      {
-        "target_guid": "32UdM49pfAMxiX5WyXhCuy",
-        "distance_m": 14.926647169627945,
-        "edge_ids": [
-          "E00072",
-          "E00039",
-          "E00200"
-        ]
-      },
-      {
         "target_guid": "0vTIWG60z84eKitb_eWAIR",
         "distance_m": 15.921486779456458,
         "edge_ids": [
           "E00059"
-        ]
-      },
-      {
-        "target_guid": "1d9QvK4Qv1Iem3fiUhniQB",
-        "distance_m": 16.326647169627943,
-        "edge_ids": [
-          "E00072",
-          "E00039",
-          "E00196"
-        ]
-      },
-      {
-        "target_guid": "35jd8lu1fDJAuZoKl4ldDk",
-        "distance_m": 17.926647169627945,
-        "edge_ids": [
-          "E00072",
-          "E00039",
-          "E00201"
-        ]
-      },
-      {
-        "target_guid": "00RjztLorCQgcGEHv7fY3g",
-        "distance_m": 20.92664716962794,
-        "edge_ids": [
-          "E00072",
-          "E00039",
-          "E00180"
-        ]
-      },
-      {
-        "target_guid": "2tu8_KoLfDpho5M9F1jtqL",
-        "distance_m": 23.92664716962794,
-        "edge_ids": [
-          "E00072",
-          "E00039",
-          "E00199"
-        ]
-      },
-      {
-        "target_guid": "0JdG5rMQr10RkgztM3HqwA",
-        "distance_m": 24.81073770466316,
-        "edge_ids": [
-          "E00072",
-          "E00039",
-          "E00196",
-          "E00099"
-        ]
-      },
-      {
-        "target_guid": "1BWbpTElb4dAcW2J6oyRrZ",
-        "distance_m": 25.226647169627945,
-        "edge_ids": [
-          "E00072",
-          "E00039",
-          "E00188"
-        ]
-      },
-      {
-        "target_guid": "3ZJxNn9Nz6HQakewV2F393",
-        "distance_m": 26.92664716962794,
-        "edge_ids": [
-          "E00072",
-          "E00039",
-          "E00202"
-        ]
-      },
-      {
-        "target_guid": "2sSHD6n39BZQnSaHjLYpnc",
-        "distance_m": 29.726647169627945,
-        "edge_ids": [
-          "E00072",
-          "E00039",
-          "E00198"
         ]
       }
     ],
@@ -38441,113 +35782,6 @@
         "edge_ids": [
           "E00068"
         ]
-      },
-      {
-        "target_guid": "0aFvTq1m96zgWbjq4TXV_5",
-        "distance_m": 18.883208719829323,
-        "edge_ids": [
-          "E00068",
-          "E00038"
-        ]
-      },
-      {
-        "target_guid": "1MlsdMSb17ygNfEs7N22qC",
-        "distance_m": 20.083608613367968,
-        "edge_ids": [
-          "E00068",
-          "E00039"
-        ]
-      },
-      {
-        "target_guid": "1gw9pvArXFYfZkbYdrwJwh",
-        "distance_m": 23.92664715342005,
-        "edge_ids": [
-          "E00068",
-          "E00039",
-          "E00197"
-        ]
-      },
-      {
-        "target_guid": "32UdM49pfAMxiX5WyXhCuy",
-        "distance_m": 23.92664715342005,
-        "edge_ids": [
-          "E00068",
-          "E00039",
-          "E00200"
-        ]
-      },
-      {
-        "target_guid": "1d9QvK4Qv1Iem3fiUhniQB",
-        "distance_m": 25.326647153420048,
-        "edge_ids": [
-          "E00068",
-          "E00039",
-          "E00196"
-        ]
-      },
-      {
-        "target_guid": "35jd8lu1fDJAuZoKl4ldDk",
-        "distance_m": 26.92664715342005,
-        "edge_ids": [
-          "E00068",
-          "E00039",
-          "E00201"
-        ]
-      },
-      {
-        "target_guid": "00RjztLorCQgcGEHv7fY3g",
-        "distance_m": 29.926647153420046,
-        "edge_ids": [
-          "E00068",
-          "E00039",
-          "E00180"
-        ]
-      },
-      {
-        "target_guid": "2tu8_KoLfDpho5M9F1jtqL",
-        "distance_m": 32.92664715342005,
-        "edge_ids": [
-          "E00068",
-          "E00039",
-          "E00199"
-        ]
-      },
-      {
-        "target_guid": "0JdG5rMQr10RkgztM3HqwA",
-        "distance_m": 33.81073768845527,
-        "edge_ids": [
-          "E00068",
-          "E00039",
-          "E00196",
-          "E00099"
-        ]
-      },
-      {
-        "target_guid": "1BWbpTElb4dAcW2J6oyRrZ",
-        "distance_m": 34.226647153420046,
-        "edge_ids": [
-          "E00068",
-          "E00039",
-          "E00188"
-        ]
-      },
-      {
-        "target_guid": "3ZJxNn9Nz6HQakewV2F393",
-        "distance_m": 35.92664715342005,
-        "edge_ids": [
-          "E00068",
-          "E00039",
-          "E00202"
-        ]
-      },
-      {
-        "target_guid": "2sSHD6n39BZQnSaHjLYpnc",
-        "distance_m": 38.726647153420046,
-        "edge_ids": [
-          "E00068",
-          "E00039",
-          "E00198"
-        ]
       }
     ],
     "36$lV978n70fzaOS1aGkQb": [
@@ -38613,113 +35847,6 @@
         "edge_ids": [
           "E00071"
         ]
-      },
-      {
-        "target_guid": "0aFvTq1m96zgWbjq4TXV_5",
-        "distance_m": 15.883208721834073,
-        "edge_ids": [
-          "E00071",
-          "E00038"
-        ]
-      },
-      {
-        "target_guid": "1MlsdMSb17ygNfEs7N22qC",
-        "distance_m": 17.083608615372718,
-        "edge_ids": [
-          "E00071",
-          "E00039"
-        ]
-      },
-      {
-        "target_guid": "1gw9pvArXFYfZkbYdrwJwh",
-        "distance_m": 20.9266471554248,
-        "edge_ids": [
-          "E00071",
-          "E00039",
-          "E00197"
-        ]
-      },
-      {
-        "target_guid": "32UdM49pfAMxiX5WyXhCuy",
-        "distance_m": 20.9266471554248,
-        "edge_ids": [
-          "E00071",
-          "E00039",
-          "E00200"
-        ]
-      },
-      {
-        "target_guid": "1d9QvK4Qv1Iem3fiUhniQB",
-        "distance_m": 22.326647155424798,
-        "edge_ids": [
-          "E00071",
-          "E00039",
-          "E00196"
-        ]
-      },
-      {
-        "target_guid": "35jd8lu1fDJAuZoKl4ldDk",
-        "distance_m": 23.9266471554248,
-        "edge_ids": [
-          "E00071",
-          "E00039",
-          "E00201"
-        ]
-      },
-      {
-        "target_guid": "00RjztLorCQgcGEHv7fY3g",
-        "distance_m": 26.926647155424796,
-        "edge_ids": [
-          "E00071",
-          "E00039",
-          "E00180"
-        ]
-      },
-      {
-        "target_guid": "2tu8_KoLfDpho5M9F1jtqL",
-        "distance_m": 29.926647155424796,
-        "edge_ids": [
-          "E00071",
-          "E00039",
-          "E00199"
-        ]
-      },
-      {
-        "target_guid": "0JdG5rMQr10RkgztM3HqwA",
-        "distance_m": 30.810737690460016,
-        "edge_ids": [
-          "E00071",
-          "E00039",
-          "E00196",
-          "E00099"
-        ]
-      },
-      {
-        "target_guid": "1BWbpTElb4dAcW2J6oyRrZ",
-        "distance_m": 31.2266471554248,
-        "edge_ids": [
-          "E00071",
-          "E00039",
-          "E00188"
-        ]
-      },
-      {
-        "target_guid": "3ZJxNn9Nz6HQakewV2F393",
-        "distance_m": 32.926647155424796,
-        "edge_ids": [
-          "E00071",
-          "E00039",
-          "E00202"
-        ]
-      },
-      {
-        "target_guid": "2sSHD6n39BZQnSaHjLYpnc",
-        "distance_m": 35.7266471554248,
-        "edge_ids": [
-          "E00071",
-          "E00039",
-          "E00198"
-        ]
       }
     ],
     "2ezLa6k3r22f7kZrwjKNLO": [
@@ -38780,117 +35907,10 @@
         ]
       },
       {
-        "target_guid": "0aFvTq1m96zgWbjq4TXV_5",
-        "distance_m": 12.883208725678042,
-        "edge_ids": [
-          "E00070",
-          "E00038"
-        ]
-      },
-      {
         "target_guid": "0vTIWG60z84eKitb_eWAIR",
         "distance_m": 12.921486779456458,
         "edge_ids": [
           "E00057"
-        ]
-      },
-      {
-        "target_guid": "1MlsdMSb17ygNfEs7N22qC",
-        "distance_m": 14.083608619216688,
-        "edge_ids": [
-          "E00070",
-          "E00039"
-        ]
-      },
-      {
-        "target_guid": "1gw9pvArXFYfZkbYdrwJwh",
-        "distance_m": 17.926647159268768,
-        "edge_ids": [
-          "E00070",
-          "E00039",
-          "E00197"
-        ]
-      },
-      {
-        "target_guid": "32UdM49pfAMxiX5WyXhCuy",
-        "distance_m": 17.92664715926877,
-        "edge_ids": [
-          "E00070",
-          "E00039",
-          "E00200"
-        ]
-      },
-      {
-        "target_guid": "1d9QvK4Qv1Iem3fiUhniQB",
-        "distance_m": 19.326647159268767,
-        "edge_ids": [
-          "E00070",
-          "E00039",
-          "E00196"
-        ]
-      },
-      {
-        "target_guid": "35jd8lu1fDJAuZoKl4ldDk",
-        "distance_m": 20.92664715926877,
-        "edge_ids": [
-          "E00070",
-          "E00039",
-          "E00201"
-        ]
-      },
-      {
-        "target_guid": "00RjztLorCQgcGEHv7fY3g",
-        "distance_m": 23.926647159268768,
-        "edge_ids": [
-          "E00070",
-          "E00039",
-          "E00180"
-        ]
-      },
-      {
-        "target_guid": "2tu8_KoLfDpho5M9F1jtqL",
-        "distance_m": 26.926647159268768,
-        "edge_ids": [
-          "E00070",
-          "E00039",
-          "E00199"
-        ]
-      },
-      {
-        "target_guid": "0JdG5rMQr10RkgztM3HqwA",
-        "distance_m": 27.810737694303988,
-        "edge_ids": [
-          "E00070",
-          "E00039",
-          "E00196",
-          "E00099"
-        ]
-      },
-      {
-        "target_guid": "1BWbpTElb4dAcW2J6oyRrZ",
-        "distance_m": 28.226647159268772,
-        "edge_ids": [
-          "E00070",
-          "E00039",
-          "E00188"
-        ]
-      },
-      {
-        "target_guid": "3ZJxNn9Nz6HQakewV2F393",
-        "distance_m": 29.926647159268768,
-        "edge_ids": [
-          "E00070",
-          "E00039",
-          "E00202"
-        ]
-      },
-      {
-        "target_guid": "2sSHD6n39BZQnSaHjLYpnc",
-        "distance_m": 32.72664715926877,
-        "edge_ids": [
-          "E00070",
-          "E00039",
-          "E00198"
         ]
       }
     ],
@@ -38956,113 +35976,6 @@
         "distance_m": 17.24303854519647,
         "edge_ids": [
           "E00069"
-        ]
-      },
-      {
-        "target_guid": "0aFvTq1m96zgWbjq4TXV_5",
-        "distance_m": 21.883208718598606,
-        "edge_ids": [
-          "E00069",
-          "E00038"
-        ]
-      },
-      {
-        "target_guid": "1MlsdMSb17ygNfEs7N22qC",
-        "distance_m": 23.08360861213725,
-        "edge_ids": [
-          "E00069",
-          "E00039"
-        ]
-      },
-      {
-        "target_guid": "1gw9pvArXFYfZkbYdrwJwh",
-        "distance_m": 26.926647152189332,
-        "edge_ids": [
-          "E00069",
-          "E00039",
-          "E00197"
-        ]
-      },
-      {
-        "target_guid": "32UdM49pfAMxiX5WyXhCuy",
-        "distance_m": 26.926647152189332,
-        "edge_ids": [
-          "E00069",
-          "E00039",
-          "E00200"
-        ]
-      },
-      {
-        "target_guid": "1d9QvK4Qv1Iem3fiUhniQB",
-        "distance_m": 28.32664715218933,
-        "edge_ids": [
-          "E00069",
-          "E00039",
-          "E00196"
-        ]
-      },
-      {
-        "target_guid": "35jd8lu1fDJAuZoKl4ldDk",
-        "distance_m": 29.926647152189332,
-        "edge_ids": [
-          "E00069",
-          "E00039",
-          "E00201"
-        ]
-      },
-      {
-        "target_guid": "00RjztLorCQgcGEHv7fY3g",
-        "distance_m": 32.92664715218933,
-        "edge_ids": [
-          "E00069",
-          "E00039",
-          "E00180"
-        ]
-      },
-      {
-        "target_guid": "2tu8_KoLfDpho5M9F1jtqL",
-        "distance_m": 35.92664715218933,
-        "edge_ids": [
-          "E00069",
-          "E00039",
-          "E00199"
-        ]
-      },
-      {
-        "target_guid": "0JdG5rMQr10RkgztM3HqwA",
-        "distance_m": 36.81073768722455,
-        "edge_ids": [
-          "E00069",
-          "E00039",
-          "E00196",
-          "E00099"
-        ]
-      },
-      {
-        "target_guid": "1BWbpTElb4dAcW2J6oyRrZ",
-        "distance_m": 37.22664715218933,
-        "edge_ids": [
-          "E00069",
-          "E00039",
-          "E00188"
-        ]
-      },
-      {
-        "target_guid": "3ZJxNn9Nz6HQakewV2F393",
-        "distance_m": 38.92664715218933,
-        "edge_ids": [
-          "E00069",
-          "E00039",
-          "E00202"
-        ]
-      },
-      {
-        "target_guid": "2sSHD6n39BZQnSaHjLYpnc",
-        "distance_m": 41.72664715218933,
-        "edge_ids": [
-          "E00069",
-          "E00039",
-          "E00198"
         ]
       }
     ],
@@ -39137,103 +36050,6 @@
         "edge_ids": [
           "E00198"
         ]
-      },
-      {
-        "target_guid": "0aFvTq1m96zgWbjq4TXV_5",
-        "distance_m": 23.283608572974217,
-        "edge_ids": [
-          "E00198",
-          "E00037"
-        ]
-      },
-      {
-        "target_guid": "1p4YfqvYLCyfRRiNruiahD",
-        "distance_m": 24.483608606992863,
-        "edge_ids": [
-          "E00198",
-          "E00039"
-        ]
-      },
-      {
-        "target_guid": "17HzXMa29CgeqdGTriCwwh",
-        "distance_m": 28.32664732779258,
-        "edge_ids": [
-          "E00198",
-          "E00039",
-          "E00061"
-        ]
-      },
-      {
-        "target_guid": "37NUOXsmX3z9p4Kk0VJikq",
-        "distance_m": 29.726647169627945,
-        "edge_ids": [
-          "E00198",
-          "E00039",
-          "E00072"
-        ]
-      },
-      {
-        "target_guid": "08uaDJHLH3FAZ6Hg9FwzkG",
-        "distance_m": 31.32664732779258,
-        "edge_ids": [
-          "E00198",
-          "E00039",
-          "E00046"
-        ]
-      },
-      {
-        "target_guid": "2ezLa6k3r22f7kZrwjKNLO",
-        "distance_m": 32.72664715926877,
-        "edge_ids": [
-          "E00198",
-          "E00039",
-          "E00070"
-        ]
-      },
-      {
-        "target_guid": "36$lV978n70fzaOS1aGkQb",
-        "distance_m": 35.7266471554248,
-        "edge_ids": [
-          "E00198",
-          "E00039",
-          "E00071"
-        ]
-      },
-      {
-        "target_guid": "3qz8vRMKXCHubRHdl$maGl",
-        "distance_m": 37.32664715422123,
-        "edge_ids": [
-          "E00198",
-          "E00039",
-          "E00073"
-        ]
-      },
-      {
-        "target_guid": "2VGdy0IID6LxPfFQdDE_rz",
-        "distance_m": 38.726647153420046,
-        "edge_ids": [
-          "E00198",
-          "E00039",
-          "E00068"
-        ]
-      },
-      {
-        "target_guid": "2dmNSROS54DQzD5NyEFXm$",
-        "distance_m": 41.72664715218933,
-        "edge_ids": [
-          "E00198",
-          "E00039",
-          "E00069"
-        ]
-      },
-      {
-        "target_guid": "0vTIWG60z84eKitb_eWAIR",
-        "distance_m": 43.12664732779258,
-        "edge_ids": [
-          "E00198",
-          "E00039",
-          "E00054"
-        ]
       }
     ],
     "3ZJxNn9Nz6HQakewV2F393": [
@@ -39306,103 +36122,6 @@
         "distance_m": 15.843038540052078,
         "edge_ids": [
           "E00202"
-        ]
-      },
-      {
-        "target_guid": "0aFvTq1m96zgWbjq4TXV_5",
-        "distance_m": 20.483608572974212,
-        "edge_ids": [
-          "E00202",
-          "E00037"
-        ]
-      },
-      {
-        "target_guid": "1p4YfqvYLCyfRRiNruiahD",
-        "distance_m": 21.68360860699286,
-        "edge_ids": [
-          "E00202",
-          "E00039"
-        ]
-      },
-      {
-        "target_guid": "17HzXMa29CgeqdGTriCwwh",
-        "distance_m": 25.526647327792574,
-        "edge_ids": [
-          "E00202",
-          "E00039",
-          "E00061"
-        ]
-      },
-      {
-        "target_guid": "37NUOXsmX3z9p4Kk0VJikq",
-        "distance_m": 26.92664716962794,
-        "edge_ids": [
-          "E00202",
-          "E00039",
-          "E00072"
-        ]
-      },
-      {
-        "target_guid": "08uaDJHLH3FAZ6Hg9FwzkG",
-        "distance_m": 28.526647327792574,
-        "edge_ids": [
-          "E00202",
-          "E00039",
-          "E00046"
-        ]
-      },
-      {
-        "target_guid": "2ezLa6k3r22f7kZrwjKNLO",
-        "distance_m": 29.926647159268768,
-        "edge_ids": [
-          "E00202",
-          "E00039",
-          "E00070"
-        ]
-      },
-      {
-        "target_guid": "36$lV978n70fzaOS1aGkQb",
-        "distance_m": 32.926647155424796,
-        "edge_ids": [
-          "E00202",
-          "E00039",
-          "E00071"
-        ]
-      },
-      {
-        "target_guid": "3qz8vRMKXCHubRHdl$maGl",
-        "distance_m": 34.52664715422122,
-        "edge_ids": [
-          "E00202",
-          "E00039",
-          "E00073"
-        ]
-      },
-      {
-        "target_guid": "2VGdy0IID6LxPfFQdDE_rz",
-        "distance_m": 35.92664715342005,
-        "edge_ids": [
-          "E00202",
-          "E00039",
-          "E00068"
-        ]
-      },
-      {
-        "target_guid": "2dmNSROS54DQzD5NyEFXm$",
-        "distance_m": 38.92664715218933,
-        "edge_ids": [
-          "E00202",
-          "E00039",
-          "E00069"
-        ]
-      },
-      {
-        "target_guid": "0vTIWG60z84eKitb_eWAIR",
-        "distance_m": 40.32664732779257,
-        "edge_ids": [
-          "E00202",
-          "E00039",
-          "E00054"
         ]
       }
     ],
@@ -39477,103 +36196,6 @@
         "edge_ids": [
           "E00199"
         ]
-      },
-      {
-        "target_guid": "0aFvTq1m96zgWbjq4TXV_5",
-        "distance_m": 17.483608572974212,
-        "edge_ids": [
-          "E00199",
-          "E00037"
-        ]
-      },
-      {
-        "target_guid": "1p4YfqvYLCyfRRiNruiahD",
-        "distance_m": 18.68360860699286,
-        "edge_ids": [
-          "E00199",
-          "E00039"
-        ]
-      },
-      {
-        "target_guid": "17HzXMa29CgeqdGTriCwwh",
-        "distance_m": 22.526647327792574,
-        "edge_ids": [
-          "E00199",
-          "E00039",
-          "E00061"
-        ]
-      },
-      {
-        "target_guid": "37NUOXsmX3z9p4Kk0VJikq",
-        "distance_m": 23.92664716962794,
-        "edge_ids": [
-          "E00199",
-          "E00039",
-          "E00072"
-        ]
-      },
-      {
-        "target_guid": "08uaDJHLH3FAZ6Hg9FwzkG",
-        "distance_m": 25.526647327792574,
-        "edge_ids": [
-          "E00199",
-          "E00039",
-          "E00046"
-        ]
-      },
-      {
-        "target_guid": "2ezLa6k3r22f7kZrwjKNLO",
-        "distance_m": 26.926647159268768,
-        "edge_ids": [
-          "E00199",
-          "E00039",
-          "E00070"
-        ]
-      },
-      {
-        "target_guid": "36$lV978n70fzaOS1aGkQb",
-        "distance_m": 29.926647155424796,
-        "edge_ids": [
-          "E00199",
-          "E00039",
-          "E00071"
-        ]
-      },
-      {
-        "target_guid": "3qz8vRMKXCHubRHdl$maGl",
-        "distance_m": 31.526647154221223,
-        "edge_ids": [
-          "E00199",
-          "E00039",
-          "E00073"
-        ]
-      },
-      {
-        "target_guid": "2VGdy0IID6LxPfFQdDE_rz",
-        "distance_m": 32.92664715342005,
-        "edge_ids": [
-          "E00199",
-          "E00039",
-          "E00068"
-        ]
-      },
-      {
-        "target_guid": "2dmNSROS54DQzD5NyEFXm$",
-        "distance_m": 35.92664715218933,
-        "edge_ids": [
-          "E00199",
-          "E00039",
-          "E00069"
-        ]
-      },
-      {
-        "target_guid": "0vTIWG60z84eKitb_eWAIR",
-        "distance_m": 37.32664732779257,
-        "edge_ids": [
-          "E00199",
-          "E00039",
-          "E00054"
-        ]
       }
     ],
     "00RjztLorCQgcGEHv7fY3g": [
@@ -39647,103 +36269,6 @@
           "E00179",
           "E00043"
         ]
-      },
-      {
-        "target_guid": "0aFvTq1m96zgWbjq4TXV_5",
-        "distance_m": 14.483608572974212,
-        "edge_ids": [
-          "E00180",
-          "E00037"
-        ]
-      },
-      {
-        "target_guid": "1p4YfqvYLCyfRRiNruiahD",
-        "distance_m": 15.683608606992859,
-        "edge_ids": [
-          "E00180",
-          "E00039"
-        ]
-      },
-      {
-        "target_guid": "17HzXMa29CgeqdGTriCwwh",
-        "distance_m": 19.526647327792574,
-        "edge_ids": [
-          "E00180",
-          "E00039",
-          "E00061"
-        ]
-      },
-      {
-        "target_guid": "37NUOXsmX3z9p4Kk0VJikq",
-        "distance_m": 20.92664716962794,
-        "edge_ids": [
-          "E00180",
-          "E00039",
-          "E00072"
-        ]
-      },
-      {
-        "target_guid": "08uaDJHLH3FAZ6Hg9FwzkG",
-        "distance_m": 22.526647327792574,
-        "edge_ids": [
-          "E00180",
-          "E00039",
-          "E00046"
-        ]
-      },
-      {
-        "target_guid": "2ezLa6k3r22f7kZrwjKNLO",
-        "distance_m": 23.926647159268768,
-        "edge_ids": [
-          "E00180",
-          "E00039",
-          "E00070"
-        ]
-      },
-      {
-        "target_guid": "36$lV978n70fzaOS1aGkQb",
-        "distance_m": 26.926647155424796,
-        "edge_ids": [
-          "E00180",
-          "E00039",
-          "E00071"
-        ]
-      },
-      {
-        "target_guid": "3qz8vRMKXCHubRHdl$maGl",
-        "distance_m": 28.526647154221223,
-        "edge_ids": [
-          "E00180",
-          "E00039",
-          "E00073"
-        ]
-      },
-      {
-        "target_guid": "2VGdy0IID6LxPfFQdDE_rz",
-        "distance_m": 29.926647153420046,
-        "edge_ids": [
-          "E00180",
-          "E00039",
-          "E00068"
-        ]
-      },
-      {
-        "target_guid": "2dmNSROS54DQzD5NyEFXm$",
-        "distance_m": 32.92664715218933,
-        "edge_ids": [
-          "E00180",
-          "E00039",
-          "E00069"
-        ]
-      },
-      {
-        "target_guid": "0vTIWG60z84eKitb_eWAIR",
-        "distance_m": 34.32664732779257,
-        "edge_ids": [
-          "E00180",
-          "E00039",
-          "E00054"
-        ]
       }
     ],
     "35jd8lu1fDJAuZoKl4ldDk": [
@@ -39797,14 +36322,6 @@
         ]
       },
       {
-        "target_guid": "0aFvTq1m96zgWbjq4TXV_5",
-        "distance_m": 11.483608572974218,
-        "edge_ids": [
-          "E00201",
-          "E00037"
-        ]
-      },
-      {
         "target_guid": "3ZJxNn9Nz6HQakewV2F393",
         "distance_m": 11.521486779456456,
         "edge_ids": [
@@ -39820,99 +36337,10 @@
         ]
       },
       {
-        "target_guid": "1p4YfqvYLCyfRRiNruiahD",
-        "distance_m": 12.683608606992863,
-        "edge_ids": [
-          "E00201",
-          "E00039"
-        ]
-      },
-      {
         "target_guid": "2sSHD6n39BZQnSaHjLYpnc",
         "distance_m": 14.32148677945646,
         "edge_ids": [
           "E00216"
-        ]
-      },
-      {
-        "target_guid": "17HzXMa29CgeqdGTriCwwh",
-        "distance_m": 16.526647327792578,
-        "edge_ids": [
-          "E00201",
-          "E00039",
-          "E00061"
-        ]
-      },
-      {
-        "target_guid": "37NUOXsmX3z9p4Kk0VJikq",
-        "distance_m": 17.926647169627945,
-        "edge_ids": [
-          "E00201",
-          "E00039",
-          "E00072"
-        ]
-      },
-      {
-        "target_guid": "08uaDJHLH3FAZ6Hg9FwzkG",
-        "distance_m": 19.526647327792578,
-        "edge_ids": [
-          "E00201",
-          "E00039",
-          "E00046"
-        ]
-      },
-      {
-        "target_guid": "2ezLa6k3r22f7kZrwjKNLO",
-        "distance_m": 20.926647159268768,
-        "edge_ids": [
-          "E00201",
-          "E00039",
-          "E00070"
-        ]
-      },
-      {
-        "target_guid": "36$lV978n70fzaOS1aGkQb",
-        "distance_m": 23.9266471554248,
-        "edge_ids": [
-          "E00201",
-          "E00039",
-          "E00071"
-        ]
-      },
-      {
-        "target_guid": "3qz8vRMKXCHubRHdl$maGl",
-        "distance_m": 25.52664715422123,
-        "edge_ids": [
-          "E00201",
-          "E00039",
-          "E00073"
-        ]
-      },
-      {
-        "target_guid": "2VGdy0IID6LxPfFQdDE_rz",
-        "distance_m": 26.92664715342005,
-        "edge_ids": [
-          "E00201",
-          "E00039",
-          "E00068"
-        ]
-      },
-      {
-        "target_guid": "2dmNSROS54DQzD5NyEFXm$",
-        "distance_m": 29.926647152189332,
-        "edge_ids": [
-          "E00201",
-          "E00039",
-          "E00069"
-        ]
-      },
-      {
-        "target_guid": "0vTIWG60z84eKitb_eWAIR",
-        "distance_m": 31.32664732779258,
-        "edge_ids": [
-          "E00201",
-          "E00039",
-          "E00054"
         ]
       }
     ],
@@ -39946,26 +36374,10 @@
         ]
       },
       {
-        "target_guid": "0aFvTq1m96zgWbjq4TXV_5",
-        "distance_m": 8.483608572974218,
-        "edge_ids": [
-          "E00200",
-          "E00037"
-        ]
-      },
-      {
         "target_guid": "00RjztLorCQgcGEHv7fY3g",
         "distance_m": 8.521486779456456,
         "edge_ids": [
           "E00185"
-        ]
-      },
-      {
-        "target_guid": "1p4YfqvYLCyfRRiNruiahD",
-        "distance_m": 9.683608606992863,
-        "edge_ids": [
-          "E00200",
-          "E00039"
         ]
       },
       {
@@ -39991,15 +36403,6 @@
         ]
       },
       {
-        "target_guid": "17HzXMa29CgeqdGTriCwwh",
-        "distance_m": 13.526647327792578,
-        "edge_ids": [
-          "E00200",
-          "E00039",
-          "E00061"
-        ]
-      },
-      {
         "target_guid": "3ZJxNn9Nz6HQakewV2F393",
         "distance_m": 14.521486779456456,
         "edge_ids": [
@@ -40007,82 +36410,10 @@
         ]
       },
       {
-        "target_guid": "37NUOXsmX3z9p4Kk0VJikq",
-        "distance_m": 14.926647169627945,
-        "edge_ids": [
-          "E00200",
-          "E00039",
-          "E00072"
-        ]
-      },
-      {
-        "target_guid": "08uaDJHLH3FAZ6Hg9FwzkG",
-        "distance_m": 16.526647327792578,
-        "edge_ids": [
-          "E00200",
-          "E00039",
-          "E00046"
-        ]
-      },
-      {
         "target_guid": "2sSHD6n39BZQnSaHjLYpnc",
         "distance_m": 17.32148677945646,
         "edge_ids": [
           "E00215"
-        ]
-      },
-      {
-        "target_guid": "2ezLa6k3r22f7kZrwjKNLO",
-        "distance_m": 17.926647159268768,
-        "edge_ids": [
-          "E00200",
-          "E00039",
-          "E00070"
-        ]
-      },
-      {
-        "target_guid": "36$lV978n70fzaOS1aGkQb",
-        "distance_m": 20.9266471554248,
-        "edge_ids": [
-          "E00200",
-          "E00039",
-          "E00071"
-        ]
-      },
-      {
-        "target_guid": "3qz8vRMKXCHubRHdl$maGl",
-        "distance_m": 22.52664715422123,
-        "edge_ids": [
-          "E00200",
-          "E00039",
-          "E00073"
-        ]
-      },
-      {
-        "target_guid": "2VGdy0IID6LxPfFQdDE_rz",
-        "distance_m": 23.92664715342005,
-        "edge_ids": [
-          "E00200",
-          "E00039",
-          "E00068"
-        ]
-      },
-      {
-        "target_guid": "2dmNSROS54DQzD5NyEFXm$",
-        "distance_m": 26.926647152189332,
-        "edge_ids": [
-          "E00200",
-          "E00039",
-          "E00069"
-        ]
-      },
-      {
-        "target_guid": "0vTIWG60z84eKitb_eWAIR",
-        "distance_m": 28.32664732779258,
-        "edge_ids": [
-          "E00200",
-          "E00039",
-          "E00054"
         ]
       }
     ],
@@ -40149,113 +36480,6 @@
         "edge_ids": [
           "E00054"
         ]
-      },
-      {
-        "target_guid": "0aFvTq1m96zgWbjq4TXV_5",
-        "distance_m": 23.283208894201852,
-        "edge_ids": [
-          "E00054",
-          "E00038"
-        ]
-      },
-      {
-        "target_guid": "1MlsdMSb17ygNfEs7N22qC",
-        "distance_m": 24.483608787740497,
-        "edge_ids": [
-          "E00054",
-          "E00039"
-        ]
-      },
-      {
-        "target_guid": "1gw9pvArXFYfZkbYdrwJwh",
-        "distance_m": 28.32664732779258,
-        "edge_ids": [
-          "E00054",
-          "E00039",
-          "E00197"
-        ]
-      },
-      {
-        "target_guid": "32UdM49pfAMxiX5WyXhCuy",
-        "distance_m": 28.32664732779258,
-        "edge_ids": [
-          "E00054",
-          "E00039",
-          "E00200"
-        ]
-      },
-      {
-        "target_guid": "1d9QvK4Qv1Iem3fiUhniQB",
-        "distance_m": 29.726647327792577,
-        "edge_ids": [
-          "E00054",
-          "E00039",
-          "E00196"
-        ]
-      },
-      {
-        "target_guid": "35jd8lu1fDJAuZoKl4ldDk",
-        "distance_m": 31.32664732779258,
-        "edge_ids": [
-          "E00054",
-          "E00039",
-          "E00201"
-        ]
-      },
-      {
-        "target_guid": "00RjztLorCQgcGEHv7fY3g",
-        "distance_m": 34.32664732779257,
-        "edge_ids": [
-          "E00054",
-          "E00039",
-          "E00180"
-        ]
-      },
-      {
-        "target_guid": "2tu8_KoLfDpho5M9F1jtqL",
-        "distance_m": 37.32664732779257,
-        "edge_ids": [
-          "E00054",
-          "E00039",
-          "E00199"
-        ]
-      },
-      {
-        "target_guid": "0JdG5rMQr10RkgztM3HqwA",
-        "distance_m": 38.2107378628278,
-        "edge_ids": [
-          "E00054",
-          "E00039",
-          "E00196",
-          "E00099"
-        ]
-      },
-      {
-        "target_guid": "1BWbpTElb4dAcW2J6oyRrZ",
-        "distance_m": 38.62664732779258,
-        "edge_ids": [
-          "E00054",
-          "E00039",
-          "E00188"
-        ]
-      },
-      {
-        "target_guid": "3ZJxNn9Nz6HQakewV2F393",
-        "distance_m": 40.32664732779257,
-        "edge_ids": [
-          "E00054",
-          "E00039",
-          "E00202"
-        ]
-      },
-      {
-        "target_guid": "2sSHD6n39BZQnSaHjLYpnc",
-        "distance_m": 43.12664732779258,
-        "edge_ids": [
-          "E00054",
-          "E00039",
-          "E00198"
-        ]
       }
     ],
     "3qz8vRMKXCHubRHdl$maGl": [
@@ -40321,113 +36545,6 @@
         "edge_ids": [
           "E00073"
         ]
-      },
-      {
-        "target_guid": "0aFvTq1m96zgWbjq4TXV_5",
-        "distance_m": 17.4832087206305,
-        "edge_ids": [
-          "E00073",
-          "E00038"
-        ]
-      },
-      {
-        "target_guid": "1MlsdMSb17ygNfEs7N22qC",
-        "distance_m": 18.683608614169145,
-        "edge_ids": [
-          "E00073",
-          "E00039"
-        ]
-      },
-      {
-        "target_guid": "1gw9pvArXFYfZkbYdrwJwh",
-        "distance_m": 22.526647154221227,
-        "edge_ids": [
-          "E00073",
-          "E00039",
-          "E00197"
-        ]
-      },
-      {
-        "target_guid": "32UdM49pfAMxiX5WyXhCuy",
-        "distance_m": 22.526647154221227,
-        "edge_ids": [
-          "E00073",
-          "E00039",
-          "E00200"
-        ]
-      },
-      {
-        "target_guid": "1d9QvK4Qv1Iem3fiUhniQB",
-        "distance_m": 23.926647154221225,
-        "edge_ids": [
-          "E00073",
-          "E00039",
-          "E00196"
-        ]
-      },
-      {
-        "target_guid": "35jd8lu1fDJAuZoKl4ldDk",
-        "distance_m": 25.526647154221227,
-        "edge_ids": [
-          "E00073",
-          "E00039",
-          "E00201"
-        ]
-      },
-      {
-        "target_guid": "00RjztLorCQgcGEHv7fY3g",
-        "distance_m": 28.526647154221223,
-        "edge_ids": [
-          "E00073",
-          "E00039",
-          "E00180"
-        ]
-      },
-      {
-        "target_guid": "2tu8_KoLfDpho5M9F1jtqL",
-        "distance_m": 31.526647154221223,
-        "edge_ids": [
-          "E00073",
-          "E00039",
-          "E00199"
-        ]
-      },
-      {
-        "target_guid": "0JdG5rMQr10RkgztM3HqwA",
-        "distance_m": 32.41073768925644,
-        "edge_ids": [
-          "E00073",
-          "E00039",
-          "E00196",
-          "E00099"
-        ]
-      },
-      {
-        "target_guid": "1BWbpTElb4dAcW2J6oyRrZ",
-        "distance_m": 32.82664715422123,
-        "edge_ids": [
-          "E00073",
-          "E00039",
-          "E00188"
-        ]
-      },
-      {
-        "target_guid": "3ZJxNn9Nz6HQakewV2F393",
-        "distance_m": 34.52664715422122,
-        "edge_ids": [
-          "E00073",
-          "E00039",
-          "E00202"
-        ]
-      },
-      {
-        "target_guid": "2sSHD6n39BZQnSaHjLYpnc",
-        "distance_m": 37.32664715422123,
-        "edge_ids": [
-          "E00073",
-          "E00039",
-          "E00198"
-        ]
       }
     ],
     "08uaDJHLH3FAZ6Hg9FwzkG": [
@@ -40481,22 +36598,6 @@
         ]
       },
       {
-        "target_guid": "0aFvTq1m96zgWbjq4TXV_5",
-        "distance_m": 11.483208894201852,
-        "edge_ids": [
-          "E00046",
-          "E00038"
-        ]
-      },
-      {
-        "target_guid": "1MlsdMSb17ygNfEs7N22qC",
-        "distance_m": 12.683608787740496,
-        "edge_ids": [
-          "E00046",
-          "E00039"
-        ]
-      },
-      {
         "target_guid": "2dmNSROS54DQzD5NyEFXm$",
         "distance_m": 12.921486779456457,
         "edge_ids": [
@@ -40509,268 +36610,9 @@
         "edge_ids": [
           "E00044"
         ]
-      },
-      {
-        "target_guid": "1gw9pvArXFYfZkbYdrwJwh",
-        "distance_m": 16.526647327792578,
-        "edge_ids": [
-          "E00046",
-          "E00039",
-          "E00197"
-        ]
-      },
-      {
-        "target_guid": "32UdM49pfAMxiX5WyXhCuy",
-        "distance_m": 16.526647327792578,
-        "edge_ids": [
-          "E00046",
-          "E00039",
-          "E00200"
-        ]
-      },
-      {
-        "target_guid": "1d9QvK4Qv1Iem3fiUhniQB",
-        "distance_m": 17.926647327792576,
-        "edge_ids": [
-          "E00046",
-          "E00039",
-          "E00196"
-        ]
-      },
-      {
-        "target_guid": "35jd8lu1fDJAuZoKl4ldDk",
-        "distance_m": 19.526647327792578,
-        "edge_ids": [
-          "E00046",
-          "E00039",
-          "E00201"
-        ]
-      },
-      {
-        "target_guid": "00RjztLorCQgcGEHv7fY3g",
-        "distance_m": 22.526647327792574,
-        "edge_ids": [
-          "E00046",
-          "E00039",
-          "E00180"
-        ]
-      },
-      {
-        "target_guid": "2tu8_KoLfDpho5M9F1jtqL",
-        "distance_m": 25.526647327792574,
-        "edge_ids": [
-          "E00046",
-          "E00039",
-          "E00199"
-        ]
-      },
-      {
-        "target_guid": "0JdG5rMQr10RkgztM3HqwA",
-        "distance_m": 26.410737862827794,
-        "edge_ids": [
-          "E00046",
-          "E00039",
-          "E00196",
-          "E00099"
-        ]
-      },
-      {
-        "target_guid": "1BWbpTElb4dAcW2J6oyRrZ",
-        "distance_m": 26.82664732779258,
-        "edge_ids": [
-          "E00046",
-          "E00039",
-          "E00188"
-        ]
-      },
-      {
-        "target_guid": "3ZJxNn9Nz6HQakewV2F393",
-        "distance_m": 28.526647327792574,
-        "edge_ids": [
-          "E00046",
-          "E00039",
-          "E00202"
-        ]
-      },
-      {
-        "target_guid": "2sSHD6n39BZQnSaHjLYpnc",
-        "distance_m": 31.32664732779258,
-        "edge_ids": [
-          "E00046",
-          "E00039",
-          "E00198"
-        ]
       }
     ],
-    "0aFvTq1m96zgWbjq4TXV_5": [
-      {
-        "target_guid": "1p4YfqvYLCyfRRiNruiahD",
-        "distance_m": 4.640170173402136,
-        "edge_ids": [
-          "E00038"
-        ]
-      },
-      {
-        "target_guid": "1MlsdMSb17ygNfEs7N22qC",
-        "distance_m": 4.6405700329221355,
-        "edge_ids": [
-          "E00037"
-        ]
-      },
-      {
-        "target_guid": "17HzXMa29CgeqdGTriCwwh",
-        "distance_m": 8.483208894201852,
-        "edge_ids": [
-          "E00038",
-          "E00061"
-        ]
-      },
-      {
-        "target_guid": "1gw9pvArXFYfZkbYdrwJwh",
-        "distance_m": 8.483608572974216,
-        "edge_ids": [
-          "E00037",
-          "E00197"
-        ]
-      },
-      {
-        "target_guid": "32UdM49pfAMxiX5WyXhCuy",
-        "distance_m": 8.483608572974218,
-        "edge_ids": [
-          "E00037",
-          "E00200"
-        ]
-      },
-      {
-        "target_guid": "37NUOXsmX3z9p4Kk0VJikq",
-        "distance_m": 9.883208736037217,
-        "edge_ids": [
-          "E00038",
-          "E00072"
-        ]
-      },
-      {
-        "target_guid": "1d9QvK4Qv1Iem3fiUhniQB",
-        "distance_m": 9.883608572974214,
-        "edge_ids": [
-          "E00037",
-          "E00196"
-        ]
-      },
-      {
-        "target_guid": "08uaDJHLH3FAZ6Hg9FwzkG",
-        "distance_m": 11.483208894201852,
-        "edge_ids": [
-          "E00038",
-          "E00046"
-        ]
-      },
-      {
-        "target_guid": "35jd8lu1fDJAuZoKl4ldDk",
-        "distance_m": 11.483608572974218,
-        "edge_ids": [
-          "E00037",
-          "E00201"
-        ]
-      },
-      {
-        "target_guid": "2ezLa6k3r22f7kZrwjKNLO",
-        "distance_m": 12.883208725678042,
-        "edge_ids": [
-          "E00038",
-          "E00070"
-        ]
-      },
-      {
-        "target_guid": "00RjztLorCQgcGEHv7fY3g",
-        "distance_m": 14.483608572974212,
-        "edge_ids": [
-          "E00037",
-          "E00180"
-        ]
-      },
-      {
-        "target_guid": "36$lV978n70fzaOS1aGkQb",
-        "distance_m": 15.883208721834073,
-        "edge_ids": [
-          "E00038",
-          "E00071"
-        ]
-      },
-      {
-        "target_guid": "3qz8vRMKXCHubRHdl$maGl",
-        "distance_m": 17.4832087206305,
-        "edge_ids": [
-          "E00038",
-          "E00073"
-        ]
-      },
-      {
-        "target_guid": "2tu8_KoLfDpho5M9F1jtqL",
-        "distance_m": 17.483608572974212,
-        "edge_ids": [
-          "E00037",
-          "E00199"
-        ]
-      },
-      {
-        "target_guid": "0JdG5rMQr10RkgztM3HqwA",
-        "distance_m": 18.367699108009433,
-        "edge_ids": [
-          "E00037",
-          "E00196",
-          "E00099"
-        ]
-      },
-      {
-        "target_guid": "1BWbpTElb4dAcW2J6oyRrZ",
-        "distance_m": 18.783608572974217,
-        "edge_ids": [
-          "E00037",
-          "E00188"
-        ]
-      },
-      {
-        "target_guid": "2VGdy0IID6LxPfFQdDE_rz",
-        "distance_m": 18.883208719829323,
-        "edge_ids": [
-          "E00038",
-          "E00068"
-        ]
-      },
-      {
-        "target_guid": "3ZJxNn9Nz6HQakewV2F393",
-        "distance_m": 20.483608572974212,
-        "edge_ids": [
-          "E00037",
-          "E00202"
-        ]
-      },
-      {
-        "target_guid": "2dmNSROS54DQzD5NyEFXm$",
-        "distance_m": 21.883208718598606,
-        "edge_ids": [
-          "E00038",
-          "E00069"
-        ]
-      },
-      {
-        "target_guid": "0vTIWG60z84eKitb_eWAIR",
-        "distance_m": 23.283208894201852,
-        "edge_ids": [
-          "E00038",
-          "E00054"
-        ]
-      },
-      {
-        "target_guid": "2sSHD6n39BZQnSaHjLYpnc",
-        "distance_m": 23.283608572974217,
-        "edge_ids": [
-          "E00037",
-          "E00198"
-        ]
-      }
-    ],
+    "0aFvTq1m96zgWbjq4TXV_5": [],
     "1d9QvK4Qv1Iem3fiUhniQB": [
       {
         "target_guid": "1gw9pvArXFYfZkbYdrwJwh",
@@ -40815,26 +36657,10 @@
         ]
       },
       {
-        "target_guid": "0aFvTq1m96zgWbjq4TXV_5",
-        "distance_m": 9.883608572974214,
-        "edge_ids": [
-          "E00196",
-          "E00037"
-        ]
-      },
-      {
         "target_guid": "2tu8_KoLfDpho5M9F1jtqL",
         "distance_m": 10.121486779456456,
         "edge_ids": [
           "E00205"
-        ]
-      },
-      {
-        "target_guid": "1p4YfqvYLCyfRRiNruiahD",
-        "distance_m": 11.083608606992861,
-        "edge_ids": [
-          "E00196",
-          "E00039"
         ]
       },
       {
@@ -40852,91 +36678,10 @@
         ]
       },
       {
-        "target_guid": "17HzXMa29CgeqdGTriCwwh",
-        "distance_m": 14.926647327792576,
-        "edge_ids": [
-          "E00196",
-          "E00039",
-          "E00061"
-        ]
-      },
-      {
         "target_guid": "2sSHD6n39BZQnSaHjLYpnc",
         "distance_m": 15.92148677945646,
         "edge_ids": [
           "E00204"
-        ]
-      },
-      {
-        "target_guid": "37NUOXsmX3z9p4Kk0VJikq",
-        "distance_m": 16.326647169627943,
-        "edge_ids": [
-          "E00196",
-          "E00039",
-          "E00072"
-        ]
-      },
-      {
-        "target_guid": "08uaDJHLH3FAZ6Hg9FwzkG",
-        "distance_m": 17.926647327792576,
-        "edge_ids": [
-          "E00196",
-          "E00039",
-          "E00046"
-        ]
-      },
-      {
-        "target_guid": "2ezLa6k3r22f7kZrwjKNLO",
-        "distance_m": 19.326647159268767,
-        "edge_ids": [
-          "E00196",
-          "E00039",
-          "E00070"
-        ]
-      },
-      {
-        "target_guid": "36$lV978n70fzaOS1aGkQb",
-        "distance_m": 22.326647155424798,
-        "edge_ids": [
-          "E00196",
-          "E00039",
-          "E00071"
-        ]
-      },
-      {
-        "target_guid": "3qz8vRMKXCHubRHdl$maGl",
-        "distance_m": 23.92664715422123,
-        "edge_ids": [
-          "E00196",
-          "E00039",
-          "E00073"
-        ]
-      },
-      {
-        "target_guid": "2VGdy0IID6LxPfFQdDE_rz",
-        "distance_m": 25.326647153420048,
-        "edge_ids": [
-          "E00196",
-          "E00039",
-          "E00068"
-        ]
-      },
-      {
-        "target_guid": "2dmNSROS54DQzD5NyEFXm$",
-        "distance_m": 28.32664715218933,
-        "edge_ids": [
-          "E00196",
-          "E00039",
-          "E00069"
-        ]
-      },
-      {
-        "target_guid": "0vTIWG60z84eKitb_eWAIR",
-        "distance_m": 29.726647327792577,
-        "edge_ids": [
-          "E00196",
-          "E00039",
-          "E00054"
         ]
       }
     ],
@@ -41010,103 +36755,6 @@
         "edge_ids": [
           "E00188"
         ]
-      },
-      {
-        "target_guid": "0aFvTq1m96zgWbjq4TXV_5",
-        "distance_m": 18.783608572974217,
-        "edge_ids": [
-          "E00188",
-          "E00037"
-        ]
-      },
-      {
-        "target_guid": "1p4YfqvYLCyfRRiNruiahD",
-        "distance_m": 19.983608606992863,
-        "edge_ids": [
-          "E00188",
-          "E00039"
-        ]
-      },
-      {
-        "target_guid": "17HzXMa29CgeqdGTriCwwh",
-        "distance_m": 23.82664732779258,
-        "edge_ids": [
-          "E00188",
-          "E00039",
-          "E00061"
-        ]
-      },
-      {
-        "target_guid": "37NUOXsmX3z9p4Kk0VJikq",
-        "distance_m": 25.226647169627945,
-        "edge_ids": [
-          "E00188",
-          "E00039",
-          "E00072"
-        ]
-      },
-      {
-        "target_guid": "08uaDJHLH3FAZ6Hg9FwzkG",
-        "distance_m": 26.82664732779258,
-        "edge_ids": [
-          "E00188",
-          "E00039",
-          "E00046"
-        ]
-      },
-      {
-        "target_guid": "2ezLa6k3r22f7kZrwjKNLO",
-        "distance_m": 28.226647159268772,
-        "edge_ids": [
-          "E00188",
-          "E00039",
-          "E00070"
-        ]
-      },
-      {
-        "target_guid": "36$lV978n70fzaOS1aGkQb",
-        "distance_m": 31.2266471554248,
-        "edge_ids": [
-          "E00188",
-          "E00039",
-          "E00071"
-        ]
-      },
-      {
-        "target_guid": "3qz8vRMKXCHubRHdl$maGl",
-        "distance_m": 32.82664715422123,
-        "edge_ids": [
-          "E00188",
-          "E00039",
-          "E00073"
-        ]
-      },
-      {
-        "target_guid": "2VGdy0IID6LxPfFQdDE_rz",
-        "distance_m": 34.226647153420046,
-        "edge_ids": [
-          "E00188",
-          "E00039",
-          "E00068"
-        ]
-      },
-      {
-        "target_guid": "2dmNSROS54DQzD5NyEFXm$",
-        "distance_m": 37.22664715218933,
-        "edge_ids": [
-          "E00188",
-          "E00039",
-          "E00069"
-        ]
-      },
-      {
-        "target_guid": "0vTIWG60z84eKitb_eWAIR",
-        "distance_m": 38.62664732779258,
-        "edge_ids": [
-          "E00188",
-          "E00039",
-          "E00054"
-        ]
       }
     ],
     "1gw9pvArXFYfZkbYdrwJwh": [
@@ -41139,26 +36787,10 @@
         ]
       },
       {
-        "target_guid": "0aFvTq1m96zgWbjq4TXV_5",
-        "distance_m": 8.483608572974216,
-        "edge_ids": [
-          "E00197",
-          "E00037"
-        ]
-      },
-      {
         "target_guid": "00RjztLorCQgcGEHv7fY3g",
         "distance_m": 8.521486779456454,
         "edge_ids": [
           "E00182"
-        ]
-      },
-      {
-        "target_guid": "1p4YfqvYLCyfRRiNruiahD",
-        "distance_m": 9.683608606992863,
-        "edge_ids": [
-          "E00197",
-          "E00039"
         ]
       },
       {
@@ -41184,15 +36816,6 @@
         ]
       },
       {
-        "target_guid": "17HzXMa29CgeqdGTriCwwh",
-        "distance_m": 13.526647327792578,
-        "edge_ids": [
-          "E00197",
-          "E00039",
-          "E00061"
-        ]
-      },
-      {
         "target_guid": "3ZJxNn9Nz6HQakewV2F393",
         "distance_m": 14.521486779456454,
         "edge_ids": [
@@ -41200,82 +36823,10 @@
         ]
       },
       {
-        "target_guid": "37NUOXsmX3z9p4Kk0VJikq",
-        "distance_m": 14.926647169627945,
-        "edge_ids": [
-          "E00197",
-          "E00039",
-          "E00072"
-        ]
-      },
-      {
-        "target_guid": "08uaDJHLH3FAZ6Hg9FwzkG",
-        "distance_m": 16.526647327792578,
-        "edge_ids": [
-          "E00197",
-          "E00039",
-          "E00046"
-        ]
-      },
-      {
         "target_guid": "2sSHD6n39BZQnSaHjLYpnc",
         "distance_m": 17.321486779456457,
         "edge_ids": [
           "E00209"
-        ]
-      },
-      {
-        "target_guid": "2ezLa6k3r22f7kZrwjKNLO",
-        "distance_m": 17.926647159268768,
-        "edge_ids": [
-          "E00197",
-          "E00039",
-          "E00070"
-        ]
-      },
-      {
-        "target_guid": "36$lV978n70fzaOS1aGkQb",
-        "distance_m": 20.9266471554248,
-        "edge_ids": [
-          "E00197",
-          "E00039",
-          "E00071"
-        ]
-      },
-      {
-        "target_guid": "3qz8vRMKXCHubRHdl$maGl",
-        "distance_m": 22.52664715422123,
-        "edge_ids": [
-          "E00197",
-          "E00039",
-          "E00073"
-        ]
-      },
-      {
-        "target_guid": "2VGdy0IID6LxPfFQdDE_rz",
-        "distance_m": 23.92664715342005,
-        "edge_ids": [
-          "E00197",
-          "E00039",
-          "E00068"
-        ]
-      },
-      {
-        "target_guid": "2dmNSROS54DQzD5NyEFXm$",
-        "distance_m": 26.926647152189332,
-        "edge_ids": [
-          "E00197",
-          "E00039",
-          "E00069"
-        ]
-      },
-      {
-        "target_guid": "0vTIWG60z84eKitb_eWAIR",
-        "distance_m": 28.32664732779258,
-        "edge_ids": [
-          "E00197",
-          "E00039",
-          "E00054"
         ]
       }
     ],
@@ -41357,114 +36908,6 @@
           "E00043",
           "E00191"
         ]
-      },
-      {
-        "target_guid": "0aFvTq1m96zgWbjq4TXV_5",
-        "distance_m": 18.367699108009433,
-        "edge_ids": [
-          "E00099",
-          "E00196",
-          "E00037"
-        ]
-      },
-      {
-        "target_guid": "1p4YfqvYLCyfRRiNruiahD",
-        "distance_m": 19.56769914202808,
-        "edge_ids": [
-          "E00099",
-          "E00196",
-          "E00039"
-        ]
-      },
-      {
-        "target_guid": "17HzXMa29CgeqdGTriCwwh",
-        "distance_m": 23.410737862827794,
-        "edge_ids": [
-          "E00099",
-          "E00196",
-          "E00039",
-          "E00061"
-        ]
-      },
-      {
-        "target_guid": "37NUOXsmX3z9p4Kk0VJikq",
-        "distance_m": 24.81073770466316,
-        "edge_ids": [
-          "E00099",
-          "E00196",
-          "E00039",
-          "E00072"
-        ]
-      },
-      {
-        "target_guid": "08uaDJHLH3FAZ6Hg9FwzkG",
-        "distance_m": 26.410737862827794,
-        "edge_ids": [
-          "E00099",
-          "E00196",
-          "E00039",
-          "E00046"
-        ]
-      },
-      {
-        "target_guid": "2ezLa6k3r22f7kZrwjKNLO",
-        "distance_m": 27.810737694303988,
-        "edge_ids": [
-          "E00099",
-          "E00196",
-          "E00039",
-          "E00070"
-        ]
-      },
-      {
-        "target_guid": "36$lV978n70fzaOS1aGkQb",
-        "distance_m": 30.810737690460016,
-        "edge_ids": [
-          "E00099",
-          "E00196",
-          "E00039",
-          "E00071"
-        ]
-      },
-      {
-        "target_guid": "3qz8vRMKXCHubRHdl$maGl",
-        "distance_m": 32.41073768925644,
-        "edge_ids": [
-          "E00099",
-          "E00196",
-          "E00039",
-          "E00073"
-        ]
-      },
-      {
-        "target_guid": "2VGdy0IID6LxPfFQdDE_rz",
-        "distance_m": 33.81073768845526,
-        "edge_ids": [
-          "E00099",
-          "E00196",
-          "E00039",
-          "E00068"
-        ]
-      },
-      {
-        "target_guid": "2dmNSROS54DQzD5NyEFXm$",
-        "distance_m": 36.810737687224545,
-        "edge_ids": [
-          "E00099",
-          "E00196",
-          "E00039",
-          "E00069"
-        ]
-      },
-      {
-        "target_guid": "0vTIWG60z84eKitb_eWAIR",
-        "distance_m": 38.2107378628278,
-        "edge_ids": [
-          "E00099",
-          "E00196",
-          "E00039",
-          "E00054"
-        ]
       }
     ],
     "1p4YfqvYLCyfRRiNruiahD": [
@@ -41476,24 +36919,10 @@
         ]
       },
       {
-        "target_guid": "0aFvTq1m96zgWbjq4TXV_5",
-        "distance_m": 4.640170173402136,
-        "edge_ids": [
-          "E00038"
-        ]
-      },
-      {
         "target_guid": "37NUOXsmX3z9p4Kk0VJikq",
         "distance_m": 5.243038562635081,
         "edge_ids": [
           "E00072"
-        ]
-      },
-      {
-        "target_guid": "1MlsdMSb17ygNfEs7N22qC",
-        "distance_m": 5.840570066940781,
-        "edge_ids": [
-          "E00039"
         ]
       },
       {
@@ -41511,42 +36940,10 @@
         ]
       },
       {
-        "target_guid": "1gw9pvArXFYfZkbYdrwJwh",
-        "distance_m": 9.683608606992863,
-        "edge_ids": [
-          "E00039",
-          "E00197"
-        ]
-      },
-      {
-        "target_guid": "32UdM49pfAMxiX5WyXhCuy",
-        "distance_m": 9.683608606992863,
-        "edge_ids": [
-          "E00039",
-          "E00200"
-        ]
-      },
-      {
-        "target_guid": "1d9QvK4Qv1Iem3fiUhniQB",
-        "distance_m": 11.083608606992861,
-        "edge_ids": [
-          "E00039",
-          "E00196"
-        ]
-      },
-      {
         "target_guid": "36$lV978n70fzaOS1aGkQb",
         "distance_m": 11.243038548431937,
         "edge_ids": [
           "E00071"
-        ]
-      },
-      {
-        "target_guid": "35jd8lu1fDJAuZoKl4ldDk",
-        "distance_m": 12.683608606992863,
-        "edge_ids": [
-          "E00039",
-          "E00201"
         ]
       },
       {
@@ -41564,14 +36961,6 @@
         ]
       },
       {
-        "target_guid": "00RjztLorCQgcGEHv7fY3g",
-        "distance_m": 15.683608606992859,
-        "edge_ids": [
-          "E00039",
-          "E00180"
-        ]
-      },
-      {
         "target_guid": "2dmNSROS54DQzD5NyEFXm$",
         "distance_m": 17.24303854519647,
         "edge_ids": [
@@ -41583,47 +36972,6 @@
         "distance_m": 18.643038720799716,
         "edge_ids": [
           "E00054"
-        ]
-      },
-      {
-        "target_guid": "2tu8_KoLfDpho5M9F1jtqL",
-        "distance_m": 18.68360860699286,
-        "edge_ids": [
-          "E00039",
-          "E00199"
-        ]
-      },
-      {
-        "target_guid": "0JdG5rMQr10RkgztM3HqwA",
-        "distance_m": 19.567699142028083,
-        "edge_ids": [
-          "E00039",
-          "E00196",
-          "E00099"
-        ]
-      },
-      {
-        "target_guid": "1BWbpTElb4dAcW2J6oyRrZ",
-        "distance_m": 19.983608606992863,
-        "edge_ids": [
-          "E00039",
-          "E00188"
-        ]
-      },
-      {
-        "target_guid": "3ZJxNn9Nz6HQakewV2F393",
-        "distance_m": 21.68360860699286,
-        "edge_ids": [
-          "E00039",
-          "E00202"
-        ]
-      },
-      {
-        "target_guid": "2sSHD6n39BZQnSaHjLYpnc",
-        "distance_m": 24.483608606992863,
-        "edge_ids": [
-          "E00039",
-          "E00198"
         ]
       }
     ],
@@ -41643,24 +36991,10 @@
         ]
       },
       {
-        "target_guid": "0aFvTq1m96zgWbjq4TXV_5",
-        "distance_m": 4.6405700329221355,
-        "edge_ids": [
-          "E00037"
-        ]
-      },
-      {
         "target_guid": "1d9QvK4Qv1Iem3fiUhniQB",
         "distance_m": 5.243038540052079,
         "edge_ids": [
           "E00196"
-        ]
-      },
-      {
-        "target_guid": "1p4YfqvYLCyfRRiNruiahD",
-        "distance_m": 5.840570066940781,
-        "edge_ids": [
-          "E00039"
         ]
       },
       {
@@ -41671,34 +37005,10 @@
         ]
       },
       {
-        "target_guid": "17HzXMa29CgeqdGTriCwwh",
-        "distance_m": 9.683608787740496,
-        "edge_ids": [
-          "E00039",
-          "E00061"
-        ]
-      },
-      {
         "target_guid": "00RjztLorCQgcGEHv7fY3g",
         "distance_m": 9.843038540052078,
         "edge_ids": [
           "E00180"
-        ]
-      },
-      {
-        "target_guid": "37NUOXsmX3z9p4Kk0VJikq",
-        "distance_m": 11.083608629575863,
-        "edge_ids": [
-          "E00039",
-          "E00072"
-        ]
-      },
-      {
-        "target_guid": "08uaDJHLH3FAZ6Hg9FwzkG",
-        "distance_m": 12.683608787740496,
-        "edge_ids": [
-          "E00039",
-          "E00046"
         ]
       },
       {
@@ -41717,14 +37027,6 @@
         ]
       },
       {
-        "target_guid": "2ezLa6k3r22f7kZrwjKNLO",
-        "distance_m": 14.083608619216688,
-        "edge_ids": [
-          "E00039",
-          "E00070"
-        ]
-      },
-      {
         "target_guid": "1BWbpTElb4dAcW2J6oyRrZ",
         "distance_m": 14.143038540052082,
         "edge_ids": [
@@ -41739,50 +37041,10 @@
         ]
       },
       {
-        "target_guid": "36$lV978n70fzaOS1aGkQb",
-        "distance_m": 17.083608615372718,
-        "edge_ids": [
-          "E00039",
-          "E00071"
-        ]
-      },
-      {
         "target_guid": "2sSHD6n39BZQnSaHjLYpnc",
         "distance_m": 18.643038540052082,
         "edge_ids": [
           "E00198"
-        ]
-      },
-      {
-        "target_guid": "3qz8vRMKXCHubRHdl$maGl",
-        "distance_m": 18.683608614169145,
-        "edge_ids": [
-          "E00039",
-          "E00073"
-        ]
-      },
-      {
-        "target_guid": "2VGdy0IID6LxPfFQdDE_rz",
-        "distance_m": 20.083608613367968,
-        "edge_ids": [
-          "E00039",
-          "E00068"
-        ]
-      },
-      {
-        "target_guid": "2dmNSROS54DQzD5NyEFXm$",
-        "distance_m": 23.08360861213725,
-        "edge_ids": [
-          "E00039",
-          "E00069"
-        ]
-      },
-      {
-        "target_guid": "0vTIWG60z84eKitb_eWAIR",
-        "distance_m": 24.483608787740497,
-        "edge_ids": [
-          "E00039",
-          "E00054"
         ]
       }
     ],
@@ -41816,22 +37078,6 @@
         ]
       },
       {
-        "target_guid": "2rfNFYnCT2WAXMkqZ5PiDc",
-        "distance_m": 8.483208894201852,
-        "edge_ids": [
-          "E00303",
-          "E00102"
-        ]
-      },
-      {
-        "target_guid": "2N6esOMjP29AvhRLQ1Jz3$",
-        "distance_m": 9.683608787740496,
-        "edge_ids": [
-          "E00303",
-          "E00101"
-        ]
-      },
-      {
         "target_guid": "2ijDjejvTCZvZnfGVKFht6",
         "distance_m": 9.921486779456458,
         "edge_ids": [
@@ -41853,24 +37099,6 @@
         ]
       },
       {
-        "target_guid": "0HthpQNkzAiuSXm9HWsQaw",
-        "distance_m": 13.526647327792578,
-        "edge_ids": [
-          "E00303",
-          "E00101",
-          "E00115"
-        ]
-      },
-      {
-        "target_guid": "2wCVZFSRnBZ8YJ5Ri$bwG7",
-        "distance_m": 13.526647327792578,
-        "edge_ids": [
-          "E00303",
-          "E00101",
-          "E00139"
-        ]
-      },
-      {
         "target_guid": "2VJpmvlMLEvOKD0Mb9hAiw",
         "distance_m": 15.921486779456458,
         "edge_ids": [
@@ -41878,73 +37106,10 @@
         ]
       },
       {
-        "target_guid": "0CFMpIkEzADxWz$xDSGgek",
-        "distance_m": 16.526647327792578,
-        "edge_ids": [
-          "E00303",
-          "E00101",
-          "E00107"
-        ]
-      },
-      {
         "target_guid": "1EjnchXi9Esx$bY6vHG2RD",
         "distance_m": 17.321486779456457,
         "edge_ids": [
           "E00287"
-        ]
-      },
-      {
-        "target_guid": "2h5A513TXAAhxsa3$Armxt",
-        "distance_m": 17.926647327792576,
-        "edge_ids": [
-          "E00303",
-          "E00101",
-          "E00138"
-        ]
-      },
-      {
-        "target_guid": "3uYK2H0E52Qhz8bK3APcca",
-        "distance_m": 19.526647327792574,
-        "edge_ids": [
-          "E00303",
-          "E00101",
-          "E00141"
-        ]
-      },
-      {
-        "target_guid": "24UZuOfCf3JhP_9U8SWMuK",
-        "distance_m": 22.526647327792574,
-        "edge_ids": [
-          "E00303",
-          "E00101",
-          "E00133"
-        ]
-      },
-      {
-        "target_guid": "2$R4rUG1nFkBAylN9aGNhb",
-        "distance_m": 23.92664732779258,
-        "edge_ids": [
-          "E00303",
-          "E00101",
-          "E00128"
-        ]
-      },
-      {
-        "target_guid": "3mQi89EHb4rOWufyKZfZhB",
-        "distance_m": 25.526647327792574,
-        "edge_ids": [
-          "E00303",
-          "E00101",
-          "E00140"
-        ]
-      },
-      {
-        "target_guid": "1ufhCZbhH2Ifud2RWdYCPS",
-        "distance_m": 28.32664732779258,
-        "edge_ids": [
-          "E00303",
-          "E00101",
-          "E00122"
         ]
       }
     ],
@@ -41985,26 +37150,10 @@
         ]
       },
       {
-        "target_guid": "2rfNFYnCT2WAXMkqZ5PiDc",
-        "distance_m": 9.88320889420185,
-        "edge_ids": [
-          "E00313",
-          "E00102"
-        ]
-      },
-      {
         "target_guid": "0o6iTaAHzAQ9cd4xHGAaOG",
         "distance_m": 10.121486779456458,
         "edge_ids": [
           "E00284"
-        ]
-      },
-      {
-        "target_guid": "2N6esOMjP29AvhRLQ1Jz3$",
-        "distance_m": 11.083608787740495,
-        "edge_ids": [
-          "E00313",
-          "E00101"
         ]
       },
       {
@@ -42022,91 +37171,10 @@
         ]
       },
       {
-        "target_guid": "0HthpQNkzAiuSXm9HWsQaw",
-        "distance_m": 14.926647327792576,
-        "edge_ids": [
-          "E00313",
-          "E00101",
-          "E00115"
-        ]
-      },
-      {
-        "target_guid": "2wCVZFSRnBZ8YJ5Ri$bwG7",
-        "distance_m": 14.926647327792576,
-        "edge_ids": [
-          "E00313",
-          "E00101",
-          "E00139"
-        ]
-      },
-      {
         "target_guid": "1EjnchXi9Esx$bY6vHG2RD",
         "distance_m": 15.921486779456458,
         "edge_ids": [
           "E00291"
-        ]
-      },
-      {
-        "target_guid": "0CFMpIkEzADxWz$xDSGgek",
-        "distance_m": 17.926647327792576,
-        "edge_ids": [
-          "E00313",
-          "E00101",
-          "E00107"
-        ]
-      },
-      {
-        "target_guid": "2h5A513TXAAhxsa3$Armxt",
-        "distance_m": 19.326647327792575,
-        "edge_ids": [
-          "E00313",
-          "E00101",
-          "E00138"
-        ]
-      },
-      {
-        "target_guid": "3uYK2H0E52Qhz8bK3APcca",
-        "distance_m": 20.926647327792573,
-        "edge_ids": [
-          "E00313",
-          "E00101",
-          "E00141"
-        ]
-      },
-      {
-        "target_guid": "24UZuOfCf3JhP_9U8SWMuK",
-        "distance_m": 23.926647327792573,
-        "edge_ids": [
-          "E00313",
-          "E00101",
-          "E00133"
-        ]
-      },
-      {
-        "target_guid": "2$R4rUG1nFkBAylN9aGNhb",
-        "distance_m": 25.32664732779258,
-        "edge_ids": [
-          "E00313",
-          "E00101",
-          "E00128"
-        ]
-      },
-      {
-        "target_guid": "3mQi89EHb4rOWufyKZfZhB",
-        "distance_m": 26.926647327792573,
-        "edge_ids": [
-          "E00313",
-          "E00101",
-          "E00140"
-        ]
-      },
-      {
-        "target_guid": "1ufhCZbhH2Ifud2RWdYCPS",
-        "distance_m": 29.726647327792577,
-        "edge_ids": [
-          "E00313",
-          "E00101",
-          "E00122"
         ]
       }
     ],
@@ -42173,103 +37241,6 @@
         "edge_ids": [
           "E00312"
         ]
-      },
-      {
-        "target_guid": "2rfNFYnCT2WAXMkqZ5PiDc",
-        "distance_m": 18.88320889420185,
-        "edge_ids": [
-          "E00312",
-          "E00102"
-        ]
-      },
-      {
-        "target_guid": "2N6esOMjP29AvhRLQ1Jz3$",
-        "distance_m": 20.083608787740495,
-        "edge_ids": [
-          "E00312",
-          "E00101"
-        ]
-      },
-      {
-        "target_guid": "0HthpQNkzAiuSXm9HWsQaw",
-        "distance_m": 23.926647327792576,
-        "edge_ids": [
-          "E00312",
-          "E00101",
-          "E00115"
-        ]
-      },
-      {
-        "target_guid": "2wCVZFSRnBZ8YJ5Ri$bwG7",
-        "distance_m": 23.926647327792576,
-        "edge_ids": [
-          "E00312",
-          "E00101",
-          "E00139"
-        ]
-      },
-      {
-        "target_guid": "0CFMpIkEzADxWz$xDSGgek",
-        "distance_m": 26.926647327792576,
-        "edge_ids": [
-          "E00312",
-          "E00101",
-          "E00107"
-        ]
-      },
-      {
-        "target_guid": "2h5A513TXAAhxsa3$Armxt",
-        "distance_m": 28.326647327792575,
-        "edge_ids": [
-          "E00312",
-          "E00101",
-          "E00138"
-        ]
-      },
-      {
-        "target_guid": "3uYK2H0E52Qhz8bK3APcca",
-        "distance_m": 29.926647327792573,
-        "edge_ids": [
-          "E00312",
-          "E00101",
-          "E00141"
-        ]
-      },
-      {
-        "target_guid": "24UZuOfCf3JhP_9U8SWMuK",
-        "distance_m": 32.92664732779257,
-        "edge_ids": [
-          "E00312",
-          "E00101",
-          "E00133"
-        ]
-      },
-      {
-        "target_guid": "2$R4rUG1nFkBAylN9aGNhb",
-        "distance_m": 34.32664732779258,
-        "edge_ids": [
-          "E00312",
-          "E00101",
-          "E00128"
-        ]
-      },
-      {
-        "target_guid": "3mQi89EHb4rOWufyKZfZhB",
-        "distance_m": 35.92664732779257,
-        "edge_ids": [
-          "E00312",
-          "E00101",
-          "E00140"
-        ]
-      },
-      {
-        "target_guid": "1ufhCZbhH2Ifud2RWdYCPS",
-        "distance_m": 38.72664732779258,
-        "edge_ids": [
-          "E00312",
-          "E00101",
-          "E00122"
-        ]
       }
     ],
     "2ijDjejvTCZvZnfGVKFht6": [
@@ -42335,103 +37306,6 @@
         "edge_ids": [
           "E00310"
         ]
-      },
-      {
-        "target_guid": "2rfNFYnCT2WAXMkqZ5PiDc",
-        "distance_m": 15.88320889420185,
-        "edge_ids": [
-          "E00310",
-          "E00102"
-        ]
-      },
-      {
-        "target_guid": "2N6esOMjP29AvhRLQ1Jz3$",
-        "distance_m": 17.083608787740495,
-        "edge_ids": [
-          "E00310",
-          "E00101"
-        ]
-      },
-      {
-        "target_guid": "0HthpQNkzAiuSXm9HWsQaw",
-        "distance_m": 20.926647327792576,
-        "edge_ids": [
-          "E00310",
-          "E00101",
-          "E00115"
-        ]
-      },
-      {
-        "target_guid": "2wCVZFSRnBZ8YJ5Ri$bwG7",
-        "distance_m": 20.926647327792576,
-        "edge_ids": [
-          "E00310",
-          "E00101",
-          "E00139"
-        ]
-      },
-      {
-        "target_guid": "0CFMpIkEzADxWz$xDSGgek",
-        "distance_m": 23.926647327792576,
-        "edge_ids": [
-          "E00310",
-          "E00101",
-          "E00107"
-        ]
-      },
-      {
-        "target_guid": "2h5A513TXAAhxsa3$Armxt",
-        "distance_m": 25.326647327792575,
-        "edge_ids": [
-          "E00310",
-          "E00101",
-          "E00138"
-        ]
-      },
-      {
-        "target_guid": "3uYK2H0E52Qhz8bK3APcca",
-        "distance_m": 26.926647327792573,
-        "edge_ids": [
-          "E00310",
-          "E00101",
-          "E00141"
-        ]
-      },
-      {
-        "target_guid": "24UZuOfCf3JhP_9U8SWMuK",
-        "distance_m": 29.926647327792573,
-        "edge_ids": [
-          "E00310",
-          "E00101",
-          "E00133"
-        ]
-      },
-      {
-        "target_guid": "2$R4rUG1nFkBAylN9aGNhb",
-        "distance_m": 31.32664732779258,
-        "edge_ids": [
-          "E00310",
-          "E00101",
-          "E00128"
-        ]
-      },
-      {
-        "target_guid": "3mQi89EHb4rOWufyKZfZhB",
-        "distance_m": 32.92664732779257,
-        "edge_ids": [
-          "E00310",
-          "E00101",
-          "E00140"
-        ]
-      },
-      {
-        "target_guid": "1ufhCZbhH2Ifud2RWdYCPS",
-        "distance_m": 35.72664732779258,
-        "edge_ids": [
-          "E00310",
-          "E00101",
-          "E00122"
-        ]
       }
     ],
     "0WVkDf7jjAGhdceJ18iI2g": [
@@ -42492,107 +37366,10 @@
         ]
       },
       {
-        "target_guid": "2rfNFYnCT2WAXMkqZ5PiDc",
-        "distance_m": 12.88320889420185,
-        "edge_ids": [
-          "E00277",
-          "E00102"
-        ]
-      },
-      {
         "target_guid": "1EjnchXi9Esx$bY6vHG2RD",
         "distance_m": 12.921486779456458,
         "edge_ids": [
           "E00270"
-        ]
-      },
-      {
-        "target_guid": "2N6esOMjP29AvhRLQ1Jz3$",
-        "distance_m": 14.083608787740495,
-        "edge_ids": [
-          "E00277",
-          "E00101"
-        ]
-      },
-      {
-        "target_guid": "0HthpQNkzAiuSXm9HWsQaw",
-        "distance_m": 17.926647327792576,
-        "edge_ids": [
-          "E00277",
-          "E00101",
-          "E00115"
-        ]
-      },
-      {
-        "target_guid": "2wCVZFSRnBZ8YJ5Ri$bwG7",
-        "distance_m": 17.926647327792576,
-        "edge_ids": [
-          "E00277",
-          "E00101",
-          "E00139"
-        ]
-      },
-      {
-        "target_guid": "0CFMpIkEzADxWz$xDSGgek",
-        "distance_m": 20.926647327792576,
-        "edge_ids": [
-          "E00277",
-          "E00101",
-          "E00107"
-        ]
-      },
-      {
-        "target_guid": "2h5A513TXAAhxsa3$Armxt",
-        "distance_m": 22.326647327792575,
-        "edge_ids": [
-          "E00277",
-          "E00101",
-          "E00138"
-        ]
-      },
-      {
-        "target_guid": "3uYK2H0E52Qhz8bK3APcca",
-        "distance_m": 23.926647327792573,
-        "edge_ids": [
-          "E00277",
-          "E00101",
-          "E00141"
-        ]
-      },
-      {
-        "target_guid": "24UZuOfCf3JhP_9U8SWMuK",
-        "distance_m": 26.926647327792573,
-        "edge_ids": [
-          "E00277",
-          "E00101",
-          "E00133"
-        ]
-      },
-      {
-        "target_guid": "2$R4rUG1nFkBAylN9aGNhb",
-        "distance_m": 28.32664732779258,
-        "edge_ids": [
-          "E00277",
-          "E00101",
-          "E00128"
-        ]
-      },
-      {
-        "target_guid": "3mQi89EHb4rOWufyKZfZhB",
-        "distance_m": 29.926647327792573,
-        "edge_ids": [
-          "E00277",
-          "E00101",
-          "E00140"
-        ]
-      },
-      {
-        "target_guid": "1ufhCZbhH2Ifud2RWdYCPS",
-        "distance_m": 32.72664732779258,
-        "edge_ids": [
-          "E00277",
-          "E00101",
-          "E00122"
         ]
       }
     ],
@@ -42659,103 +37436,6 @@
         "edge_ids": [
           "E00307"
         ]
-      },
-      {
-        "target_guid": "2rfNFYnCT2WAXMkqZ5PiDc",
-        "distance_m": 21.88320889420185,
-        "edge_ids": [
-          "E00307",
-          "E00102"
-        ]
-      },
-      {
-        "target_guid": "2N6esOMjP29AvhRLQ1Jz3$",
-        "distance_m": 23.083608787740495,
-        "edge_ids": [
-          "E00307",
-          "E00101"
-        ]
-      },
-      {
-        "target_guid": "0HthpQNkzAiuSXm9HWsQaw",
-        "distance_m": 26.926647327792576,
-        "edge_ids": [
-          "E00307",
-          "E00101",
-          "E00115"
-        ]
-      },
-      {
-        "target_guid": "2wCVZFSRnBZ8YJ5Ri$bwG7",
-        "distance_m": 26.926647327792576,
-        "edge_ids": [
-          "E00307",
-          "E00101",
-          "E00139"
-        ]
-      },
-      {
-        "target_guid": "0CFMpIkEzADxWz$xDSGgek",
-        "distance_m": 29.926647327792576,
-        "edge_ids": [
-          "E00307",
-          "E00101",
-          "E00107"
-        ]
-      },
-      {
-        "target_guid": "2h5A513TXAAhxsa3$Armxt",
-        "distance_m": 31.326647327792575,
-        "edge_ids": [
-          "E00307",
-          "E00101",
-          "E00138"
-        ]
-      },
-      {
-        "target_guid": "3uYK2H0E52Qhz8bK3APcca",
-        "distance_m": 32.92664732779257,
-        "edge_ids": [
-          "E00307",
-          "E00101",
-          "E00141"
-        ]
-      },
-      {
-        "target_guid": "24UZuOfCf3JhP_9U8SWMuK",
-        "distance_m": 35.92664732779257,
-        "edge_ids": [
-          "E00307",
-          "E00101",
-          "E00133"
-        ]
-      },
-      {
-        "target_guid": "2$R4rUG1nFkBAylN9aGNhb",
-        "distance_m": 37.32664732779258,
-        "edge_ids": [
-          "E00307",
-          "E00101",
-          "E00128"
-        ]
-      },
-      {
-        "target_guid": "3mQi89EHb4rOWufyKZfZhB",
-        "distance_m": 38.92664732779257,
-        "edge_ids": [
-          "E00307",
-          "E00101",
-          "E00140"
-        ]
-      },
-      {
-        "target_guid": "1ufhCZbhH2Ifud2RWdYCPS",
-        "distance_m": 41.72664732779258,
-        "edge_ids": [
-          "E00307",
-          "E00101",
-          "E00122"
-        ]
       }
     ],
     "1ufhCZbhH2Ifud2RWdYCPS": [
@@ -42820,103 +37500,6 @@
         "distance_m": 18.643038540052082,
         "edge_ids": [
           "E00122"
-        ]
-      },
-      {
-        "target_guid": "2rfNFYnCT2WAXMkqZ5PiDc",
-        "distance_m": 23.283608572974217,
-        "edge_ids": [
-          "E00122",
-          "E00100"
-        ]
-      },
-      {
-        "target_guid": "3XIgDIN6vBjxvjdvI7ngjF",
-        "distance_m": 24.483608606992863,
-        "edge_ids": [
-          "E00122",
-          "E00101"
-        ]
-      },
-      {
-        "target_guid": "2GIKSl4yvD7wO8pi7zg$sQ",
-        "distance_m": 28.32664732779258,
-        "edge_ids": [
-          "E00122",
-          "E00101",
-          "E00303"
-        ]
-      },
-      {
-        "target_guid": "3UcRuggsrAXPWkQpXc3dLn",
-        "distance_m": 29.726647327792577,
-        "edge_ids": [
-          "E00122",
-          "E00101",
-          "E00313"
-        ]
-      },
-      {
-        "target_guid": "1uDQb3wH95JQTlYH_Y617r",
-        "distance_m": 31.32664732779258,
-        "edge_ids": [
-          "E00122",
-          "E00101",
-          "E00298"
-        ]
-      },
-      {
-        "target_guid": "0WVkDf7jjAGhdceJ18iI2g",
-        "distance_m": 32.72664732779258,
-        "edge_ids": [
-          "E00122",
-          "E00101",
-          "E00277"
-        ]
-      },
-      {
-        "target_guid": "2ijDjejvTCZvZnfGVKFht6",
-        "distance_m": 35.72664732779258,
-        "edge_ids": [
-          "E00122",
-          "E00101",
-          "E00310"
-        ]
-      },
-      {
-        "target_guid": "0o6iTaAHzAQ9cd4xHGAaOG",
-        "distance_m": 37.32664732779258,
-        "edge_ids": [
-          "E00122",
-          "E00101",
-          "E00285"
-        ]
-      },
-      {
-        "target_guid": "3KiAVCT1D1t8Xn0nRB8nld",
-        "distance_m": 38.72664732779258,
-        "edge_ids": [
-          "E00122",
-          "E00101",
-          "E00312"
-        ]
-      },
-      {
-        "target_guid": "2VJpmvlMLEvOKD0Mb9hAiw",
-        "distance_m": 41.72664732779258,
-        "edge_ids": [
-          "E00122",
-          "E00101",
-          "E00307"
-        ]
-      },
-      {
-        "target_guid": "1EjnchXi9Esx$bY6vHG2RD",
-        "distance_m": 43.12664732779258,
-        "edge_ids": [
-          "E00122",
-          "E00101",
-          "E00292"
         ]
       }
     ],
@@ -42983,103 +37566,6 @@
         "edge_ids": [
           "E00140"
         ]
-      },
-      {
-        "target_guid": "2rfNFYnCT2WAXMkqZ5PiDc",
-        "distance_m": 20.483608572974212,
-        "edge_ids": [
-          "E00140",
-          "E00100"
-        ]
-      },
-      {
-        "target_guid": "3XIgDIN6vBjxvjdvI7ngjF",
-        "distance_m": 21.68360860699286,
-        "edge_ids": [
-          "E00140",
-          "E00101"
-        ]
-      },
-      {
-        "target_guid": "2GIKSl4yvD7wO8pi7zg$sQ",
-        "distance_m": 25.526647327792574,
-        "edge_ids": [
-          "E00140",
-          "E00101",
-          "E00303"
-        ]
-      },
-      {
-        "target_guid": "3UcRuggsrAXPWkQpXc3dLn",
-        "distance_m": 26.926647327792573,
-        "edge_ids": [
-          "E00140",
-          "E00101",
-          "E00313"
-        ]
-      },
-      {
-        "target_guid": "1uDQb3wH95JQTlYH_Y617r",
-        "distance_m": 28.526647327792574,
-        "edge_ids": [
-          "E00140",
-          "E00101",
-          "E00298"
-        ]
-      },
-      {
-        "target_guid": "0WVkDf7jjAGhdceJ18iI2g",
-        "distance_m": 29.926647327792573,
-        "edge_ids": [
-          "E00140",
-          "E00101",
-          "E00277"
-        ]
-      },
-      {
-        "target_guid": "2ijDjejvTCZvZnfGVKFht6",
-        "distance_m": 32.92664732779257,
-        "edge_ids": [
-          "E00140",
-          "E00101",
-          "E00310"
-        ]
-      },
-      {
-        "target_guid": "0o6iTaAHzAQ9cd4xHGAaOG",
-        "distance_m": 34.526647327792574,
-        "edge_ids": [
-          "E00140",
-          "E00101",
-          "E00285"
-        ]
-      },
-      {
-        "target_guid": "3KiAVCT1D1t8Xn0nRB8nld",
-        "distance_m": 35.92664732779257,
-        "edge_ids": [
-          "E00140",
-          "E00101",
-          "E00312"
-        ]
-      },
-      {
-        "target_guid": "2VJpmvlMLEvOKD0Mb9hAiw",
-        "distance_m": 38.92664732779257,
-        "edge_ids": [
-          "E00140",
-          "E00101",
-          "E00307"
-        ]
-      },
-      {
-        "target_guid": "1EjnchXi9Esx$bY6vHG2RD",
-        "distance_m": 40.32664732779257,
-        "edge_ids": [
-          "E00140",
-          "E00101",
-          "E00292"
-        ]
       }
     ],
     "24UZuOfCf3JhP_9U8SWMuK": [
@@ -43144,103 +37630,6 @@
         "distance_m": 12.843038540052078,
         "edge_ids": [
           "E00133"
-        ]
-      },
-      {
-        "target_guid": "2rfNFYnCT2WAXMkqZ5PiDc",
-        "distance_m": 17.483608572974212,
-        "edge_ids": [
-          "E00133",
-          "E00100"
-        ]
-      },
-      {
-        "target_guid": "3XIgDIN6vBjxvjdvI7ngjF",
-        "distance_m": 18.68360860699286,
-        "edge_ids": [
-          "E00133",
-          "E00101"
-        ]
-      },
-      {
-        "target_guid": "2GIKSl4yvD7wO8pi7zg$sQ",
-        "distance_m": 22.526647327792574,
-        "edge_ids": [
-          "E00133",
-          "E00101",
-          "E00303"
-        ]
-      },
-      {
-        "target_guid": "3UcRuggsrAXPWkQpXc3dLn",
-        "distance_m": 23.926647327792573,
-        "edge_ids": [
-          "E00133",
-          "E00101",
-          "E00313"
-        ]
-      },
-      {
-        "target_guid": "1uDQb3wH95JQTlYH_Y617r",
-        "distance_m": 25.526647327792574,
-        "edge_ids": [
-          "E00133",
-          "E00101",
-          "E00298"
-        ]
-      },
-      {
-        "target_guid": "0WVkDf7jjAGhdceJ18iI2g",
-        "distance_m": 26.926647327792573,
-        "edge_ids": [
-          "E00133",
-          "E00101",
-          "E00277"
-        ]
-      },
-      {
-        "target_guid": "2ijDjejvTCZvZnfGVKFht6",
-        "distance_m": 29.926647327792573,
-        "edge_ids": [
-          "E00133",
-          "E00101",
-          "E00310"
-        ]
-      },
-      {
-        "target_guid": "0o6iTaAHzAQ9cd4xHGAaOG",
-        "distance_m": 31.526647327792574,
-        "edge_ids": [
-          "E00133",
-          "E00101",
-          "E00285"
-        ]
-      },
-      {
-        "target_guid": "3KiAVCT1D1t8Xn0nRB8nld",
-        "distance_m": 32.92664732779257,
-        "edge_ids": [
-          "E00133",
-          "E00101",
-          "E00312"
-        ]
-      },
-      {
-        "target_guid": "2VJpmvlMLEvOKD0Mb9hAiw",
-        "distance_m": 35.92664732779257,
-        "edge_ids": [
-          "E00133",
-          "E00101",
-          "E00307"
-        ]
-      },
-      {
-        "target_guid": "1EjnchXi9Esx$bY6vHG2RD",
-        "distance_m": 37.32664732779257,
-        "edge_ids": [
-          "E00133",
-          "E00101",
-          "E00292"
         ]
       }
     ],
@@ -43307,103 +37696,6 @@
         "edge_ids": [
           "E00126"
         ]
-      },
-      {
-        "target_guid": "2rfNFYnCT2WAXMkqZ5PiDc",
-        "distance_m": 14.483608572974212,
-        "edge_ids": [
-          "E00141",
-          "E00100"
-        ]
-      },
-      {
-        "target_guid": "3XIgDIN6vBjxvjdvI7ngjF",
-        "distance_m": 15.683608606992859,
-        "edge_ids": [
-          "E00141",
-          "E00101"
-        ]
-      },
-      {
-        "target_guid": "2GIKSl4yvD7wO8pi7zg$sQ",
-        "distance_m": 19.526647327792574,
-        "edge_ids": [
-          "E00141",
-          "E00101",
-          "E00303"
-        ]
-      },
-      {
-        "target_guid": "3UcRuggsrAXPWkQpXc3dLn",
-        "distance_m": 20.926647327792573,
-        "edge_ids": [
-          "E00141",
-          "E00101",
-          "E00313"
-        ]
-      },
-      {
-        "target_guid": "1uDQb3wH95JQTlYH_Y617r",
-        "distance_m": 22.526647327792574,
-        "edge_ids": [
-          "E00141",
-          "E00101",
-          "E00298"
-        ]
-      },
-      {
-        "target_guid": "0WVkDf7jjAGhdceJ18iI2g",
-        "distance_m": 23.926647327792573,
-        "edge_ids": [
-          "E00141",
-          "E00101",
-          "E00277"
-        ]
-      },
-      {
-        "target_guid": "2ijDjejvTCZvZnfGVKFht6",
-        "distance_m": 26.926647327792573,
-        "edge_ids": [
-          "E00141",
-          "E00101",
-          "E00310"
-        ]
-      },
-      {
-        "target_guid": "0o6iTaAHzAQ9cd4xHGAaOG",
-        "distance_m": 28.526647327792574,
-        "edge_ids": [
-          "E00141",
-          "E00101",
-          "E00285"
-        ]
-      },
-      {
-        "target_guid": "3KiAVCT1D1t8Xn0nRB8nld",
-        "distance_m": 29.926647327792573,
-        "edge_ids": [
-          "E00141",
-          "E00101",
-          "E00312"
-        ]
-      },
-      {
-        "target_guid": "2VJpmvlMLEvOKD0Mb9hAiw",
-        "distance_m": 32.92664732779257,
-        "edge_ids": [
-          "E00141",
-          "E00101",
-          "E00307"
-        ]
-      },
-      {
-        "target_guid": "1EjnchXi9Esx$bY6vHG2RD",
-        "distance_m": 34.32664732779257,
-        "edge_ids": [
-          "E00141",
-          "E00101",
-          "E00292"
-        ]
       }
     ],
     "0CFMpIkEzADxWz$xDSGgek": [
@@ -43457,14 +37749,6 @@
         ]
       },
       {
-        "target_guid": "2rfNFYnCT2WAXMkqZ5PiDc",
-        "distance_m": 11.483608572974218,
-        "edge_ids": [
-          "E00107",
-          "E00100"
-        ]
-      },
-      {
         "target_guid": "3mQi89EHb4rOWufyKZfZhB",
         "distance_m": 11.521486779456456,
         "edge_ids": [
@@ -43472,99 +37756,10 @@
         ]
       },
       {
-        "target_guid": "3XIgDIN6vBjxvjdvI7ngjF",
-        "distance_m": 12.683608606992863,
-        "edge_ids": [
-          "E00107",
-          "E00101"
-        ]
-      },
-      {
         "target_guid": "1ufhCZbhH2Ifud2RWdYCPS",
         "distance_m": 14.32148677945646,
         "edge_ids": [
           "E00104"
-        ]
-      },
-      {
-        "target_guid": "2GIKSl4yvD7wO8pi7zg$sQ",
-        "distance_m": 16.526647327792578,
-        "edge_ids": [
-          "E00107",
-          "E00101",
-          "E00303"
-        ]
-      },
-      {
-        "target_guid": "3UcRuggsrAXPWkQpXc3dLn",
-        "distance_m": 17.926647327792576,
-        "edge_ids": [
-          "E00107",
-          "E00101",
-          "E00313"
-        ]
-      },
-      {
-        "target_guid": "1uDQb3wH95JQTlYH_Y617r",
-        "distance_m": 19.526647327792578,
-        "edge_ids": [
-          "E00107",
-          "E00101",
-          "E00298"
-        ]
-      },
-      {
-        "target_guid": "0WVkDf7jjAGhdceJ18iI2g",
-        "distance_m": 20.926647327792576,
-        "edge_ids": [
-          "E00107",
-          "E00101",
-          "E00277"
-        ]
-      },
-      {
-        "target_guid": "2ijDjejvTCZvZnfGVKFht6",
-        "distance_m": 23.926647327792576,
-        "edge_ids": [
-          "E00107",
-          "E00101",
-          "E00310"
-        ]
-      },
-      {
-        "target_guid": "0o6iTaAHzAQ9cd4xHGAaOG",
-        "distance_m": 25.526647327792578,
-        "edge_ids": [
-          "E00107",
-          "E00101",
-          "E00285"
-        ]
-      },
-      {
-        "target_guid": "3KiAVCT1D1t8Xn0nRB8nld",
-        "distance_m": 26.926647327792576,
-        "edge_ids": [
-          "E00107",
-          "E00101",
-          "E00312"
-        ]
-      },
-      {
-        "target_guid": "2VJpmvlMLEvOKD0Mb9hAiw",
-        "distance_m": 29.926647327792576,
-        "edge_ids": [
-          "E00107",
-          "E00101",
-          "E00307"
-        ]
-      },
-      {
-        "target_guid": "1EjnchXi9Esx$bY6vHG2RD",
-        "distance_m": 31.32664732779258,
-        "edge_ids": [
-          "E00107",
-          "E00101",
-          "E00292"
         ]
       }
     ],
@@ -43598,26 +37793,10 @@
         ]
       },
       {
-        "target_guid": "2rfNFYnCT2WAXMkqZ5PiDc",
-        "distance_m": 8.483608572974218,
-        "edge_ids": [
-          "E00139",
-          "E00100"
-        ]
-      },
-      {
         "target_guid": "3uYK2H0E52Qhz8bK3APcca",
         "distance_m": 8.521486779456456,
         "edge_ids": [
           "E00146"
-        ]
-      },
-      {
-        "target_guid": "3XIgDIN6vBjxvjdvI7ngjF",
-        "distance_m": 9.683608606992863,
-        "edge_ids": [
-          "E00139",
-          "E00101"
         ]
       },
       {
@@ -43635,15 +37814,6 @@
         ]
       },
       {
-        "target_guid": "2GIKSl4yvD7wO8pi7zg$sQ",
-        "distance_m": 13.526647327792578,
-        "edge_ids": [
-          "E00139",
-          "E00101",
-          "E00303"
-        ]
-      },
-      {
         "target_guid": "3mQi89EHb4rOWufyKZfZhB",
         "distance_m": 14.521486779456456,
         "edge_ids": [
@@ -43651,82 +37821,10 @@
         ]
       },
       {
-        "target_guid": "3UcRuggsrAXPWkQpXc3dLn",
-        "distance_m": 14.926647327792576,
-        "edge_ids": [
-          "E00139",
-          "E00101",
-          "E00313"
-        ]
-      },
-      {
-        "target_guid": "1uDQb3wH95JQTlYH_Y617r",
-        "distance_m": 16.526647327792578,
-        "edge_ids": [
-          "E00139",
-          "E00101",
-          "E00298"
-        ]
-      },
-      {
         "target_guid": "1ufhCZbhH2Ifud2RWdYCPS",
         "distance_m": 17.32148677945646,
         "edge_ids": [
           "E00124"
-        ]
-      },
-      {
-        "target_guid": "0WVkDf7jjAGhdceJ18iI2g",
-        "distance_m": 17.926647327792576,
-        "edge_ids": [
-          "E00139",
-          "E00101",
-          "E00277"
-        ]
-      },
-      {
-        "target_guid": "2ijDjejvTCZvZnfGVKFht6",
-        "distance_m": 20.926647327792576,
-        "edge_ids": [
-          "E00139",
-          "E00101",
-          "E00310"
-        ]
-      },
-      {
-        "target_guid": "0o6iTaAHzAQ9cd4xHGAaOG",
-        "distance_m": 22.526647327792578,
-        "edge_ids": [
-          "E00139",
-          "E00101",
-          "E00285"
-        ]
-      },
-      {
-        "target_guid": "3KiAVCT1D1t8Xn0nRB8nld",
-        "distance_m": 23.926647327792576,
-        "edge_ids": [
-          "E00139",
-          "E00101",
-          "E00312"
-        ]
-      },
-      {
-        "target_guid": "2VJpmvlMLEvOKD0Mb9hAiw",
-        "distance_m": 26.926647327792576,
-        "edge_ids": [
-          "E00139",
-          "E00101",
-          "E00307"
-        ]
-      },
-      {
-        "target_guid": "1EjnchXi9Esx$bY6vHG2RD",
-        "distance_m": 28.32664732779258,
-        "edge_ids": [
-          "E00139",
-          "E00101",
-          "E00292"
         ]
       }
     ],
@@ -43793,103 +37891,6 @@
         "edge_ids": [
           "E00292"
         ]
-      },
-      {
-        "target_guid": "2rfNFYnCT2WAXMkqZ5PiDc",
-        "distance_m": 23.283208894201852,
-        "edge_ids": [
-          "E00292",
-          "E00102"
-        ]
-      },
-      {
-        "target_guid": "2N6esOMjP29AvhRLQ1Jz3$",
-        "distance_m": 24.483608787740497,
-        "edge_ids": [
-          "E00292",
-          "E00101"
-        ]
-      },
-      {
-        "target_guid": "0HthpQNkzAiuSXm9HWsQaw",
-        "distance_m": 28.32664732779258,
-        "edge_ids": [
-          "E00292",
-          "E00101",
-          "E00115"
-        ]
-      },
-      {
-        "target_guid": "2wCVZFSRnBZ8YJ5Ri$bwG7",
-        "distance_m": 28.32664732779258,
-        "edge_ids": [
-          "E00292",
-          "E00101",
-          "E00139"
-        ]
-      },
-      {
-        "target_guid": "0CFMpIkEzADxWz$xDSGgek",
-        "distance_m": 31.32664732779258,
-        "edge_ids": [
-          "E00292",
-          "E00101",
-          "E00107"
-        ]
-      },
-      {
-        "target_guid": "2h5A513TXAAhxsa3$Armxt",
-        "distance_m": 32.72664732779258,
-        "edge_ids": [
-          "E00292",
-          "E00101",
-          "E00138"
-        ]
-      },
-      {
-        "target_guid": "3uYK2H0E52Qhz8bK3APcca",
-        "distance_m": 34.32664732779257,
-        "edge_ids": [
-          "E00292",
-          "E00101",
-          "E00141"
-        ]
-      },
-      {
-        "target_guid": "24UZuOfCf3JhP_9U8SWMuK",
-        "distance_m": 37.32664732779257,
-        "edge_ids": [
-          "E00292",
-          "E00101",
-          "E00133"
-        ]
-      },
-      {
-        "target_guid": "2$R4rUG1nFkBAylN9aGNhb",
-        "distance_m": 38.72664732779258,
-        "edge_ids": [
-          "E00292",
-          "E00101",
-          "E00128"
-        ]
-      },
-      {
-        "target_guid": "3mQi89EHb4rOWufyKZfZhB",
-        "distance_m": 40.32664732779257,
-        "edge_ids": [
-          "E00292",
-          "E00101",
-          "E00140"
-        ]
-      },
-      {
-        "target_guid": "1ufhCZbhH2Ifud2RWdYCPS",
-        "distance_m": 43.12664732779258,
-        "edge_ids": [
-          "E00292",
-          "E00101",
-          "E00122"
-        ]
       }
     ],
     "0o6iTaAHzAQ9cd4xHGAaOG": [
@@ -43955,103 +37956,6 @@
         "edge_ids": [
           "E00285"
         ]
-      },
-      {
-        "target_guid": "2rfNFYnCT2WAXMkqZ5PiDc",
-        "distance_m": 17.48320889420185,
-        "edge_ids": [
-          "E00285",
-          "E00102"
-        ]
-      },
-      {
-        "target_guid": "2N6esOMjP29AvhRLQ1Jz3$",
-        "distance_m": 18.683608787740496,
-        "edge_ids": [
-          "E00285",
-          "E00101"
-        ]
-      },
-      {
-        "target_guid": "0HthpQNkzAiuSXm9HWsQaw",
-        "distance_m": 22.526647327792578,
-        "edge_ids": [
-          "E00285",
-          "E00101",
-          "E00115"
-        ]
-      },
-      {
-        "target_guid": "2wCVZFSRnBZ8YJ5Ri$bwG7",
-        "distance_m": 22.526647327792578,
-        "edge_ids": [
-          "E00285",
-          "E00101",
-          "E00139"
-        ]
-      },
-      {
-        "target_guid": "0CFMpIkEzADxWz$xDSGgek",
-        "distance_m": 25.526647327792578,
-        "edge_ids": [
-          "E00285",
-          "E00101",
-          "E00107"
-        ]
-      },
-      {
-        "target_guid": "2h5A513TXAAhxsa3$Armxt",
-        "distance_m": 26.926647327792576,
-        "edge_ids": [
-          "E00285",
-          "E00101",
-          "E00138"
-        ]
-      },
-      {
-        "target_guid": "3uYK2H0E52Qhz8bK3APcca",
-        "distance_m": 28.526647327792574,
-        "edge_ids": [
-          "E00285",
-          "E00101",
-          "E00141"
-        ]
-      },
-      {
-        "target_guid": "24UZuOfCf3JhP_9U8SWMuK",
-        "distance_m": 31.526647327792574,
-        "edge_ids": [
-          "E00285",
-          "E00101",
-          "E00133"
-        ]
-      },
-      {
-        "target_guid": "2$R4rUG1nFkBAylN9aGNhb",
-        "distance_m": 32.92664732779258,
-        "edge_ids": [
-          "E00285",
-          "E00101",
-          "E00128"
-        ]
-      },
-      {
-        "target_guid": "3mQi89EHb4rOWufyKZfZhB",
-        "distance_m": 34.526647327792574,
-        "edge_ids": [
-          "E00285",
-          "E00101",
-          "E00140"
-        ]
-      },
-      {
-        "target_guid": "1ufhCZbhH2Ifud2RWdYCPS",
-        "distance_m": 37.32664732779258,
-        "edge_ids": [
-          "E00285",
-          "E00101",
-          "E00122"
-        ]
       }
     ],
     "1uDQb3wH95JQTlYH_Y617r": [
@@ -44105,22 +38009,6 @@
         ]
       },
       {
-        "target_guid": "2rfNFYnCT2WAXMkqZ5PiDc",
-        "distance_m": 11.483208894201852,
-        "edge_ids": [
-          "E00298",
-          "E00102"
-        ]
-      },
-      {
-        "target_guid": "2N6esOMjP29AvhRLQ1Jz3$",
-        "distance_m": 12.683608787740496,
-        "edge_ids": [
-          "E00298",
-          "E00101"
-        ]
-      },
-      {
         "target_guid": "2VJpmvlMLEvOKD0Mb9hAiw",
         "distance_m": 12.921486779456457,
         "edge_ids": [
@@ -44133,249 +38021,9 @@
         "edge_ids": [
           "E00286"
         ]
-      },
-      {
-        "target_guid": "0HthpQNkzAiuSXm9HWsQaw",
-        "distance_m": 16.526647327792578,
-        "edge_ids": [
-          "E00298",
-          "E00101",
-          "E00115"
-        ]
-      },
-      {
-        "target_guid": "2wCVZFSRnBZ8YJ5Ri$bwG7",
-        "distance_m": 16.526647327792578,
-        "edge_ids": [
-          "E00298",
-          "E00101",
-          "E00139"
-        ]
-      },
-      {
-        "target_guid": "0CFMpIkEzADxWz$xDSGgek",
-        "distance_m": 19.526647327792578,
-        "edge_ids": [
-          "E00298",
-          "E00101",
-          "E00107"
-        ]
-      },
-      {
-        "target_guid": "2h5A513TXAAhxsa3$Armxt",
-        "distance_m": 20.926647327792576,
-        "edge_ids": [
-          "E00298",
-          "E00101",
-          "E00138"
-        ]
-      },
-      {
-        "target_guid": "3uYK2H0E52Qhz8bK3APcca",
-        "distance_m": 22.526647327792574,
-        "edge_ids": [
-          "E00298",
-          "E00101",
-          "E00141"
-        ]
-      },
-      {
-        "target_guid": "24UZuOfCf3JhP_9U8SWMuK",
-        "distance_m": 25.526647327792574,
-        "edge_ids": [
-          "E00298",
-          "E00101",
-          "E00133"
-        ]
-      },
-      {
-        "target_guid": "2$R4rUG1nFkBAylN9aGNhb",
-        "distance_m": 26.92664732779258,
-        "edge_ids": [
-          "E00298",
-          "E00101",
-          "E00128"
-        ]
-      },
-      {
-        "target_guid": "3mQi89EHb4rOWufyKZfZhB",
-        "distance_m": 28.526647327792574,
-        "edge_ids": [
-          "E00298",
-          "E00101",
-          "E00140"
-        ]
-      },
-      {
-        "target_guid": "1ufhCZbhH2Ifud2RWdYCPS",
-        "distance_m": 31.32664732779258,
-        "edge_ids": [
-          "E00298",
-          "E00101",
-          "E00122"
-        ]
       }
     ],
-    "2rfNFYnCT2WAXMkqZ5PiDc": [
-      {
-        "target_guid": "3XIgDIN6vBjxvjdvI7ngjF",
-        "distance_m": 4.640170173402136,
-        "edge_ids": [
-          "E00102"
-        ]
-      },
-      {
-        "target_guid": "2N6esOMjP29AvhRLQ1Jz3$",
-        "distance_m": 4.6405700329221355,
-        "edge_ids": [
-          "E00100"
-        ]
-      },
-      {
-        "target_guid": "2GIKSl4yvD7wO8pi7zg$sQ",
-        "distance_m": 8.483208894201852,
-        "edge_ids": [
-          "E00102",
-          "E00303"
-        ]
-      },
-      {
-        "target_guid": "0HthpQNkzAiuSXm9HWsQaw",
-        "distance_m": 8.483608572974216,
-        "edge_ids": [
-          "E00100",
-          "E00115"
-        ]
-      },
-      {
-        "target_guid": "2wCVZFSRnBZ8YJ5Ri$bwG7",
-        "distance_m": 8.483608572974218,
-        "edge_ids": [
-          "E00100",
-          "E00139"
-        ]
-      },
-      {
-        "target_guid": "3UcRuggsrAXPWkQpXc3dLn",
-        "distance_m": 9.88320889420185,
-        "edge_ids": [
-          "E00102",
-          "E00313"
-        ]
-      },
-      {
-        "target_guid": "1uDQb3wH95JQTlYH_Y617r",
-        "distance_m": 11.483208894201852,
-        "edge_ids": [
-          "E00102",
-          "E00298"
-        ]
-      },
-      {
-        "target_guid": "0CFMpIkEzADxWz$xDSGgek",
-        "distance_m": 11.483608572974218,
-        "edge_ids": [
-          "E00100",
-          "E00107"
-        ]
-      },
-      {
-        "target_guid": "0WVkDf7jjAGhdceJ18iI2g",
-        "distance_m": 12.88320889420185,
-        "edge_ids": [
-          "E00102",
-          "E00277"
-        ]
-      },
-      {
-        "target_guid": "2h5A513TXAAhxsa3$Armxt",
-        "distance_m": 12.883608572974214,
-        "edge_ids": [
-          "E00100",
-          "E00138"
-        ]
-      },
-      {
-        "target_guid": "3uYK2H0E52Qhz8bK3APcca",
-        "distance_m": 14.483608572974212,
-        "edge_ids": [
-          "E00100",
-          "E00141"
-        ]
-      },
-      {
-        "target_guid": "2ijDjejvTCZvZnfGVKFht6",
-        "distance_m": 15.88320889420185,
-        "edge_ids": [
-          "E00102",
-          "E00310"
-        ]
-      },
-      {
-        "target_guid": "0o6iTaAHzAQ9cd4xHGAaOG",
-        "distance_m": 17.48320889420185,
-        "edge_ids": [
-          "E00102",
-          "E00285"
-        ]
-      },
-      {
-        "target_guid": "24UZuOfCf3JhP_9U8SWMuK",
-        "distance_m": 17.483608572974212,
-        "edge_ids": [
-          "E00100",
-          "E00133"
-        ]
-      },
-      {
-        "target_guid": "3KiAVCT1D1t8Xn0nRB8nld",
-        "distance_m": 18.88320889420185,
-        "edge_ids": [
-          "E00102",
-          "E00312"
-        ]
-      },
-      {
-        "target_guid": "2$R4rUG1nFkBAylN9aGNhb",
-        "distance_m": 18.883608572974218,
-        "edge_ids": [
-          "E00100",
-          "E00128"
-        ]
-      },
-      {
-        "target_guid": "3mQi89EHb4rOWufyKZfZhB",
-        "distance_m": 20.483608572974212,
-        "edge_ids": [
-          "E00100",
-          "E00140"
-        ]
-      },
-      {
-        "target_guid": "2VJpmvlMLEvOKD0Mb9hAiw",
-        "distance_m": 21.88320889420185,
-        "edge_ids": [
-          "E00102",
-          "E00307"
-        ]
-      },
-      {
-        "target_guid": "1EjnchXi9Esx$bY6vHG2RD",
-        "distance_m": 23.283208894201852,
-        "edge_ids": [
-          "E00102",
-          "E00292"
-        ]
-      },
-      {
-        "target_guid": "1ufhCZbhH2Ifud2RWdYCPS",
-        "distance_m": 23.283608572974217,
-        "edge_ids": [
-          "E00100",
-          "E00122"
-        ]
-      }
-    ],
+    "2rfNFYnCT2WAXMkqZ5PiDc": [],
     "2$R4rUG1nFkBAylN9aGNhb": [
       {
         "target_guid": "24UZuOfCf3JhP_9U8SWMuK",
@@ -44439,103 +38087,6 @@
         "edge_ids": [
           "E00128"
         ]
-      },
-      {
-        "target_guid": "2rfNFYnCT2WAXMkqZ5PiDc",
-        "distance_m": 18.883608572974218,
-        "edge_ids": [
-          "E00128",
-          "E00100"
-        ]
-      },
-      {
-        "target_guid": "3XIgDIN6vBjxvjdvI7ngjF",
-        "distance_m": 20.083608606992865,
-        "edge_ids": [
-          "E00128",
-          "E00101"
-        ]
-      },
-      {
-        "target_guid": "2GIKSl4yvD7wO8pi7zg$sQ",
-        "distance_m": 23.92664732779258,
-        "edge_ids": [
-          "E00128",
-          "E00101",
-          "E00303"
-        ]
-      },
-      {
-        "target_guid": "3UcRuggsrAXPWkQpXc3dLn",
-        "distance_m": 25.32664732779258,
-        "edge_ids": [
-          "E00128",
-          "E00101",
-          "E00313"
-        ]
-      },
-      {
-        "target_guid": "1uDQb3wH95JQTlYH_Y617r",
-        "distance_m": 26.92664732779258,
-        "edge_ids": [
-          "E00128",
-          "E00101",
-          "E00298"
-        ]
-      },
-      {
-        "target_guid": "0WVkDf7jjAGhdceJ18iI2g",
-        "distance_m": 28.32664732779258,
-        "edge_ids": [
-          "E00128",
-          "E00101",
-          "E00277"
-        ]
-      },
-      {
-        "target_guid": "2ijDjejvTCZvZnfGVKFht6",
-        "distance_m": 31.32664732779258,
-        "edge_ids": [
-          "E00128",
-          "E00101",
-          "E00310"
-        ]
-      },
-      {
-        "target_guid": "0o6iTaAHzAQ9cd4xHGAaOG",
-        "distance_m": 32.92664732779258,
-        "edge_ids": [
-          "E00128",
-          "E00101",
-          "E00285"
-        ]
-      },
-      {
-        "target_guid": "3KiAVCT1D1t8Xn0nRB8nld",
-        "distance_m": 34.32664732779258,
-        "edge_ids": [
-          "E00128",
-          "E00101",
-          "E00312"
-        ]
-      },
-      {
-        "target_guid": "2VJpmvlMLEvOKD0Mb9hAiw",
-        "distance_m": 37.32664732779258,
-        "edge_ids": [
-          "E00128",
-          "E00101",
-          "E00307"
-        ]
-      },
-      {
-        "target_guid": "1EjnchXi9Esx$bY6vHG2RD",
-        "distance_m": 38.72664732779258,
-        "edge_ids": [
-          "E00128",
-          "E00101",
-          "E00292"
-        ]
       }
     ],
     "2h5A513TXAAhxsa3$Armxt": [
@@ -44596,107 +38147,10 @@
         ]
       },
       {
-        "target_guid": "2rfNFYnCT2WAXMkqZ5PiDc",
-        "distance_m": 12.883608572974214,
-        "edge_ids": [
-          "E00138",
-          "E00100"
-        ]
-      },
-      {
         "target_guid": "1ufhCZbhH2Ifud2RWdYCPS",
         "distance_m": 12.92148677945646,
         "edge_ids": [
           "E00123"
-        ]
-      },
-      {
-        "target_guid": "3XIgDIN6vBjxvjdvI7ngjF",
-        "distance_m": 14.083608606992861,
-        "edge_ids": [
-          "E00138",
-          "E00101"
-        ]
-      },
-      {
-        "target_guid": "2GIKSl4yvD7wO8pi7zg$sQ",
-        "distance_m": 17.926647327792576,
-        "edge_ids": [
-          "E00138",
-          "E00101",
-          "E00303"
-        ]
-      },
-      {
-        "target_guid": "3UcRuggsrAXPWkQpXc3dLn",
-        "distance_m": 19.326647327792575,
-        "edge_ids": [
-          "E00138",
-          "E00101",
-          "E00313"
-        ]
-      },
-      {
-        "target_guid": "1uDQb3wH95JQTlYH_Y617r",
-        "distance_m": 20.926647327792576,
-        "edge_ids": [
-          "E00138",
-          "E00101",
-          "E00298"
-        ]
-      },
-      {
-        "target_guid": "0WVkDf7jjAGhdceJ18iI2g",
-        "distance_m": 22.326647327792575,
-        "edge_ids": [
-          "E00138",
-          "E00101",
-          "E00277"
-        ]
-      },
-      {
-        "target_guid": "2ijDjejvTCZvZnfGVKFht6",
-        "distance_m": 25.326647327792575,
-        "edge_ids": [
-          "E00138",
-          "E00101",
-          "E00310"
-        ]
-      },
-      {
-        "target_guid": "0o6iTaAHzAQ9cd4xHGAaOG",
-        "distance_m": 26.926647327792576,
-        "edge_ids": [
-          "E00138",
-          "E00101",
-          "E00285"
-        ]
-      },
-      {
-        "target_guid": "3KiAVCT1D1t8Xn0nRB8nld",
-        "distance_m": 28.326647327792575,
-        "edge_ids": [
-          "E00138",
-          "E00101",
-          "E00312"
-        ]
-      },
-      {
-        "target_guid": "2VJpmvlMLEvOKD0Mb9hAiw",
-        "distance_m": 31.326647327792575,
-        "edge_ids": [
-          "E00138",
-          "E00101",
-          "E00307"
-        ]
-      },
-      {
-        "target_guid": "1EjnchXi9Esx$bY6vHG2RD",
-        "distance_m": 32.72664732779258,
-        "edge_ids": [
-          "E00138",
-          "E00101",
-          "E00292"
         ]
       }
     ],
@@ -44730,26 +38184,10 @@
         ]
       },
       {
-        "target_guid": "2rfNFYnCT2WAXMkqZ5PiDc",
-        "distance_m": 8.483608572974216,
-        "edge_ids": [
-          "E00115",
-          "E00100"
-        ]
-      },
-      {
         "target_guid": "3uYK2H0E52Qhz8bK3APcca",
         "distance_m": 8.521486779456454,
         "edge_ids": [
           "E00119"
-        ]
-      },
-      {
-        "target_guid": "3XIgDIN6vBjxvjdvI7ngjF",
-        "distance_m": 9.683608606992863,
-        "edge_ids": [
-          "E00115",
-          "E00101"
         ]
       },
       {
@@ -44767,15 +38205,6 @@
         ]
       },
       {
-        "target_guid": "2GIKSl4yvD7wO8pi7zg$sQ",
-        "distance_m": 13.526647327792578,
-        "edge_ids": [
-          "E00115",
-          "E00101",
-          "E00303"
-        ]
-      },
-      {
         "target_guid": "3mQi89EHb4rOWufyKZfZhB",
         "distance_m": 14.521486779456454,
         "edge_ids": [
@@ -44783,82 +38212,10 @@
         ]
       },
       {
-        "target_guid": "3UcRuggsrAXPWkQpXc3dLn",
-        "distance_m": 14.926647327792576,
-        "edge_ids": [
-          "E00115",
-          "E00101",
-          "E00313"
-        ]
-      },
-      {
-        "target_guid": "1uDQb3wH95JQTlYH_Y617r",
-        "distance_m": 16.526647327792578,
-        "edge_ids": [
-          "E00115",
-          "E00101",
-          "E00298"
-        ]
-      },
-      {
         "target_guid": "1ufhCZbhH2Ifud2RWdYCPS",
         "distance_m": 17.321486779456457,
         "edge_ids": [
           "E00112"
-        ]
-      },
-      {
-        "target_guid": "0WVkDf7jjAGhdceJ18iI2g",
-        "distance_m": 17.926647327792576,
-        "edge_ids": [
-          "E00115",
-          "E00101",
-          "E00277"
-        ]
-      },
-      {
-        "target_guid": "2ijDjejvTCZvZnfGVKFht6",
-        "distance_m": 20.926647327792576,
-        "edge_ids": [
-          "E00115",
-          "E00101",
-          "E00310"
-        ]
-      },
-      {
-        "target_guid": "0o6iTaAHzAQ9cd4xHGAaOG",
-        "distance_m": 22.526647327792578,
-        "edge_ids": [
-          "E00115",
-          "E00101",
-          "E00285"
-        ]
-      },
-      {
-        "target_guid": "3KiAVCT1D1t8Xn0nRB8nld",
-        "distance_m": 23.926647327792576,
-        "edge_ids": [
-          "E00115",
-          "E00101",
-          "E00312"
-        ]
-      },
-      {
-        "target_guid": "2VJpmvlMLEvOKD0Mb9hAiw",
-        "distance_m": 26.926647327792576,
-        "edge_ids": [
-          "E00115",
-          "E00101",
-          "E00307"
-        ]
-      },
-      {
-        "target_guid": "1EjnchXi9Esx$bY6vHG2RD",
-        "distance_m": 28.32664732779258,
-        "edge_ids": [
-          "E00115",
-          "E00101",
-          "E00292"
         ]
       }
     ],
@@ -44871,24 +38228,10 @@
         ]
       },
       {
-        "target_guid": "2rfNFYnCT2WAXMkqZ5PiDc",
-        "distance_m": 4.640170173402136,
-        "edge_ids": [
-          "E00102"
-        ]
-      },
-      {
         "target_guid": "3UcRuggsrAXPWkQpXc3dLn",
         "distance_m": 5.2430387207997144,
         "edge_ids": [
           "E00313"
-        ]
-      },
-      {
-        "target_guid": "2N6esOMjP29AvhRLQ1Jz3$",
-        "distance_m": 5.840570066940781,
-        "edge_ids": [
-          "E00101"
         ]
       },
       {
@@ -44906,34 +38249,10 @@
         ]
       },
       {
-        "target_guid": "0HthpQNkzAiuSXm9HWsQaw",
-        "distance_m": 9.683608606992863,
-        "edge_ids": [
-          "E00101",
-          "E00115"
-        ]
-      },
-      {
-        "target_guid": "2wCVZFSRnBZ8YJ5Ri$bwG7",
-        "distance_m": 9.683608606992863,
-        "edge_ids": [
-          "E00101",
-          "E00139"
-        ]
-      },
-      {
         "target_guid": "2ijDjejvTCZvZnfGVKFht6",
         "distance_m": 11.243038720799714,
         "edge_ids": [
           "E00310"
-        ]
-      },
-      {
-        "target_guid": "0CFMpIkEzADxWz$xDSGgek",
-        "distance_m": 12.683608606992863,
-        "edge_ids": [
-          "E00101",
-          "E00107"
         ]
       },
       {
@@ -44944,26 +38263,10 @@
         ]
       },
       {
-        "target_guid": "2h5A513TXAAhxsa3$Armxt",
-        "distance_m": 14.083608606992861,
-        "edge_ids": [
-          "E00101",
-          "E00138"
-        ]
-      },
-      {
         "target_guid": "3KiAVCT1D1t8Xn0nRB8nld",
         "distance_m": 14.243038720799714,
         "edge_ids": [
           "E00312"
-        ]
-      },
-      {
-        "target_guid": "3uYK2H0E52Qhz8bK3APcca",
-        "distance_m": 15.683608606992859,
-        "edge_ids": [
-          "E00101",
-          "E00141"
         ]
       },
       {
@@ -44978,38 +38281,6 @@
         "distance_m": 18.643038720799716,
         "edge_ids": [
           "E00292"
-        ]
-      },
-      {
-        "target_guid": "24UZuOfCf3JhP_9U8SWMuK",
-        "distance_m": 18.68360860699286,
-        "edge_ids": [
-          "E00101",
-          "E00133"
-        ]
-      },
-      {
-        "target_guid": "2$R4rUG1nFkBAylN9aGNhb",
-        "distance_m": 20.083608606992865,
-        "edge_ids": [
-          "E00101",
-          "E00128"
-        ]
-      },
-      {
-        "target_guid": "3mQi89EHb4rOWufyKZfZhB",
-        "distance_m": 21.68360860699286,
-        "edge_ids": [
-          "E00101",
-          "E00140"
-        ]
-      },
-      {
-        "target_guid": "1ufhCZbhH2Ifud2RWdYCPS",
-        "distance_m": 24.483608606992863,
-        "edge_ids": [
-          "E00101",
-          "E00122"
         ]
       }
     ],
@@ -45029,20 +38300,6 @@
         ]
       },
       {
-        "target_guid": "2rfNFYnCT2WAXMkqZ5PiDc",
-        "distance_m": 4.6405700329221355,
-        "edge_ids": [
-          "E00100"
-        ]
-      },
-      {
-        "target_guid": "3XIgDIN6vBjxvjdvI7ngjF",
-        "distance_m": 5.840570066940781,
-        "edge_ids": [
-          "E00101"
-        ]
-      },
-      {
         "target_guid": "0CFMpIkEzADxWz$xDSGgek",
         "distance_m": 6.843038540052082,
         "edge_ids": [
@@ -45057,14 +38314,6 @@
         ]
       },
       {
-        "target_guid": "2GIKSl4yvD7wO8pi7zg$sQ",
-        "distance_m": 9.683608787740496,
-        "edge_ids": [
-          "E00101",
-          "E00303"
-        ]
-      },
-      {
         "target_guid": "3uYK2H0E52Qhz8bK3APcca",
         "distance_m": 9.843038540052078,
         "edge_ids": [
@@ -45072,34 +38321,10 @@
         ]
       },
       {
-        "target_guid": "3UcRuggsrAXPWkQpXc3dLn",
-        "distance_m": 11.083608787740495,
-        "edge_ids": [
-          "E00101",
-          "E00313"
-        ]
-      },
-      {
-        "target_guid": "1uDQb3wH95JQTlYH_Y617r",
-        "distance_m": 12.683608787740496,
-        "edge_ids": [
-          "E00101",
-          "E00298"
-        ]
-      },
-      {
         "target_guid": "24UZuOfCf3JhP_9U8SWMuK",
         "distance_m": 12.843038540052078,
         "edge_ids": [
           "E00133"
-        ]
-      },
-      {
-        "target_guid": "0WVkDf7jjAGhdceJ18iI2g",
-        "distance_m": 14.083608787740495,
-        "edge_ids": [
-          "E00101",
-          "E00277"
         ]
       },
       {
@@ -45117,50 +38342,10 @@
         ]
       },
       {
-        "target_guid": "2ijDjejvTCZvZnfGVKFht6",
-        "distance_m": 17.083608787740495,
-        "edge_ids": [
-          "E00101",
-          "E00310"
-        ]
-      },
-      {
         "target_guid": "1ufhCZbhH2Ifud2RWdYCPS",
         "distance_m": 18.643038540052082,
         "edge_ids": [
           "E00122"
-        ]
-      },
-      {
-        "target_guid": "0o6iTaAHzAQ9cd4xHGAaOG",
-        "distance_m": 18.683608787740496,
-        "edge_ids": [
-          "E00101",
-          "E00285"
-        ]
-      },
-      {
-        "target_guid": "3KiAVCT1D1t8Xn0nRB8nld",
-        "distance_m": 20.083608787740495,
-        "edge_ids": [
-          "E00101",
-          "E00312"
-        ]
-      },
-      {
-        "target_guid": "2VJpmvlMLEvOKD0Mb9hAiw",
-        "distance_m": 23.083608787740495,
-        "edge_ids": [
-          "E00101",
-          "E00307"
-        ]
-      },
-      {
-        "target_guid": "1EjnchXi9Esx$bY6vHG2RD",
-        "distance_m": 24.483608787740497,
-        "edge_ids": [
-          "E00101",
-          "E00292"
         ]
       }
     ]
@@ -45298,9 +38483,12 @@
         "E00268"
       ],
       "routeStatusCounts": {
-        "pass": 58
+        "pass": 55,
+        "fail": 3
       },
-      "failureReasonCounts": {}
+      "failureReasonCounts": {
+        "stair_block": 3
+      }
     },
     {
       "name": "z=-1.65",
@@ -45346,7 +38534,7 @@
       ],
       "stairGuids": [],
       "rampGuids": [],
-      "issueCount": 0,
+      "issueCount": 3,
       "routeEdgeIds": [],
       "routeStatusCounts": {},
       "failureReasonCounts": {}
@@ -45503,9 +38691,12 @@
         "E00178"
       ],
       "routeStatusCounts": {
-        "pass": 67
+        "pass": 64,
+        "fail": 3
       },
-      "failureReasonCounts": {}
+      "failureReasonCounts": {
+        "stair_block": 3
+      }
     },
     {
       "name": "z=1.35",
@@ -45553,7 +38744,7 @@
       ],
       "stairGuids": [],
       "rampGuids": [],
-      "issueCount": 0,
+      "issueCount": 3,
       "routeEdgeIds": [],
       "routeStatusCounts": {},
       "failureReasonCounts": {}
@@ -45744,9 +38935,12 @@
         "E00223"
       ],
       "routeStatusCounts": {
-        "pass": 95
+        "fail": 3,
+        "pass": 92
       },
-      "failureReasonCounts": {}
+      "failureReasonCounts": {
+        "stair_block": 3
+      }
     },
     {
       "name": "z=4.35",
@@ -45802,7 +38996,7 @@
       ],
       "stairGuids": [],
       "rampGuids": [],
-      "issueCount": 0,
+      "issueCount": 3,
       "routeEdgeIds": [],
       "routeStatusCounts": {},
       "failureReasonCounts": {}
@@ -45989,9 +39183,12 @@
         "E00313"
       ],
       "routeStatusCounts": {
-        "pass": 93
+        "fail": 3,
+        "pass": 90
       },
-      "failureReasonCounts": {}
+      "failureReasonCounts": {
+        "stair_block": 3
+      }
     },
     {
       "name": "z=7.35",
@@ -46047,7 +39244,7 @@
       ],
       "stairGuids": [],
       "rampGuids": [],
-      "issueCount": 0,
+      "issueCount": 3,
       "routeEdgeIds": [],
       "routeStatusCounts": {},
       "failureReasonCounts": {}

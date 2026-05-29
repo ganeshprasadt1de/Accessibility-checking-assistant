@@ -1,6 +1,112 @@
+@prefix acc: <https://example.org/wheelchair-accessibility#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 [] a sh:ValidationReport ;
-    sh:conforms true .
+    sh:conforms false ;
+    sh:result [ a sh:ValidationResult ;
+            sh:focusNode <https://example.org/wheelchair-accessibility#route/E00039> ;
+            sh:resultMessage "Route edge has failed dependencies." ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraint _:n2813050fbcac435da96ae2cc1ad94965b4 ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape acc:RouteShape ;
+            sh:value <https://example.org/wheelchair-accessibility#route/E00039> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <https://example.org/wheelchair-accessibility#route/E00101> ;
+            sh:resultMessage "Route edge has failed dependencies." ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraint _:n2813050fbcac435da96ae2cc1ad94965b4 ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape acc:RouteShape ;
+            sh:value <https://example.org/wheelchair-accessibility#route/E00101> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <https://example.org/wheelchair-accessibility#route/E00037> ;
+            sh:resultMessage "Route edge has failed dependencies." ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraint _:n2813050fbcac435da96ae2cc1ad94965b4 ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape acc:RouteShape ;
+            sh:value <https://example.org/wheelchair-accessibility#route/E00037> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <https://example.org/wheelchair-accessibility#route/E00102> ;
+            sh:resultMessage "Route edge has failed dependencies." ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraint _:n2813050fbcac435da96ae2cc1ad94965b4 ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape acc:RouteShape ;
+            sh:value <https://example.org/wheelchair-accessibility#route/E00102> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <https://example.org/wheelchair-accessibility#route/E00040> ;
+            sh:resultMessage "Route edge has failed dependencies." ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraint _:n2813050fbcac435da96ae2cc1ad94965b4 ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape acc:RouteShape ;
+            sh:value <https://example.org/wheelchair-accessibility#route/E00040> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <https://example.org/wheelchair-accessibility#route/E00042> ;
+            sh:resultMessage "Route edge has failed dependencies." ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraint _:n2813050fbcac435da96ae2cc1ad94965b4 ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape acc:RouteShape ;
+            sh:value <https://example.org/wheelchair-accessibility#route/E00042> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <https://example.org/wheelchair-accessibility#route/E00150> ;
+            sh:resultMessage "Route edge has failed dependencies." ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraint _:n2813050fbcac435da96ae2cc1ad94965b4 ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape acc:RouteShape ;
+            sh:value <https://example.org/wheelchair-accessibility#route/E00150> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <https://example.org/wheelchair-accessibility#route/E00148> ;
+            sh:resultMessage "Route edge has failed dependencies." ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraint _:n2813050fbcac435da96ae2cc1ad94965b4 ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape acc:RouteShape ;
+            sh:value <https://example.org/wheelchair-accessibility#route/E00148> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <https://example.org/wheelchair-accessibility#route/E00038> ;
+            sh:resultMessage "Route edge has failed dependencies." ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraint _:n2813050fbcac435da96ae2cc1ad94965b4 ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape acc:RouteShape ;
+            sh:value <https://example.org/wheelchair-accessibility#route/E00038> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <https://example.org/wheelchair-accessibility#route/E00041> ;
+            sh:resultMessage "Route edge has failed dependencies." ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraint _:n2813050fbcac435da96ae2cc1ad94965b4 ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape acc:RouteShape ;
+            sh:value <https://example.org/wheelchair-accessibility#route/E00041> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <https://example.org/wheelchair-accessibility#route/E00100> ;
+            sh:resultMessage "Route edge has failed dependencies." ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraint _:n2813050fbcac435da96ae2cc1ad94965b4 ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape acc:RouteShape ;
+            sh:value <https://example.org/wheelchair-accessibility#route/E00100> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <https://example.org/wheelchair-accessibility#route/E00149> ;
+            sh:resultMessage "Route edge has failed dependencies." ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraint _:n2813050fbcac435da96ae2cc1ad94965b4 ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape acc:RouteShape ;
+            sh:value <https://example.org/wheelchair-accessibility#route/E00149> ] .
+
+_:n2813050fbcac435da96ae2cc1ad94965b4 a sh:SPARQLConstraint ;
+    sh:message "Route edge has failed dependencies." ;
+    sh:select """
+            PREFIX acc: <https://example.org/wheelchair-accessibility#>
+            SELECT $this WHERE {
+                $this acc:routeStatus "fail" .
+            }
+        """ .
 

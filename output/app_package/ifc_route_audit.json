@@ -45,9 +45,12 @@
       16
     ],
     "status_counts": {
-      "pass": 313
+      "pass": 301,
+      "fail": 12
     },
-    "failure_reason_counts": {}
+    "failure_reason_counts": {
+      "stair_block": 12
+    }
   },
   "shacl_route_rule_note": "The current SHACL route rule checks acc:routeStatus = 'fail'. The dependency facts are calculated before SHACL by the backend. This is useful for reporting but it is not a full route-planning proof inside SHACL."
 }

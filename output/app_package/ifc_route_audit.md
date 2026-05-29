@@ -16,8 +16,8 @@
 - Doors with route edges: 77
 - Doors without route edges: 0
 - Connected component sizes: [22, 21, 18, 16]
-- Route status counts: {'pass': 313}
-- Failure reason counts: {}
+- Route status counts: {'pass': 301, 'fail': 12}
+- Failure reason counts: {'stair_block': 12}
 
 ## SHACL Route Rule
 

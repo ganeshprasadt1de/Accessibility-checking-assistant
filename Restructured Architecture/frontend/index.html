@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wheelchair Route Checker</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>Wheelchair Route Checker</h1>
+        <p>IFC geometry, IFCtoLBD RDF, SHACL checks, and precomputed door routes.</p>
+      </div>
+      <nav>
+        <button data-page="results" class="active">Check Results</button>
+        <button data-page="visualisation">Visualisation</button>
+        <button data-page="model">Building Model</button>
+        <button data-page="simulation">Wheelchair Simulation</button>
+      </nav>
+    </header>
+
+    <main>
+      <section id="results" class="page active">
+        <div class="summary" id="summary"></div>
+        <h2>Extracted Building Data</h2>
+        <div class="tableWrap"><table id="elementTable"></table></div>
+        <h2>Issues</h2>
+        <div class="tableWrap"><table id="issueTable"></table></div>
+      </section>
+
+      <section id="visualisation" class="page">
+        <div class="downloads">
+          <a href="/api/ttl/raw" download="raw_lbd_graph.ttl">Download raw_lbd_graph.ttl</a>
+          <a href="/api/ttl/enriched" download="lbd_graph.ttl">Download lbd_graph.ttl</a>
+        </div>
+        <div class="graphTools">
+          <input id="graphSearch" placeholder="Search door, room, route, GUID" />
+          <button id="graphFit">Fit</button>
+          <button id="graphPause">Pause</button>
+          <span id="graphHint">Wheel zooms, drag background pans, drag nodes moves them.</span>
+        </div>
+        <div class="graphLegend">
+          <span><i class="legendDot element"></i>element</span>
+          <span><i class="legendDot space"></i>space</span>
+          <span><i class="legendDot route"></i>route</span>
+          <span><i class="legendDot issue"></i>issue</span>
+          <span><i class="legendDot value"></i>value</span>
+        </div>
+        <div class="split graphSplit">
+          <div class="graphPanel">
+            <h2>Raw LBD Graph</h2>
+            <p id="rawGraphStats" class="graphStats"></p>
+            <canvas id="rawGraph"></canvas>
+          </div>
+          <div class="graphPanel">
+            <h2>Enriched Accessibility Graph</h2>
+            <p id="enrichedGraphStats" class="graphStats"></p>
+            <canvas id="enrichedGraph"></canvas>
+          </div>
+        </div>
+        <aside id="graphInspector" class="graphInspector">Hover or click a node.</aside>
+      </section>
+
+      <section id="model" class="page">
+        <div class="viewerToolbar">
+          <div class="segmented" aria-label="3D control mode">
+            <button id="modeOrbit" class="active">Orbit</button>
+            <button id="modePan">Pan</button>
+            <button id="modeSide">Side Rotate</button>
+          </div>
+          <button id="viewFit">Fit Model</button>
+          <button id="viewTop">Top View</button>
+          <button id="viewDoors">Show Doors</button>
+          <label class="viewerToggle"><input id="toggleRouteOnly" type="checkbox" /> Route focus</label>
+        </div>
+        <div class="modelLayout">
+          <div id="viewer"></div>
+          <aside>
+            <h2>Door Routes</h2>
+            <p id="selectedDoor">Click a door box in the model.</p>
+            <div id="routeList"></div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="simulation" class="page">
+        <div class="simulationShell">
+          <div class="simToolbar">
+            <label class="floorSelectLabel">Floor <select id="floorSelect"></select></label>
+            <button id="simRun">Run Check</button>
+            <label class="speedControl">Speed <input id="simSpeed" type="range" min="0.35" max="2.4" step="0.05" value="0.85" /></label>
+            <button id="simPlayPause">Pause</button>
+            <button id="simReset">Reset</button>
+          </div>
+          <div class="simLayout">
+            <div id="simulationViewer"></div>
+            <aside class="simPanel">
+              <h2 id="simTitle">Floor indoor check</h2>
+              <p id="simStatus">Choose a floor and run the check.</p>
+              <div class="simMetrics" id="simMetrics"></div>
+              <div class="simLegend">
+                <span><i class="legendDot passDot"></i>clear</span>
+                <span><i class="legendDot warnDot"></i>watch</span>
+                <span><i class="legendDot failDot"></i>blocked</span>
+              </div>
+              <p class="simSource" id="simSource">The check uses the selected floor, its doors, spaces, routes, stairs, and ramps from the IFC file.</p>
+            </aside>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.165.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.165.0/examples/jsm/"
+        }
+      }
+    </script>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

@@ -1,9 +1,0 @@
-ifcopenshell
-rdflib
-pyshacl
-streamlit
-pandas
-requests
-shapely
-plotly
-open3d

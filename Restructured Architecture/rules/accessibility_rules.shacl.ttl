@@ -1,0 +1,62 @@
+@prefix acc: <https://example.org/wheelchair-accessibility#> .
+@prefix props: <https://w3id.org/props#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+acc:DoorWidthShape
+    a sh:NodeShape ;
+    sh:targetClass acc:IfcDoor ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "Door clear width is below 0.90 m." ;
+        sh:select """
+            PREFIX acc: <https://example.org/wheelchair-accessibility#>
+            PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+            SELECT $this WHERE {
+                $this acc:derivedDoorWidthM ?width .
+                FILTER(xsd:decimal(?width) < 0.90)
+            }
+        """ ;
+    ] .
+
+acc:RampShape
+    a sh:NodeShape ;
+    sh:targetClass acc:IfcRamp ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "Ramp slope is above 6 percent." ;
+        sh:select """
+            PREFIX acc: <https://example.org/wheelchair-accessibility#>
+            PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+            SELECT $this WHERE {
+                $this acc:rampSlopePercent ?slope .
+                FILTER(xsd:decimal(?slope) > 6.0)
+            }
+        """ ;
+    ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "Ramp usable width is below 1.20 m." ;
+        sh:select """
+            PREFIX acc: <https://example.org/wheelchair-accessibility#>
+            PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+            SELECT $this WHERE {
+                $this acc:rampUsableWidthM ?width .
+                FILTER(xsd:decimal(?width) < 1.20)
+            }
+        """ ;
+    ] .
+
+acc:RouteShape
+    a sh:NodeShape ;
+    sh:targetClass acc:RouteEdge ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "Route edge has failed dependencies." ;
+        sh:select """
+            PREFIX acc: <https://example.org/wheelchair-accessibility#>
+            SELECT $this WHERE {
+                $this acc:routeStatus "fail" .
+            }
+        """ ;
+    ] .

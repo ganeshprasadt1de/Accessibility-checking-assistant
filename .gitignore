@@ -16,5 +16,5 @@ sample_models/
 ~$*.pptx
 *.msi
 .service_state.json
-Restructured Architecture/output/app_package/_work/
-Restructured Architecture/output/app_package/*.ifc
+output/app_package/_work/
+output/app_package/*.ifc

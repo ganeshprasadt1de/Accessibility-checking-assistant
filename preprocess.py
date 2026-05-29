@@ -14,6 +14,7 @@ from backend.ifc_tools import (
     load_raw_graph,
     try_ifctolbd,
 )
+from backend.geometry import distance
 from backend.package_writer import write_json_package
 from backend.routes import add_routes_to_graph, build_route_edges, save_route_binary
 from backend.rules import evaluate_value_rules
@@ -56,6 +57,7 @@ def main() -> int:
     add_routes_to_graph(graph, edges)
     issues = evaluate_value_rules(elements)
     _add_route_issues(issues, elements, edges)
+    _add_stair_approach_issues(issues, elements)
     for issue in issues:
         issue_uri = ACC[f"issue/{issue.issue_id}"]
         graph.add((issue_uri, RDF.type, ACC.AccessibilityIssue))
@@ -113,6 +115,38 @@ def _add_route_issues(issues: list[Issue], elements, edges) -> None:
                 source="Indoor route path check",
                 short_text=fallback(rule_id),
                 details=f"Route edge {edge.edge_id} failed: {', '.join(edge.reasons)}.",
+            )
+        )
+
+
+def _add_stair_approach_issues(issues: list[Issue], elements) -> None:
+    doors = [element for element in elements if element.ifc_type == "IfcDoor" and element.center]
+    stairs = [element for element in elements if element.ifc_type == "IfcStair" and element.center]
+    for stair in stairs:
+        same_floor_doors = [
+            door
+            for door in doors
+            if (door.storey and stair.storey and door.storey == stair.storey)
+            or (door.center and stair.center and abs(door.center[2] - stair.center[2]) <= 2.2)
+        ]
+        if not same_floor_doors:
+            continue
+        start = min(same_floor_doors, key=lambda door: distance(door.center, stair.center))
+        measured = distance(start.center, stair.center)
+        issues.append(
+            Issue(
+                issue_id=f"I{len(issues) + 1:04d}",
+                element_guid=stair.guid,
+                element_label=stair.label,
+                element_type=stair.ifc_type,
+                rule_id="stair_block",
+                severity="fail",
+                measured=measured,
+                required=0.0,
+                unit="m",
+                source="Stair approach check",
+                short_text=fallback("stair_block"),
+                details=f"Approach from {start.label} reaches {stair.label}. Stairs are not a wheelchair route.",
             )
         )
 

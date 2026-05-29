@@ -42,7 +42,7 @@ Wheelchair Simulation:
 
 - floor dropdown
 - isometric floor view
-- small cartoon wheelchair user
+- small wheelchair user
 - green route when it passes
 - red route when it fails
 

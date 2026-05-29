@@ -3,7 +3,7 @@
     "elementCount": 312,
     "doorCount": 77,
     "routeEdgeCount": 313,
-    "issueCount": 0,
+    "issueCount": 4,
     "missingGeometryCount": 0,
     "ifctolbd": "Java or Maven not found, used IFC-derived fallback LBD graph",
     "shacl": {
@@ -9094,7 +9094,64 @@
       "extra": {}
     }
   ],
-  "issues": [],
+  "issues": [
+    {
+      "issue_id": "I0001",
+      "element_guid": "0o_5lbt6jCpRs3V3FoLyNr",
+      "element_label": "IfcStair Treppe-KG",
+      "element_type": "IfcStair",
+      "rule_id": "stair_block",
+      "severity": "fail",
+      "measured": 6.410451862897743,
+      "required": 0.0,
+      "unit": "m",
+      "source": "Stair approach check",
+      "short_text": "stair blocks route",
+      "details": "Approach from IfcDoor T\u00fcr-018 reaches IfcStair Treppe-KG. Stairs are not a wheelchair route."
+    },
+    {
+      "issue_id": "I0002",
+      "element_guid": "1Kl5_Wzb98HOSGZ8eaBX2f",
+      "element_label": "IfcStair Treppe-EG",
+      "element_type": "IfcStair",
+      "rule_id": "stair_block",
+      "severity": "fail",
+      "measured": 6.410451862897743,
+      "required": 0.0,
+      "unit": "m",
+      "source": "Stair approach check",
+      "short_text": "stair blocks route",
+      "details": "Approach from IfcDoor T\u00fcr-018 reaches IfcStair Treppe-EG. Stairs are not a wheelchair route."
+    },
+    {
+      "issue_id": "I0003",
+      "element_guid": "3Zb0LaH4z9HPmaVjAzVngL",
+      "element_label": "IfcStair Treppe-1-OG",
+      "element_type": "IfcStair",
+      "rule_id": "stair_block",
+      "severity": "fail",
+      "measured": 6.410451862897743,
+      "required": 0.0,
+      "unit": "m",
+      "source": "Stair approach check",
+      "short_text": "stair blocks route",
+      "details": "Approach from IfcDoor T\u00fcr-018 reaches IfcStair Treppe-1-OG. Stairs are not a wheelchair route."
+    },
+    {
+      "issue_id": "I0004",
+      "element_guid": "0xQhptVzf44Qzhs9jMEILa",
+      "element_label": "IfcStair Treppe-2-OG",
+      "element_type": "IfcStair",
+      "rule_id": "stair_block",
+      "severity": "fail",
+      "measured": 6.410451862897743,
+      "required": 0.0,
+      "unit": "m",
+      "source": "Stair approach check",
+      "short_text": "stair blocks route",
+      "details": "Approach from IfcDoor T\u00fcr-018 reaches IfcStair Treppe-2-OG. Stairs are not a wheelchair route."
+    }
+  ],
   "routeEdges": [
     {
       "edgeId": "E00001",
@@ -45236,7 +45293,7 @@
         "0o_5lbt6jCpRs3V3FoLyNr"
       ],
       "rampGuids": [],
-      "issueCount": 0,
+      "issueCount": 1,
       "routeEdgeIds": [
         "E00089",
         "E00090",
@@ -45432,7 +45489,7 @@
         "1Kl5_Wzb98HOSGZ8eaBX2f"
       ],
       "rampGuids": [],
-      "issueCount": 0,
+      "issueCount": 1,
       "routeEdgeIds": [
         "E00001",
         "E00002",
@@ -45645,7 +45702,7 @@
         "3Zb0LaH4z9HPmaVjAzVngL"
       ],
       "rampGuids": [],
-      "issueCount": 0,
+      "issueCount": 1,
       "routeEdgeIds": [
         "E00037",
         "E00038",
@@ -45892,7 +45949,7 @@
         "0xQhptVzf44Qzhs9jMEILa"
       ],
       "rampGuids": [],
-      "issueCount": 0,
+      "issueCount": 1,
       "routeEdgeIds": [
         "E00100",
         "E00101",

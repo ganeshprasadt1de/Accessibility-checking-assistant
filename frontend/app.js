@@ -674,6 +674,10 @@ function setupViewer() {
         } else if (obj.userData.ifcType === "IfcSpace") {
           obj.material.opacity = 0.12;
           obj.renderOrder = 0;
+        } else if (obj.userData.ifcType === "IfcStair") {
+          obj.material.color.set(0xb3261e);
+          obj.material.opacity = 0.9;
+          obj.renderOrder = 3;
         } else {
           obj.material.opacity = 0.42;
           obj.renderOrder = 1;
@@ -749,6 +753,8 @@ function setRouteFocus(enabled) {
     const type = obj.userData.ifcType;
     if (type === "IfcDoor") {
       obj.material.opacity = 1;
+    } else if (type === "IfcStair") {
+      obj.material.opacity = enabled ? 1 : 0.9;
     } else if (enabled) {
       obj.material.opacity = type === "IfcSpace" ? 0.04 : 0.18;
     } else {
@@ -761,9 +767,9 @@ function addEdgeOverlay(mesh) {
   if (!mesh.geometry || edgeOverlayGroup.children.length > 900) return;
   const edges = new THREE.EdgesGeometry(mesh.geometry, 35);
   const material = new THREE.LineBasicMaterial({
-    color: mesh.userData.ifcType === "IfcDoor" ? 0x5ce1ff : 0xc9d1cd,
+    color: mesh.userData.ifcType === "IfcDoor" ? 0x5ce1ff : mesh.userData.ifcType === "IfcStair" ? 0xff7a70 : 0xc9d1cd,
     transparent: true,
-    opacity: mesh.userData.ifcType === "IfcDoor" ? 0.85 : 0.16,
+    opacity: mesh.userData.ifcType === "IfcDoor" ? 0.85 : mesh.userData.ifcType === "IfcStair" ? 0.9 : 0.16,
   });
   const line = new THREE.LineSegments(edges, material);
   line.matrix.copy(mesh.matrixWorld);
@@ -825,14 +831,15 @@ async function showRoutes(guid) {
   const data = await response.json();
   routeGroup.clear();
   const byEdge = new Map(appData.routeEdges.map((e) => [e.edgeId, e]));
-  const visible = data.routes;
+  const stairRoute = stairApproachRouteForDoor(guid);
+  const visible = stairRoute ? [stairRoute, ...data.routes] : data.routes;
   if (visible[0]) addRoutePath(visible[0], byEdge);
   document.querySelector("#routeList").innerHTML = visible
     .map((route) => {
       const edges = route.edge_ids.map((id) => byEdge.get(id)).filter(Boolean);
-      const failed = edges.some((e) => e.status === "fail");
+      const failed = route.status === "fail" || edges.some((e) => e.status === "fail");
       const reasonCodes = [...new Set(edges.flatMap((e) => e.reasons))];
-      const reason = reasonCodes.map(reasonText).join(", ") || "clear";
+      const reason = route.reason || reasonCodes.map(reasonText).join(", ") || "clear";
       const target = appData.elements.find((e) => e.guid === route.target_guid);
       return `<div class="routeItem" data-target="${escapeHtml(route.target_guid)}"><strong>${escapeHtml(cleanElementName(target?.name || target?.label || route.target_guid))}</strong><br><span class="${failed ? "fail" : "pass"}">${failed ? "failed" : "passed"}</span> ${round(route.distance_m)} m<br>${escapeHtml(reason)}</div>`;
     })
@@ -852,6 +859,12 @@ async function showRoutes(guid) {
 }
 
 function addRoutePath(route, byEdge) {
+  if (route.path?.length) {
+    const geometry = new THREE.BufferGeometry().setFromPoints(route.path.map((p) => new THREE.Vector3(p[0], p[1], p[2] + 0.25)));
+    const material = new THREE.LineBasicMaterial({ color: route.status === "fail" ? 0xb3261e : 0x2d7d46, transparent: true, opacity: route.status === "fail" ? 0.78 : 0.44 });
+    routeGroup.add(new THREE.Line(geometry, material));
+    return;
+  }
   const points = [];
   let failed = false;
   for (const edgeId of route.edge_ids) {
@@ -867,6 +880,34 @@ function addRoutePath(route, byEdge) {
   const geometry = new THREE.BufferGeometry().setFromPoints(points.map((p) => new THREE.Vector3(p[0], p[1], p[2] + 0.25)));
   const material = new THREE.LineBasicMaterial({ color: failed ? 0xb3261e : 0x2d7d46, transparent: true, opacity: failed ? 0.72 : 0.44 });
   routeGroup.add(new THREE.Line(geometry, material));
+}
+
+function stairApproachRouteForDoor(guid) {
+  const door = appData.elements.find((element) => element.guid === guid && element.ifcType === "IfcDoor" && element.center);
+  if (!door) return null;
+  const stairs = appData.elements.filter((element) => element.ifcType === "IfcStair" && element.center && sameFloorElement(door, element));
+  if (!stairs.length) return null;
+  const stair = stairs
+    .map((element) => ({ element, distance: distance3d(door.center, element.center) }))
+    .sort((a, b) => a.distance - b.distance)[0];
+  const mid = [door.center[0], door.center[1], stair.element.center[2]];
+  return {
+    target_guid: stair.element.guid,
+    distance_m: stair.distance,
+    edge_ids: [],
+    status: "fail",
+    reason: "stair blocks route",
+    path: [door.center, mid, stair.element.center],
+  };
+}
+
+function sameFloorElement(a, b) {
+  if (a.storey && b.storey && a.storey === b.storey) return true;
+  return a.center && b.center && Math.abs(a.center[2] - b.center[2]) <= 2.2;
+}
+
+function distance3d(a, b) {
+  return Math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2);
 }
 
 function addRouteLine(edge) {

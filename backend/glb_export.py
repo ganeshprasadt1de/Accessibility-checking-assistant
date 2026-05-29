@@ -69,6 +69,7 @@ def export_box_glb(elements: list[Element], edges: list[RouteEdge], output_path:
         {"name": "door", "pbrMetallicRoughness": {"baseColorFactor": [0.08, 0.42, 0.62, 1], "metallicFactor": 0, "roughnessFactor": 0.7}},
         {"name": "obstacle", "pbrMetallicRoughness": {"baseColorFactor": [0.55, 0.55, 0.52, 1], "metallicFactor": 0, "roughnessFactor": 0.9}},
         {"name": "ramp", "pbrMetallicRoughness": {"baseColorFactor": [0.50, 0.38, 0.18, 1], "metallicFactor": 0, "roughnessFactor": 0.9}},
+        {"name": "stair", "pbrMetallicRoughness": {"baseColorFactor": [0.70, 0.15, 0.12, 1], "metallicFactor": 0, "roughnessFactor": 0.85}},
     ]
     meshes = []
     nodes = []
@@ -83,6 +84,8 @@ def export_box_glb(elements: list[Element], edges: list[RouteEdge], output_path:
             material_index = 1
         elif element.ifc_type == "IfcRamp":
             material_index = 3
+        elif element.ifc_type == "IfcStair":
+            material_index = 4
         mesh_index = len(meshes)
         meshes.append({"name": element.label, "primitives": [{"attributes": {"POSITION": 0}, "indices": 1, "material": material_index}]})
         cx, cy, cz = element.center

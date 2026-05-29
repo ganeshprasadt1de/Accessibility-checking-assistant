@@ -75,6 +75,7 @@ async function init() {
   appData = await response.json();
   renderSummary();
   renderTables();
+  setupAssistant();
 }
 
 function renderSummary() {
@@ -113,6 +114,55 @@ function renderTables() {
     displaySource(i.source),
   ]);
   fillTable("#issueTable", ["Type", "Element", "Issue", "Measured", "Required", "Source"], issueRows);
+}
+
+function setupAssistant() {
+  const input = document.querySelector("#assistantQuestion");
+  const button = document.querySelector("#assistantAsk");
+  const answer = document.querySelector("#assistantAnswer");
+  if (!input || !button || !answer) return;
+
+  const ask = async () => {
+    const question = input.value.trim() || "Explain the checker result.";
+    answer.textContent = "Preparing explanation...";
+    button.disabled = true;
+    try {
+      const response = await fetch("/api/assistant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Assistant request failed.");
+      answer.textContent = `${data.answer || localAssistantAnswer()} Source: ${data.source || "prepared checker facts"}.`;
+    } catch {
+      answer.textContent = `${localAssistantAnswer()} Source: prepared checker facts.`;
+    } finally {
+      button.disabled = false;
+    }
+  };
+
+  button.addEventListener("click", ask);
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") ask();
+  });
+}
+
+function localAssistantAnswer() {
+  const floors = appData.floors
+    .filter((floor) => floor.doorGuids?.length || floor.routeEdgeIds?.length)
+    .map((floor) => {
+      const failed = floor.routeStatusCounts?.fail || 0;
+      return `${floor.name}: ${floor.doorGuids?.length || 0} doors, ${floor.routeEdgeIds?.length || 0} routes, ${failed} failed`;
+    })
+    .join("; ");
+  const issues = appData.summary.issueCount || 0;
+  const failedRoutes = appData.routeEdges.filter((edge) => edge.status === "fail").length;
+  const result =
+    issues === 0 && failedRoutes === 0
+      ? "All generated indoor routes pass the current prototype checks."
+      : `The checker found ${issues} issues and ${failedRoutes} failed route edges.`;
+  return `${result} It checks door width, route width, turning space, stair blockers, ramp width, and ramp slope. By floor: ${floors}.`;
 }
 
 function fillTable(selector, headers, rows) {

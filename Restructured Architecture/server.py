@@ -5,6 +5,8 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
+from backend.short_explainer import explain_question
+
 ROOT = Path(__file__).resolve().parent
 FRONTEND = ROOT / "frontend"
 PACKAGE = ROOT / "output" / "app_package"
@@ -42,6 +44,26 @@ class Handler(SimpleHTTPRequestHandler):
             return
         super().do_GET()
 
+    def do_POST(self) -> None:
+        if self.path.startswith("/api/assistant"):
+            length = int(self.headers.get("Content-Length", "0") or 0)
+            try:
+                payload = json.loads(self.rfile.read(length).decode("utf-8") or "{}")
+            except json.JSONDecodeError:
+                self._json({"error": "Question could not be read."}, 400)
+                return
+
+            data_path = PACKAGE / "app_data.json"
+            if not data_path.exists():
+                self._json({"error": "Run preprocess.py first."}, 404)
+                return
+
+            question = str(payload.get("question", "")).strip() or "Explain the checker result."
+            data = json.loads(data_path.read_text(encoding="utf-8"))
+            self._json(explain_question(question, assistant_context(data)))
+            return
+        self._json({"error": "Unknown endpoint."}, 404)
+
     def _json(self, payload: dict, status: int = 200) -> None:
         body = json.dumps(payload).encode("utf-8")
         self.send_response(status)
@@ -61,6 +83,37 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
         self.wfile.write(body)
+
+
+def assistant_context(data: dict) -> dict:
+    rule_keys = [
+        "door_width_m",
+        "corridor_width_m",
+        "turning_space_m",
+        "ramp_width_m",
+        "ramp_slope_percent",
+    ]
+    floors = []
+    for floor in data.get("floors", []):
+        door_count = len(floor.get("doorGuids", []))
+        route_count = len(floor.get("routeEdgeIds", []))
+        if not door_count and not route_count:
+            continue
+        floors.append(
+            {
+                "name": floor.get("name") or "Unnamed floor",
+                "doors": door_count,
+                "routeEdges": route_count,
+                "failedRouteEdges": int(floor.get("routeStatusCounts", {}).get("fail", 0) or 0),
+                "failureReasons": floor.get("failureReasonCounts", {}),
+            }
+        )
+    return {
+        "summary": data.get("summary", {}),
+        "rules": {key: data.get("rules", {}).get(key) for key in rule_keys},
+        "floors": floors,
+        "issues": data.get("issues", [])[:20],
+    }
 
 
 def main() -> None:

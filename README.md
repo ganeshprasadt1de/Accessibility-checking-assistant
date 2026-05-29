@@ -22,6 +22,7 @@ The app checks only indoor wheelchair movement and related building elements:
 - stairs close to movement routes
 - route continuity between doors on each floor
 - floor-by-floor isometric route simulation
+- plain language explanation of the prepared checker result
 
 It does not check toilets, lifts, outdoor approach paths, fire safety, furniture comfort, or full legal approval.
 
@@ -43,6 +44,10 @@ Rule values are used only as requirements. They are not used as fake IFC measure
 
 If a required width, ramp value, space value, or geometry value is missing, the app reports it as missing.
 
+The assistant explains the prepared checker facts. It does not decide if a route passes or fails.
+
+If Ollama is not running, the app still gives a built-in explanation from the same prepared facts.
+
 ## Pipeline
 
 ```text
@@ -52,6 +57,7 @@ IFC input from command line
 -> RDF geometry enrichment
 -> floor-based door route graph
 -> prototype indoor route checks
+-> assistant explanation from prepared facts
 -> static frontend package
 ```
 
@@ -194,6 +200,7 @@ Check Results:
 
 - extracted building data table
 - issues table
+- assistant question box for plain language explanations
 
 Visualisation:
 
@@ -231,6 +238,8 @@ python -m pip install -r requirements.txt
 
 Java and Maven are needed only when running the bundled IFCtoLBD converter. If they are missing or the converter cannot be called, the app writes a clear note and uses an IFC-derived RDF fallback so the rest of the pipeline can still be inspected.
 
+Ollama is optional. If Ollama is running with `qwen3:8b`, the assistant can rewrite the prepared facts in natural language. If Ollama is not running, the app uses its built-in explanation.
+
 ## Main Files
 
 ```text
@@ -241,7 +250,7 @@ backend/routes.py                floor route graph and route checks
 backend/rules.py                 focused wheelchair issue checks
 backend/shacl_runner.py          SHACL SPARQL validation
 backend/glb_export.py            GLB box model export
-backend/short_explainer.py       short deterministic issue text
+backend/short_explainer.py       assistant and short issue text
 frontend/index.html              app shell
 frontend/app.js                  tables, graph view, model view, and floor simulation
 frontend/styles.css              app styling

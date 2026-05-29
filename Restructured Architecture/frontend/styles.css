@@ -105,6 +105,33 @@ main {
   font-size: 13px;
 }
 
+.assistant {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  max-width: 920px;
+  margin-bottom: 8px;
+}
+
+.assistant input {
+  border: 1px solid #9aa7a3;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 14px;
+  min-width: 0;
+}
+
+.assistant p {
+  grid-column: 1 / -1;
+  color: #3d494b;
+  font-size: 14px;
+  line-height: 1.45;
+  background: #ffffff;
+  border: 1px solid #d9ded8;
+  border-radius: 8px;
+  padding: 12px;
+}
+
 .tableWrap {
   overflow: auto;
   background: #ffffff;

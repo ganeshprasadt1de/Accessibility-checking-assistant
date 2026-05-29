@@ -13,7 +13,7 @@ The first prototype checks these rules:
 - door or opening clear width must be at least 0.90 m
 - main indoor route width should be at least 1.50 m
 - turning space should be at least 1.50 m by 1.50 m
-- stairs block a wheelchair route when the route space contains stair geometry
+- stairs block a wheelchair route when the route path enters the stair area
 - ramps must be at least 1.20 m wide and at most 6 percent slope
 
 The app is only for indoor route checks. It does not check toilets, lifts, outdoor paths, fire safety, or full legal approval.

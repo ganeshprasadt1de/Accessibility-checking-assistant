@@ -176,9 +176,6 @@ def _route_hits_stair(path: list[tuple[float, float, float]], obstacles: list[El
     stairs = [item for item in obstacles if item.ifc_type == "IfcStair"]
     if not stairs:
         return False
-    if space and space.bbox_min and space.bbox_max:
-        if any(intersects_box(space.bbox_min, space.bbox_max, stair.bbox_min, stair.bbox_max) for stair in stairs):
-            return True
     half = RULE_LIMITS.clearance_width_m / 2
     for point in _sample_path(path, step=0.35):
         x, y, z = point

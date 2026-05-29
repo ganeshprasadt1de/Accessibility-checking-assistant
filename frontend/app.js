@@ -33,6 +33,7 @@ let simSpeed = 0.85;
 let simPath = [];
 let simScenarioData;
 let simRouteIndex = 0;
+let simBlockedHold = 0;
 
 const pages = document.querySelectorAll(".page");
 document.querySelectorAll("nav button").forEach((button) => {
@@ -961,6 +962,7 @@ function setupSimulation() {
 function loadSimulationScenario(name) {
   simProgress = 0;
   simRouteIndex = 0;
+  simBlockedHold = 0;
   simPlaying = true;
   document.querySelector("#simPlayPause").textContent = "Pause";
   simWorld.clear();
@@ -1020,17 +1022,19 @@ function buildFloorScenario() {
   const failedEdges = floorEdges.filter((edge) => edge.status === "fail");
   const transform = createFloorTransform(floorElements);
   const startDoors = chooseFloorStartDoors(floor, floorDoors, floorEdges);
-  const routePaths = buildSimulationRoutesFromStarts(startDoors, floorEdges, transform);
+  const routePaths = [...buildStairApproachRoutes(startDoors, floorElements, transform), ...buildSimulationRoutesFromStarts(startDoors, floorEdges, transform)];
   const chosenRoute = routePaths[0];
   const path = routePaths[0]?.path || [new THREE.Vector3(-5, 0.08, 0), new THREE.Vector3(5, 0.08, 0)];
   const reasonCounts = countReasons(floorEdges);
   const floorFailReason = topReasonText(reasonCounts);
   const startText = startDoors.map((door) => cleanElementName(door.name || door.label)).join(", ") || "no start door";
+  const visualFailedRoutes = routePaths.filter((route) => route.status === "fail").length;
+  const blockerText = failedEdges.length ? floorFailReason : visualFailedRoutes ? "stair blocks route" : "none";
   return {
     title: `${floor.name} indoor check`,
     status: chosenRoute
-      ? failedEdges.length
-        ? `Starting from ${startText}. Passing routes run first when available. Failed stair routes are shown after that: ${floorFailReason}.`
+      ? visualFailedRoutes
+        ? `Starting from ${startText}. The stair approach is shown as blocked, then the other door routes continue.`
         : `Starting from ${startText}. All generated routes on this floor pass the prototype checks.`
       : "No door-to-door route edges were generated for this floor.",
     source: "Prototype indoor rules: door width, route width, turning space, stair blockers, ramp width and slope.",
@@ -1042,8 +1046,9 @@ function buildFloorScenario() {
       ["Start door", startText, startDoors.length ? "pass" : "fail"],
       ["Doors on floor", String(floorDoors.length), floorDoors.length ? "pass" : "fail"],
       ["Route edges", String(floorEdges.length), floorEdges.length ? "pass" : "fail"],
-      ["Failed edges", String(failedEdges.length), failedEdges.length ? "fail" : "pass"],
-      ["Main reason", topReasonText(reasonCounts), failedEdges.length ? "fail" : "pass"],
+      ["Failed door routes", String(failedEdges.length), failedEdges.length ? "fail" : "pass"],
+      ["Stair approach", visualFailedRoutes ? "blocked" : "clear", visualFailedRoutes ? "fail" : "pass"],
+      ["Main reason", blockerText, visualFailedRoutes ? "fail" : "pass"],
     ],
     build(group) {
       addFloorBase(group, floorElements, transform);
@@ -1053,6 +1058,33 @@ function buildFloorScenario() {
       addFloorBlockers(group, floorElements, transform);
     },
   };
+}
+
+function buildStairApproachRoutes(startDoors, floorElements, transform) {
+  const stairs = floorElements.filter((element) => element.ifcType === "IfcStair" && element.bboxMin && element.bboxMax);
+  if (!startDoors.length || !stairs.length) return [];
+  const routes = [];
+  for (const startDoor of startDoors) {
+    if (!startDoor.center) continue;
+    const startPoint = transform.point(startDoor.center);
+    const stair = stairs
+      .map((item) => {
+        const center = [(item.bboxMin[0] + item.bboxMax[0]) / 2, (item.bboxMin[1] + item.bboxMax[1]) / 2, (item.bboxMin[2] + item.bboxMax[2]) / 2];
+        return { item, center, distance: Math.hypot(center[0] - startDoor.center[0], center[1] - startDoor.center[1]) };
+      })
+      .sort((a, b) => a.distance - b.distance)[0];
+    const stairPoint = transform.point(stair.center);
+    const midPoint = new THREE.Vector3(startPoint.x, startPoint.y, stairPoint.z);
+    routes.push({
+      key: `${startDoor.guid}:stair:${stair.item.guid}`,
+      edgeId: "stair approach",
+      status: "fail",
+      reason: "stair blocks route",
+      blockAt: 0.88,
+      path: [startPoint, midPoint, stairPoint],
+    });
+  }
+  return routes;
 }
 
 function chooseFloorStartDoors(floor, floorDoors, floorEdges) {
@@ -1111,6 +1143,13 @@ function buildSimulationRoutesFromStarts(startDoors, floorEdges, transform) {
     if (!startDoors.some((door) => door.guid === edge.startGuid || door.guid === edge.endGuid)) continue;
     const startGuid = startDoors.some((door) => door.guid === edge.startGuid) ? edge.startGuid : edge.endGuid;
     const item = routePathFromEdgeIds(startGuid, [edge.edgeId], edgeById, transform, "fail", edge.reasons?.[0] ? reasonText(edge.reasons[0]) : "blocked", null);
+    if (item && !seen.has(item.key)) {
+      seen.add(item.key);
+      routes.push(item);
+    }
+  }
+  for (const edge of floorEdges) {
+    const item = routePathFromEdgeIds(edge.startGuid, [edge.edgeId], edgeById, transform, edge.status, edge.reasons?.[0] ? reasonText(edge.reasons[0]) : "clear", edge.endGuid);
     if (item && !seen.has(item.key)) {
       seen.add(item.key);
       routes.push(item);
@@ -1420,7 +1459,13 @@ function animateSimulation() {
   const routeFails = route?.status === "fail";
   const blockAt = routeFails ? route?.blockAt || 0.72 : 1;
   const blocked = routeFails && simProgress >= blockAt;
-  if (simPlaying && !blocked) {
+  if (simPlaying && blocked) {
+    simBlockedHold += delta;
+    if (simBlockedHold > 1.4) {
+      advanceSimulationRoute();
+    }
+  } else if (simPlaying) {
+    simBlockedHold = 0;
     simProgress += delta * simSpeed * 0.085;
     if (simProgress > 1) {
       advanceSimulationRoute();
@@ -1448,6 +1493,7 @@ function advanceSimulationRoute() {
   }
   simRouteIndex = (simRouteIndex + 1) % routes.length;
   simProgress = 0;
+  simBlockedHold = 0;
   simPath = currentSimulationPath();
   if (simPathLine) {
     simWorld.remove(simPathLine);
@@ -1512,7 +1558,7 @@ function updateSimulationStatus(blocked) {
   if (!simScenarioData) return;
   const route = currentSimulationRoute();
   const prefix = route ? `Route ${route.edgeId}: ${route.reason}. ` : "";
-  const status = blocked ? `${prefix}Blocked here. Reset or choose another floor to continue.` : `${prefix}${simScenarioData.status}`;
+  const status = blocked ? `${prefix}Blocked here. Moving to the next route in a moment.` : `${prefix}${simScenarioData.status}`;
   document.querySelector("#simStatus").textContent = status;
 }
 

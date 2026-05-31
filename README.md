@@ -32,12 +32,6 @@ Check Results:
 - route issues found by the checker
 - assistant box that explains the result in simple words
 
-Visualisation:
-
-- raw building graph
-- enriched accessibility graph
-- Turtle file downloads
-
 Building Model:
 
 - 3D building view
@@ -164,7 +158,7 @@ backend/shacl_runner.py          runs SHACL checks
 backend/glb_export.py            creates the browser 3D model
 backend/short_explainer.py       assistant and short issue text
 frontend/index.html              website layout
-frontend/app.js                  website logic, graphs, model view, and simulation
+frontend/app.js                  website logic, assistant, model view, and simulation
 frontend/styles.css              website styling
 rules/accessibility_rules.shacl.ttl
 ```

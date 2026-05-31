@@ -27,12 +27,6 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path.startswith("/api/data"):
             self._send_file(PACKAGE / "app_data.json", "application/json")
             return
-        if self.path.startswith("/api/ttl/raw"):
-            self._send_file(PACKAGE / "raw_lbd_graph.ttl", "text/turtle")
-            return
-        if self.path.startswith("/api/ttl/enriched"):
-            self._send_file(PACKAGE / "lbd_graph.ttl", "text/turtle")
-            return
         if self.path.startswith("/api/route/"):
             guid = unquote(self.path.rsplit("/", 1)[-1])
             data_path = PACKAGE / "app_data.json"

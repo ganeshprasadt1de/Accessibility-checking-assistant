@@ -14,7 +14,6 @@
       </div>
       <nav>
         <button data-page="results" class="active">Check Results</button>
-        <button data-page="visualisation">Visualisation</button>
         <button data-page="model">Building Model</button>
         <button data-page="simulation">Wheelchair Simulation</button>
       </nav>
@@ -33,39 +32,6 @@
         <div class="tableWrap"><table id="elementTable"></table></div>
         <h2>Issues</h2>
         <div class="tableWrap"><table id="issueTable"></table></div>
-      </section>
-
-      <section id="visualisation" class="page">
-        <div class="downloads">
-          <a href="/api/ttl/raw" download="raw_lbd_graph.ttl">Download raw_lbd_graph.ttl</a>
-          <a href="/api/ttl/enriched" download="lbd_graph.ttl">Download lbd_graph.ttl</a>
-        </div>
-        <div class="graphTools">
-          <input id="graphSearch" placeholder="Search door, room, route, GUID" />
-          <button id="graphFit">Fit</button>
-          <button id="graphPause">Pause</button>
-          <span id="graphHint">Wheel zooms, drag background pans, drag nodes moves them.</span>
-        </div>
-        <div class="graphLegend">
-          <span><i class="legendDot element"></i>element</span>
-          <span><i class="legendDot space"></i>space</span>
-          <span><i class="legendDot route"></i>route</span>
-          <span><i class="legendDot issue"></i>issue</span>
-          <span><i class="legendDot value"></i>value</span>
-        </div>
-        <div class="split graphSplit">
-          <div class="graphPanel">
-            <h2>Raw LBD Graph</h2>
-            <p id="rawGraphStats" class="graphStats"></p>
-            <canvas id="rawGraph"></canvas>
-          </div>
-          <div class="graphPanel">
-            <h2>Enriched Accessibility Graph</h2>
-            <p id="enrichedGraphStats" class="graphStats"></p>
-            <canvas id="enrichedGraph"></canvas>
-          </div>
-        </div>
-        <aside id="graphInspector" class="graphInspector">Hover or click a node.</aside>
       </section>
 
       <section id="model" class="page">

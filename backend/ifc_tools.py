@@ -37,40 +37,64 @@ def extract_first_ifc(zip_path: Path, output_dir: Path, preferred_name: str | No
     return target
 
 
-def try_ifctolbd(ifc_path: Path, ifctolbd_zip: Path, output_ttl: Path, work_dir: Path) -> tuple[bool, str]:
-    """Run IFCtoLBD when Java/Maven can execute it. Returns status and note."""
+def run_ifctolbd(ifc_path: Path, ifctolbd_zip: Path, output_ttl: Path, work_dir: Path) -> str:
+    """Run IFCtoLBD and fail loudly when the converter cannot produce RDF."""
     java = shutil.which("java")
     mvn = shutil.which("mvn") or shutil.which("mvn.cmd")
-    if not java or not mvn:
-        return False, "Java or Maven not found, used IFC-derived fallback LBD graph"
+    if not java:
+        raise RuntimeError("Java is not installed or is not available on PATH. IFCtoLBD cannot run.")
+    if not mvn:
+        raise RuntimeError("Maven is not installed or is not available on PATH. IFCtoLBD cannot be built.")
+    if not ifctolbd_zip.exists():
+        raise FileNotFoundError(f"IFCtoLBD ZIP was not found: {ifctolbd_zip}")
     tool_dir = work_dir / "ifctolbd"
     if not tool_dir.exists():
         with zipfile.ZipFile(ifctolbd_zip) as archive:
             archive.extractall(tool_dir)
     project = tool_dir / "IFCtoLBD-master" / "IFCtoLBD"
     if not project.exists():
-        return False, "IFCtoLBD project folder not found, used IFC-derived fallback LBD graph"
+        raise FileNotFoundError(f"IFCtoLBD project folder was not found after extraction: {project}")
+    for module_name in ("IFCtoRDF", "IFCtoLBD_Geometry"):
+        module = tool_dir / "IFCtoLBD-master" / module_name
+        if not module.exists():
+            raise FileNotFoundError(f"Required IFCtoLBD module was not found: {module}")
+        try:
+            subprocess.run([mvn, "-q", "-DskipTests", "install"], cwd=module, check=True, timeout=300)
+        except (subprocess.SubprocessError, OSError) as exc:
+            raise RuntimeError(f"IFCtoLBD dependency module build failed for {module_name}: {exc}") from exc
     try:
-        subprocess.run([mvn, "-q", "-DskipTests", "package"], cwd=project, check=True, timeout=180)
+        subprocess.run([mvn, "-q", "-DskipTests", "package"], cwd=project, check=True, timeout=300)
     except (subprocess.SubprocessError, OSError) as exc:
-        return False, f"IFCtoLBD build did not finish, used IFC-derived fallback LBD graph: {exc}"
+        raise RuntimeError(f"IFCtoLBD Maven build failed: {exc}") from exc
     jars = sorted((project / "target").glob("*jar-with-dependencies*.jar")) or sorted(
         (project / "target").glob("*.jar")
     )
     if not jars:
-        return False, "IFCtoLBD jar not found after build, used IFC-derived fallback LBD graph"
+        raise FileNotFoundError(f"IFCtoLBD jar was not found after Maven build: {project / 'target'}")
+    base_uri = "https://example.org/building/"
     commands = [
-        [java, "-jar", str(jars[0]), str(ifc_path), str(output_ttl)],
-        [java, "-cp", str(jars[0]), "org.linkedbuildingdata.ifc2lbd.IFCtoLBDConverter_CLI", str(ifc_path), str(output_ttl)],
+        [
+            java,
+            "-cp",
+            str(jars[0]),
+            "org.linkedbuildingdata.ifc2lbd.IFCtoLBDConverter_CLI",
+            "-u",
+            base_uri,
+            "-t",
+            str(output_ttl),
+            str(ifc_path),
+        ],
     ]
+    errors: list[str] = []
     for command in commands:
         try:
             subprocess.run(command, cwd=project, check=True, timeout=180)
             if output_ttl.exists() and output_ttl.stat().st_size > 0:
-                return True, "raw graph created by IFCtoLBD"
-        except (subprocess.SubprocessError, OSError):
+                return "raw graph created by IFCtoLBD"
+        except (subprocess.SubprocessError, OSError) as exc:
+            errors.append(f"{' '.join(command)} -> {exc}")
             continue
-    return False, "IFCtoLBD CLI entry point was not callable, used IFC-derived fallback LBD graph"
+    raise RuntimeError("IFCtoLBD converter did not produce a Turtle graph. " + " | ".join(errors))
 
 
 def bind_graph(g: Graph) -> None:
@@ -83,40 +107,32 @@ def element_uri(guid: str) -> URIRef:
     return ACC[f"element/{safe}"]
 
 
-def create_raw_lbd_fallback(elements: list[Element], output_ttl: Path) -> None:
-    g = Graph()
-    bind_graph(g)
-    for element in elements:
-        uri = element_uri(element.guid)
-        g.add((uri, RDF.type, ACC[element.ifc_type]))
-        if element.ifc_type == "IfcSpace":
-            g.add((uri, RDF.type, BOT.Space))
-        elif element.ifc_type in {"IfcDoor", "IfcRamp", "IfcStair", "IfcWall", "IfcSlab", "IfcColumn"}:
-            g.add((uri, RDF.type, BOT.Element))
-        g.add((uri, RDFS.label, Literal(element.label)))
-        g.add((uri, PROPS.globalId, Literal(element.guid)))
-        g.add((uri, PROPS.ifcType, Literal(element.ifc_type)))
-        if element.name:
-            g.add((uri, PROPS.name, Literal(element.name)))
-    output_ttl.parent.mkdir(parents=True, exist_ok=True)
-    g.serialize(destination=output_ttl, format="turtle")
-
-
 def load_raw_graph(path: Path) -> Graph:
     g = Graph()
     bind_graph(g)
-    if path.exists() and path.stat().st_size:
-        try:
-            g.parse(path, format="turtle")
-        except Exception:
-            g = Graph()
-            bind_graph(g)
+    if not path.exists() or not path.stat().st_size:
+        raise FileNotFoundError(f"Raw IFCtoLBD graph is missing or empty: {path}")
+    g.parse(path, format="turtle")
     return g
 
 
 def add_geometry_to_graph(g: Graph, elements: list[Element]) -> None:
     for element in elements:
         uri = element_uri(element.guid)
+        g.add((uri, RDF.type, ACC[element.ifc_type]))
+        if element.ifc_type == "IfcSpace":
+            g.add((uri, RDF.type, BOT.Space))
+        elif element.ifc_type in {
+            "IfcDoor",
+            "IfcRamp",
+            "IfcRampFlight",
+            "IfcStair",
+            "IfcStairFlight",
+            "IfcWall",
+            "IfcSlab",
+            "IfcColumn",
+        }:
+            g.add((uri, RDF.type, BOT.Element))
         g.add((uri, PROPS.globalId, Literal(element.guid)))
         g.add((uri, PROPS.ifcType, Literal(element.ifc_type)))
         g.add((uri, RDFS.label, Literal(element.label)))

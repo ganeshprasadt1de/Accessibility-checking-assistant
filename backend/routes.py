@@ -21,7 +21,7 @@ def build_route_edges(ifc_path: Path, elements: list[Element]) -> list[RouteEdge
     space_edges = _space_boundary_route_edges(ifc_path, elements)
     if space_edges:
         return space_edges
-    return _fallback_nearby_route_edges(elements)
+    raise RuntimeError("No usable IfcRelSpaceBoundary door-to-space route graph was found in the IFC model.")
 
 
 def _space_boundary_route_edges(ifc_path: Path, elements: list[Element]) -> list[RouteEdge]:
@@ -54,8 +54,7 @@ def _space_boundary_route_edges(ifc_path: Path, elements: list[Element]) -> list
                 continue
             seen_pairs.add(pair_key)
             path = _path_through_space(door_a, door_b, space)
-            reasons = _route_reasons(door_a, door_b, path, obstacles, space)
-            status = "pass" if not reasons else "fail"
+            measurements = _route_measurements(door_a, door_b, path, obstacles, space)
             edge_id = f"E{len(edges) + 1:05d}"
             dist = sum(distance(path[i], path[i + 1]) for i in range(len(path) - 1))
             edges.append(
@@ -64,45 +63,13 @@ def _space_boundary_route_edges(ifc_path: Path, elements: list[Element]) -> list
                     start_guid=door_a.guid,
                     end_guid=door_b.guid,
                     distance_m=dist,
-                    status=status,
-                    reasons=sorted(set(reasons)),
+                    status="unchecked",
+                    reasons=[],
                     path=path,
                     source="IFC space boundaries and floor geometry",
                     via_space_guid=space.guid,
                     via_space_label=space.label,
-                )
-            )
-    return edges
-
-
-def _fallback_nearby_route_edges(elements: list[Element]) -> list[RouteEdge]:
-    doors = [e for e in elements if e.ifc_type == "IfcDoor" and e.center]
-    obstacles = obstacle_elements(elements)
-    edges: list[RouteEdge] = []
-    max_links_per_door = 6
-    for door in doors:
-        nearby = sorted(
-            (other for other in doors if other.guid != door.guid and _same_level(door, other)),
-            key=lambda other: distance(door.center, other.center),
-        )[:max_links_per_door]
-        for other in nearby:
-            if door.guid > other.guid:
-                continue
-            path = _path_between(door.center, other.center)
-            reasons = _route_reasons(door, other, path, obstacles, None)
-            status = "pass" if not reasons else "fail"
-            edge_id = f"E{len(edges) + 1:05d}"
-            dist = sum(distance(path[i], path[i + 1]) for i in range(len(path) - 1))
-            edges.append(
-                RouteEdge(
-                    edge_id,
-                    door.guid,
-                    other.guid,
-                    dist,
-                    status,
-                    sorted(set(reasons)),
-                    path,
-                    source="Fallback nearest-door graph because usable space boundaries were missing",
+                    measurements=measurements,
                 )
             )
     return edges
@@ -124,31 +91,30 @@ def _door_to_spaces(model) -> dict[str, list[str]]:
     return mapping
 
 
-def _route_reasons(
+def _route_measurements(
     door_a: Element,
     door_b: Element,
     path: list[tuple[float, float, float]],
     obstacles: list[Element],
     space: Element | None,
-) -> list[str]:
-    reasons: list[str] = []
+) -> dict[str, float | str | bool | None]:
+    measurements: dict[str, float | str | bool | None] = {}
     width_a = door_a.extra.get("derivedDoorWidthM")
     width_b = door_b.extra.get("derivedDoorWidthM")
-    if width_a is not None and float(width_a) < RULE_LIMITS.route_door_width_m:
-        reasons.append("door_width")
-    if width_b is not None and float(width_b) < RULE_LIMITS.route_door_width_m:
-        reasons.append("door_width")
+    widths = [float(width) for width in (width_a, width_b) if width is not None]
+    if widths:
+        measurements["routeDoorWidthMinM"] = min(widths)
     if space:
         clear = _num(space.extra.get("derivedClearSpaceWidthM"))
         turn = _num(space.extra.get("turningSpaceM"))
-        if clear is not None and clear < RULE_LIMITS.corridor_width_m:
-            reasons.append("route_width")
-        if _path_has_turn(path) and turn is not None and turn < RULE_LIMITS.turning_space_m:
-            reasons.append("turning_space")
-    if _route_hits_stair(path, obstacles, space):
-        reasons.append("stair_block")
-    reasons.extend(_ramp_reasons(obstacles, space))
-    return reasons
+        if clear is not None:
+            measurements["routeClearWidthM"] = clear
+        if turn is not None:
+            measurements["routeTurningSpaceM"] = turn
+        measurements["routeHasTurn"] = _path_has_turn(path)
+    measurements["routeHitsStair"] = _route_hits_stair(path, obstacles, space)
+    measurements.update(_ramp_measurements(obstacles, space, path))
+    return measurements
 
 
 def _num(value) -> float | None:
@@ -173,15 +139,19 @@ def _path_has_turn(path: list[tuple[float, float, float]]) -> bool:
 
 
 def _route_hits_stair(path: list[tuple[float, float, float]], obstacles: list[Element], space: Element | None) -> bool:
-    stairs = [item for item in obstacles if item.ifc_type == "IfcStair"]
+    stairs = [item for item in obstacles if item.ifc_type in {"IfcStair", "IfcStairFlight"}]
     if not stairs:
         return False
+    return _route_intersects_any(path, stairs)
+
+
+def _route_intersects_any(path: list[tuple[float, float, float]], obstacles: list[Element]) -> bool:
     half = RULE_LIMITS.clearance_width_m / 2
     for point in _sample_path(path, step=0.35):
         x, y, z = point
         route_min = (x - half, y - half, z - 0.05)
         route_max = (x + half, y + half, z + RULE_LIMITS.clearance_height_m)
-        if any(intersects_box(route_min, route_max, stair.bbox_min, stair.bbox_max) for stair in stairs):
+        if any(intersects_box(route_min, route_max, obstacle.bbox_min, obstacle.bbox_max) for obstacle in obstacles):
             return True
     return False
 
@@ -205,31 +175,24 @@ def _sample_path(path: list[tuple[float, float, float]], step: float) -> list[tu
     return points
 
 
-def _ramp_reasons(obstacles: list[Element], space: Element | None) -> list[str]:
-    reasons: list[str] = []
+def _ramp_measurements(obstacles: list[Element], space: Element | None, path: list[tuple[float, float, float]]) -> dict[str, float | str | bool | None]:
+    measurements: dict[str, float | str | bool | None] = {}
     for ramp in obstacles:
-        if ramp.ifc_type != "IfcRamp":
+        if ramp.ifc_type not in {"IfcRamp", "IfcRampFlight"}:
             continue
-        if space and space.bbox_min and space.bbox_max and not intersects_box(space.bbox_min, space.bbox_max, ramp.bbox_min, ramp.bbox_max):
+        if space and space.bbox_min and space.bbox_max:
+            if not intersects_box(space.bbox_min, space.bbox_max, ramp.bbox_min, ramp.bbox_max):
+                continue
+        elif not _route_intersects_any(path, [ramp]):
             continue
         slope = _num(ramp.extra.get("rampSlopePercent"))
         width = _num(ramp.extra.get("rampUsableWidthM"))
-        if slope is not None and slope > RULE_LIMITS.ramp_slope_percent:
-            reasons.append("ramp_slope")
-        if width is not None and width < RULE_LIMITS.ramp_width_m:
-            reasons.append("ramp_width")
-    return reasons
-
-
-def _same_level(a: Element, b: Element) -> bool:
-    if a.center and b.center and abs(a.center[2] - b.center[2]) <= 1.5:
-        return True
-    return bool(a.storey and b.storey and a.storey == b.storey)
-
-
-def _path_between(a: tuple[float, float, float], b: tuple[float, float, float]) -> list[tuple[float, float, float]]:
-    mid = (b[0], a[1], max(a[2], b[2]))
-    return [a, mid, b]
+        measurements["routeUsesRamp"] = True
+        if slope is not None:
+            measurements["routeRampSlopePercent"] = slope
+        if width is not None:
+            measurements["routeRampUsableWidthM"] = width
+    return measurements
 
 
 def _path_through_space(door_a: Element, door_b: Element, space: Element) -> list[tuple[float, float, float]]:
@@ -300,6 +263,13 @@ def add_routes_to_graph(g: Graph, edges: list[RouteEdge]) -> None:
             g.add((uri, RDFS.label, Literal(f"{edge.start_guid} to {edge.end_guid} through {edge.via_space_label}")))
         for reason in edge.reasons:
             g.add((uri, ACC.routeFailureReason, Literal(reason)))
+        for key, value in edge.measurements.items():
+            if isinstance(value, bool):
+                g.add((uri, ACC[key], Literal(value, datatype=XSD.boolean)))
+            elif isinstance(value, (int, float)):
+                g.add((uri, ACC[key], Literal(round(float(value), 4), datatype=XSD.decimal)))
+            elif value is not None:
+                g.add((uri, ACC[key], Literal(str(value))))
 
 
 def save_route_binary(edges: list[RouteEdge], path) -> None:

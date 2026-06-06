@@ -5,7 +5,9 @@
     "IfcWall": 121,
     "IfcSlab": 26,
     "IfcRamp": 0,
+    "IfcRampFlight": 0,
     "IfcStair": 4,
+    "IfcStairFlight": 0,
     "IfcRelSpaceBoundary": 1000,
     "IfcRelConnectsPathElements": 216
   },
@@ -49,5 +51,5 @@
     },
     "failure_reason_counts": {}
   },
-  "shacl_route_rule_note": "The current SHACL route rule checks acc:routeStatus = 'fail'. The dependency facts are calculated before SHACL by the backend. This is useful for reporting but it is not a full route-planning proof inside SHACL."
+  "shacl_route_rule_note": "Route geometry measurements are written to RDF first. SHACL then checks route door width, route clear width, turning space, stair intersection, and ramp measurements. The app route status is copied from the SHACL validation results."
 }

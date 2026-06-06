@@ -5,7 +5,6 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-MIDTERM_ROOT = ROOT.parent
 
 
 @dataclass(frozen=True)
@@ -37,4 +36,4 @@ NS = {
 
 
 def default_ifctolbd_zip() -> Path:
-    return MIDTERM_ROOT / "IFCtoLBD-master.zip"
+    return ROOT / "IFCtoLBD-master.zip"

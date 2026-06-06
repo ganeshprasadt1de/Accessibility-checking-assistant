@@ -9,19 +9,14 @@ from backend.geometry import extract_elements
 from backend.glb_export import export_box_glb
 from backend.ifc_tools import (
     add_geometry_to_graph,
-    create_raw_lbd_fallback,
     element_uri,
     load_raw_graph,
-    try_ifctolbd,
+    run_ifctolbd,
 )
-from backend.geometry import distance
 from backend.package_writer import write_json_package
 from backend.routes import add_routes_to_graph, build_route_edges, save_route_binary
-from backend.rules import evaluate_value_rules
-from backend.shacl_runner import run_shacl
+from backend.shacl_runner import issues_from_shacl_report, run_shacl
 from backend.audit import write_audit_report
-from backend.model import Issue
-from backend.short_explainer import fallback
 from rdflib import Literal, Namespace, RDF
 from rdflib.namespace import XSD
 
@@ -46,18 +41,18 @@ def main() -> int:
     print(f"Extracted elements: {len(elements)}")
 
     raw_ttl = output / "raw_lbd_graph.ttl"
-    ok, ifctolbd_note = try_ifctolbd(ifc_path, args.ifctolbd_zip.resolve(), raw_ttl, work)
-    if not ok:
-        create_raw_lbd_fallback(elements, raw_ttl)
+    ifctolbd_note = run_ifctolbd(ifc_path, args.ifctolbd_zip.resolve(), raw_ttl, work)
     print(ifctolbd_note)
 
     graph = load_raw_graph(raw_ttl)
     add_geometry_to_graph(graph, elements)
     edges = build_route_edges(ifc_path, elements)
     add_routes_to_graph(graph, edges)
-    issues = evaluate_value_rules(elements)
-    _add_route_issues(issues, elements, edges)
-    _add_stair_approach_issues(issues, elements)
+    lbd_ttl = output / "lbd_graph.ttl"
+    graph.serialize(destination=lbd_ttl, format="turtle")
+
+    shacl_summary = run_shacl(lbd_ttl, ROOT / "rules" / "accessibility_rules.shacl.ttl", output / "shacl_report.ttl")
+    issues = issues_from_shacl_report(output / "shacl_report.ttl", lbd_ttl, elements, edges)
     for issue in issues:
         issue_uri = ACC[f"issue/{issue.issue_id}"]
         graph.add((issue_uri, RDF.type, ACC.AccessibilityIssue))
@@ -70,10 +65,13 @@ def main() -> int:
             graph.add((issue_uri, ACC.measuredValue, Literal(round(issue.measured, 4), datatype=XSD.decimal)))
         if issue.required is not None:
             graph.add((issue_uri, ACC.requiredValue, Literal(round(issue.required, 4), datatype=XSD.decimal)))
-    lbd_ttl = output / "lbd_graph.ttl"
+    for edge in edges:
+        route_uri = ACC[f"route/{edge.edge_id}"]
+        graph.set((route_uri, ACC.routeStatus, Literal(edge.status)))
+        for reason in edge.reasons:
+            graph.add((route_uri, ACC.routeFailureReason, Literal(reason)))
     graph.serialize(destination=lbd_ttl, format="turtle")
 
-    shacl_summary = run_shacl(lbd_ttl, ROOT / "rules" / "accessibility_rules.shacl.ttl", output / "shacl_report.ttl")
     write_json_package(output, elements, issues, edges, missing_geometry, shacl_summary, ifctolbd_note)
     write_audit_report(ifc_path, output, {"routeEdges": [
         {
@@ -90,65 +88,6 @@ def main() -> int:
     print(f"Wrote package: {output}")
     print(f"Routes: {len(edges)}, issues: {len(issues)}, missing geometry: {len(missing_geometry)}")
     return 0
-
-
-def _add_route_issues(issues: list[Issue], elements, edges) -> None:
-    by_guid = {element.guid: element for element in elements}
-    for edge in edges:
-        if edge.status != "fail":
-            continue
-        element = by_guid.get(edge.via_space_guid) or by_guid.get(edge.start_guid)
-        if not element:
-            continue
-        rule_id = edge.reasons[0] if edge.reasons else "unreachable"
-        issues.append(
-            Issue(
-                issue_id=f"I{len(issues) + 1:04d}",
-                element_guid=element.guid,
-                element_label=element.label,
-                element_type=element.ifc_type,
-                rule_id=rule_id,
-                severity="fail",
-                measured=edge.distance_m,
-                required=None,
-                unit="m",
-                source="Indoor route path check",
-                short_text=fallback(rule_id),
-                details=f"Route edge {edge.edge_id} failed: {', '.join(edge.reasons)}.",
-            )
-        )
-
-
-def _add_stair_approach_issues(issues: list[Issue], elements) -> None:
-    doors = [element for element in elements if element.ifc_type == "IfcDoor" and element.center]
-    stairs = [element for element in elements if element.ifc_type == "IfcStair" and element.center]
-    for stair in stairs:
-        same_floor_doors = [
-            door
-            for door in doors
-            if (door.storey and stair.storey and door.storey == stair.storey)
-            or (door.center and stair.center and abs(door.center[2] - stair.center[2]) <= 2.2)
-        ]
-        if not same_floor_doors:
-            continue
-        start = min(same_floor_doors, key=lambda door: distance(door.center, stair.center))
-        measured = distance(start.center, stair.center)
-        issues.append(
-            Issue(
-                issue_id=f"I{len(issues) + 1:04d}",
-                element_guid=stair.guid,
-                element_label=stair.label,
-                element_type=stair.ifc_type,
-                rule_id="stair_block",
-                severity="fail",
-                measured=measured,
-                required=0.0,
-                unit="m",
-                source="Stair approach check",
-                short_text=fallback("stair_block"),
-                details=f"Approach from {start.label} reaches {stair.label}. Stairs are not a wheelchair route.",
-            )
-        )
 
 
 if __name__ == "__main__":

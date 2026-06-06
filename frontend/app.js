@@ -85,7 +85,7 @@ function renderSummary() {
 
 function renderTables() {
   const elementRows = appData.elements
-    .filter((e) => ["IfcDoor", "IfcSpace", "IfcRamp", "IfcStair"].includes(e.ifcType))
+    .filter((e) => ["IfcDoor", "IfcSpace", "IfcRamp", "IfcRampFlight", "IfcStair", "IfcStairFlight", "IfcTransportElement"].includes(e.ifcType))
     .slice(0, 250)
     .map((e) => [
       e.ifcType,
@@ -125,9 +125,9 @@ function setupAssistant() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Assistant request failed.");
-      answer.textContent = `${data.answer || localAssistantAnswer()} Source: ${data.source || "prepared checker facts"}.`;
-    } catch {
-      answer.textContent = `${localAssistantAnswer()} Source: prepared checker facts.`;
+      answer.textContent = `${data.answer || "No generated answer was returned."} Source: ${data.source || "backend response"}.`;
+    } catch (error) {
+      answer.textContent = error.message || "Assistant request failed.";
     } finally {
       button.disabled = false;
     }
@@ -137,23 +137,6 @@ function setupAssistant() {
   input.addEventListener("keydown", (event) => {
     if (event.key === "Enter") ask();
   });
-}
-
-function localAssistantAnswer() {
-  const floors = appData.floors
-    .filter((floor) => floor.doorGuids?.length || floor.routeEdgeIds?.length)
-    .map((floor) => {
-      const failed = floor.routeStatusCounts?.fail || 0;
-      return `${floor.name}: ${floor.doorGuids?.length || 0} doors, ${floor.routeEdgeIds?.length || 0} routes, ${failed} failed`;
-    })
-    .join("; ");
-  const issues = appData.summary.issueCount || 0;
-  const failedRoutes = appData.routeEdges.filter((edge) => edge.status === "fail").length;
-  const result =
-    issues === 0 && failedRoutes === 0
-      ? "All generated indoor routes pass the current indoor checks."
-      : `The checker found ${issues} issues and ${failedRoutes} failed route edges.`;
-  return `${result} It checks door width, route width, turning space, stair blockers, ramp width, and ramp slope. By floor: ${floors}.`;
 }
 
 function fillTable(selector, headers, rows) {
@@ -215,9 +198,13 @@ function setupViewer() {
         } else if (obj.userData.ifcType === "IfcSpace") {
           obj.material.opacity = 0.12;
           obj.renderOrder = 0;
-        } else if (obj.userData.ifcType === "IfcStair") {
+        } else if (isStairType(obj.userData.ifcType)) {
           obj.material.color.set(0xb3261e);
           obj.material.opacity = 0.9;
+          obj.renderOrder = 3;
+        } else if (isRampType(obj.userData.ifcType)) {
+          obj.material.color.set(0x9c7a32);
+          obj.material.opacity = 0.85;
           obj.renderOrder = 3;
         } else {
           obj.material.opacity = 0.42;
@@ -294,7 +281,7 @@ function setRouteFocus(enabled) {
     const type = obj.userData.ifcType;
     if (type === "IfcDoor") {
       obj.material.opacity = 1;
-    } else if (type === "IfcStair") {
+    } else if (isStairType(type) || isRampType(type)) {
       obj.material.opacity = enabled ? 1 : 0.9;
     } else if (enabled) {
       obj.material.opacity = type === "IfcSpace" ? 0.04 : 0.18;
@@ -308,9 +295,9 @@ function addEdgeOverlay(mesh) {
   if (!mesh.geometry || edgeOverlayGroup.children.length > 900) return;
   const edges = new THREE.EdgesGeometry(mesh.geometry, 35);
   const material = new THREE.LineBasicMaterial({
-    color: mesh.userData.ifcType === "IfcDoor" ? 0x5ce1ff : mesh.userData.ifcType === "IfcStair" ? 0xff7a70 : 0xc9d1cd,
+    color: mesh.userData.ifcType === "IfcDoor" ? 0x5ce1ff : isStairType(mesh.userData.ifcType) ? 0xff7a70 : 0xc9d1cd,
     transparent: true,
-    opacity: mesh.userData.ifcType === "IfcDoor" ? 0.85 : mesh.userData.ifcType === "IfcStair" ? 0.9 : 0.16,
+    opacity: mesh.userData.ifcType === "IfcDoor" ? 0.85 : isStairType(mesh.userData.ifcType) ? 0.9 : 0.16,
   });
   const line = new THREE.LineSegments(edges, material);
   line.matrix.copy(mesh.matrixWorld);
@@ -426,7 +413,7 @@ function addRoutePath(route, byEdge) {
 function stairApproachRouteForDoor(guid) {
   const door = appData.elements.find((element) => element.guid === guid && element.ifcType === "IfcDoor" && element.center);
   if (!door) return null;
-  const stairs = appData.elements.filter((element) => element.ifcType === "IfcStair" && element.center && sameFloorElement(door, element));
+  const stairs = appData.elements.filter((element) => isStairType(element.ifcType) && element.center && sameFloorElement(door, element));
   if (!stairs.length) return null;
   const stair = stairs
     .map((element) => ({ element, distance: distance3d(door.center, element.center) }))
@@ -597,18 +584,21 @@ function buildFloorScenario() {
   const elementsByGuid = new Map(appData.elements.map((element) => [element.guid, element]));
   const floorElements = (floor.elementGuids || []).map((guid) => elementsByGuid.get(guid)).filter(Boolean);
   const floorDoors = (floor.doorGuids || []).map((guid) => elementsByGuid.get(guid)).filter(Boolean);
-  const floorEdges = (floor.routeEdgeIds || [])
+  const routeStartDoors = floorDoors.filter((door) => !isLiftDoor(door));
+  const rawFloorEdges = (floor.routeEdgeIds || [])
     .map((edgeId) => appData.routeEdges.find((edge) => edge.edgeId === edgeId))
     .filter(Boolean);
-  const passEdges = floorEdges.filter((edge) => edge.status === "pass");
-  const failedEdges = floorEdges.filter((edge) => edge.status === "fail");
+  const routeBounds = floorRouteBounds(floorElements);
+  const floorEdges = rawFloorEdges.filter((edge) => routeEdgeLooksDrawable(edge, routeBounds));
+  const passEdges = rawFloorEdges.filter((edge) => edge.status === "pass");
+  const failedEdges = rawFloorEdges.filter((edge) => edge.status === "fail");
   const transform = createFloorTransform(floorElements);
-  const startDoors = chooseFloorStartDoors(floor, floorDoors, floorEdges);
+  const startDoors = chooseFloorStartDoors(floor, routeStartDoors.length ? routeStartDoors : floorDoors, floorEdges);
   const floorStart = chooseFloorStartPoint(floor, startDoors, floorElements, floorEdges);
   const routePaths = [...buildStairApproachRoutes(floorStart, floorElements, transform), ...buildSimulationRoutesFromStarts(startDoors, floorEdges, transform, floorStart)];
   const chosenRoute = routePaths[0];
   const path = routePaths[0]?.path || [new THREE.Vector3(-5, 0.08, 0), new THREE.Vector3(5, 0.08, 0)];
-  const reasonCounts = countReasons(floorEdges);
+  const reasonCounts = countReasons(rawFloorEdges);
   const floorFailReason = topReasonText(reasonCounts);
   const startText = floorStart?.label || startDoors.map((door) => cleanElementName(door.name || door.label)).join(", ") || "no start point";
   const visualFailedRoutes = routePaths.filter((route) => route.status === "fail").length;
@@ -620,7 +610,7 @@ function buildFloorScenario() {
         ? `Starting from ${startText}. The stair approach is shown as blocked, then the other door routes continue.`
         : `Starting from ${startText}. All generated routes on this floor pass the indoor checks.`
       : "No door-to-door route edges were generated for this floor.",
-    source: "Indoor rules: door width, route width, turning space, stair blockers, ramp width and slope.",
+    source: "SHACL rules over IFCtoLBD RDF and IFC-derived route measurements.",
     fail: Boolean(chosenRoute && chosenRoute.status === "fail"),
     blockAt: chosenRoute?.status === "fail" ? 0.72 : 1,
     routePaths,
@@ -628,7 +618,7 @@ function buildFloorScenario() {
     metrics: [
       ["Start door", startText, startDoors.length ? "pass" : "fail"],
       ["Doors on floor", String(floorDoors.length), floorDoors.length ? "pass" : "fail"],
-      ["Route edges", String(floorEdges.length), floorEdges.length ? "pass" : "fail"],
+      ["Route edges", String(rawFloorEdges.length), rawFloorEdges.length ? "pass" : "fail"],
       ["Failed door routes", String(failedEdges.length), failedEdges.length ? "fail" : "pass"],
       ["Stair approach", visualFailedRoutes ? "blocked" : "clear", visualFailedRoutes ? "fail" : "pass"],
       ["Main reason", blockerText, visualFailedRoutes ? "fail" : "pass"],
@@ -645,7 +635,7 @@ function buildFloorScenario() {
 
 function chooseFloorStartPoint(floor, startDoors, floorElements, floorEdges) {
   const entranceFloor = guessEntranceFloor();
-  const stairs = floorElements.filter((element) => element.ifcType === "IfcStair" && element.center && element.bboxMin && element.bboxMax);
+  const stairs = floorElements.filter((element) => isStairType(element.ifcType) && element.center && element.bboxMin && element.bboxMax);
   if (floor.name !== entranceFloor && stairs.length) {
     const stair = stairs[0];
     return {
@@ -675,7 +665,7 @@ function stairLandingPoint(stair, floorEdges) {
 }
 
 function buildStairApproachRoutes(floorStart, floorElements, transform) {
-  const stairs = floorElements.filter((element) => element.ifcType === "IfcStair" && element.bboxMin && element.bboxMax);
+  const stairs = floorElements.filter((element) => isStairType(element.ifcType) && element.bboxMin && element.bboxMax);
   if (!floorStart?.point || !stairs.length) return [];
   const routes = [];
   const startPoint = transform.point(floorStart.point);
@@ -728,12 +718,12 @@ function chooseFloorStartDoors(floor, floorDoors, floorEdges) {
     .sort((a, b) => String(a.name || a.label).localeCompare(String(b.name || b.label)));
   if (stairStarts.length) return stairStarts;
 
-  const fallback = [...floorDoors].sort((a, b) => {
+  const bestStart = [...floorDoors].sort((a, b) => {
     const reachDiff = (appData.accessibleRoutesByDoor?.[b.guid]?.length || 0) - (appData.accessibleRoutesByDoor?.[a.guid]?.length || 0);
     if (reachDiff) return reachDiff;
     return (edgeDegree.get(b.guid) || 0) - (edgeDegree.get(a.guid) || 0);
   })[0];
-  return fallback ? [fallback] : [];
+  return bestStart ? [bestStart] : [];
 }
 
 function buildSimulationRoutesFromStarts(startDoors, floorEdges, transform, floorStart) {
@@ -764,10 +754,41 @@ function buildSimulationRoutesFromStarts(startDoors, floorEdges, transform, floo
   return routes;
 }
 
+function floorRouteBounds(elements) {
+  const boxes = elements.filter((element) => element.bboxMin && element.bboxMax && ["IfcSpace", "IfcWall", "IfcDoor", "IfcColumn", "IfcStair", "IfcStairFlight", "IfcRamp", "IfcRampFlight"].includes(element.ifcType));
+  if (!boxes.length) return null;
+  return {
+    minX: Math.min(...boxes.map((element) => element.bboxMin[0])) - 1.5,
+    maxX: Math.max(...boxes.map((element) => element.bboxMax[0])) + 1.5,
+    minY: Math.min(...boxes.map((element) => element.bboxMin[1])) - 1.5,
+    maxY: Math.max(...boxes.map((element) => element.bboxMax[1])) + 1.5,
+    minZ: Math.min(...boxes.map((element) => element.bboxMin[2])) - 1.2,
+    maxZ: Math.max(...boxes.map((element) => element.bboxMax[2])) + 1.2,
+  };
+}
+
+function routeEdgeLooksDrawable(edge, bounds) {
+  if (!edge.path?.length) return false;
+  if (!bounds) return true;
+  for (const point of edge.path) {
+    if (point[0] < bounds.minX || point[0] > bounds.maxX || point[1] < bounds.minY || point[1] > bounds.maxY || point[2] < bounds.minZ || point[2] > bounds.maxZ) {
+      return false;
+    }
+  }
+  for (let i = 1; i < edge.path.length; i++) {
+    const a = edge.path[i - 1];
+    const b = edge.path[i];
+    const segmentLength = Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+    if (segmentLength > 9) return false;
+  }
+  return true;
+}
+
 function prependFloorStart(route, floorStart, transform) {
   if (!route?.path?.length || !floorStart?.point) return;
   const start = transform.point(floorStart.point);
-  if (route.path[0].distanceTo(start) > 0.03) {
+  const gap = route.path[0].distanceTo(start);
+  if (gap > 0.03 && gap <= 1.6) {
     route.path = [start, ...route.path];
   }
 }
@@ -892,9 +913,9 @@ function addFloorRouteLines(group, edges, transform) {
 }
 
 function addFloorBlockers(group, elements, transform) {
-  for (const element of elements.filter((item) => ["IfcStair", "IfcRamp"].includes(item.ifcType) && item.bboxMin && item.bboxMax)) {
+  for (const element of elements.filter((item) => ["IfcStair", "IfcStairFlight", "IfcRamp", "IfcRampFlight"].includes(item.ifcType) && item.bboxMin && item.bboxMax)) {
     const box = transform.box(element);
-    if (element.ifcType === "IfcStair") {
+    if (isStairType(element.ifcType)) {
       addBox(group, [box.center.x, 0.11, box.center.z], [box.size.x, 0.22, box.size.z], 0xb3261e);
       addStairStripes(group, box);
       addLabelBoard(group, "stair blocker", [box.center.x, 1.05, box.center.z], 0xb3261e);
@@ -1246,4 +1267,17 @@ function reasonText(code) {
     missing: "data is missing",
     unreachable: "route not connected",
   }[code] || "access issue found";
+}
+
+function isStairType(type) {
+  return type === "IfcStair" || type === "IfcStairFlight";
+}
+
+function isRampType(type) {
+  return type === "IfcRamp" || type === "IfcRampFlight";
+}
+
+function isLiftDoor(door) {
+  const text = `${door?.name || ""} ${door?.label || ""}`.toLowerCase();
+  return text.includes("lift") || text.includes("elevator") || text.includes("hissi") || text.includes("aufzug");
 }

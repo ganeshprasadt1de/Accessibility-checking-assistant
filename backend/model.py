@@ -32,6 +32,7 @@ class RouteEdge:
     source: str = "IfcOpenShell geometry and route graph"
     via_space_guid: str | None = None
     via_space_label: str | None = None
+    measurements: dict[str, float | str | bool | None] = field(default_factory=dict)
 
 
 @dataclass

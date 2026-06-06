@@ -6,6 +6,8 @@ IFC is a building model file format. It stores things like doors, rooms, floors,
 
 The app reads an IFC file, splits the building by floor, checks wheelchair routes between doors, and shows the result in a browser.
 
+The final compliance decision is made by SHACL rules over RDF. Python prepares IFC geometry measurements and route geometry, but it does not create the pass or fail issue list.
+
 ## What The App Checks
 
 The app checks these indoor wheelchair route rules:
@@ -77,10 +79,17 @@ python -m pip install -r requirements.txt
 
 Optional tools:
 
-- Java and Maven are only needed if you want to run the bundled IFCtoLBD converter.
 - Ollama is only needed if you want the assistant to use a local LLM.
 
-The app still runs without Ollama. In that case, the assistant uses a built-in explanation based on the checker result.
+Required tools:
+
+- Java is required for IFCtoLBD.
+- Maven is required to build IFCtoLBD from `IFCtoLBD-master.zip`.
+- `IFCtoLBD-master.zip` must be present in the repo folder.
+
+The preprocessing step stops with an error if Java, Maven, IFCtoLBD, or pySHACL is not available. It does not create a Python replacement LBD graph.
+
+The website checks Ollama when it starts. If Ollama is not running, start the website with `--yes` to continue and show SHACL report data instead of generated assistant text.
 
 ## Run With The Included IFC File
 
@@ -100,6 +109,12 @@ Open this link in your browser:
 
 ```text
 http://127.0.0.1:8765
+```
+
+If Ollama is not running and you still want to open the website:
+
+```powershell
+python server.py --yes
 ```
 
 ## Run With Your Own IFC File
@@ -123,9 +138,9 @@ The assistant explains the checker result in normal language.
 
 If Ollama is running with `qwen3:8b`, the app asks Ollama to write the answer.
 
-If Ollama is not running, the app gives a shorter built-in answer from the same result data.
+If Ollama is not running, `python server.py` stops and prints a message. Use `python server.py --yes` to continue. In that mode, assistant requests return SHACL report data instead of generated explanation text.
 
-The assistant is only for explanation. The pass or fail result comes from the route checker.
+The assistant is only for explanation. The pass or fail result comes from SHACL validation.
 
 ## Output Files
 

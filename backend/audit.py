@@ -41,7 +41,9 @@ def write_audit_report(ifc_path: Path, output_dir: Path, app_summary: dict) -> N
                 "IfcWall",
                 "IfcSlab",
                 "IfcRamp",
+                "IfcRampFlight",
                 "IfcStair",
+                "IfcStairFlight",
                 "IfcRelSpaceBoundary",
                 "IfcRelConnectsPathElements",
             ]
@@ -68,9 +70,9 @@ def write_audit_report(ifc_path: Path, output_dir: Path, app_summary: dict) -> N
             "failure_reason_counts": dict(Counter(reason for edge in route_edges for reason in edge.get("reasons", []))),
         },
         "shacl_route_rule_note": (
-            "The current SHACL route rule checks acc:routeStatus = 'fail'. "
-            "The dependency facts are calculated before SHACL by the backend. "
-            "This is useful for reporting but it is not a full route-planning proof inside SHACL."
+            "Route geometry measurements are written to RDF first. "
+            "SHACL then checks route door width, route clear width, turning space, stair intersection, and ramp measurements. "
+            "The app route status is copied from the SHACL validation results."
         ),
     }
     output_dir.mkdir(parents=True, exist_ok=True)

@@ -21,4 +21,4 @@
 
 ## SHACL Route Rule
 
-The current SHACL route rule checks acc:routeStatus = 'fail'. The dependency facts are calculated before SHACL by the backend. This is useful for reporting but it is not a full route-planning proof inside SHACL.
+Route geometry measurements are written to RDF first. SHACL then checks route door width, route clear width, turning space, stair intersection, and ramp measurements. The app route status is copied from the SHACL validation results.

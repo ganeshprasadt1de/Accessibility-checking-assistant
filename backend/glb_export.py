@@ -82,9 +82,9 @@ def export_box_glb(elements: list[Element], edges: list[RouteEdge], output_path:
             material_index = 0
         elif element.ifc_type == "IfcDoor":
             material_index = 1
-        elif element.ifc_type == "IfcRamp":
+        elif element.ifc_type in {"IfcRamp", "IfcRampFlight"}:
             material_index = 3
-        elif element.ifc_type == "IfcStair":
+        elif element.ifc_type in {"IfcStair", "IfcStairFlight"}:
             material_index = 4
         mesh_index = len(meshes)
         meshes.append({"name": element.label, "primitives": [{"attributes": {"POSITION": 0}, "indices": 1, "material": material_index}]})

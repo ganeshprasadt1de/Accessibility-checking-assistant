@@ -3,9 +3,9 @@
     "elementCount": 312,
     "doorCount": 77,
     "routeEdgeCount": 313,
-    "issueCount": 4,
+    "issueCount": 0,
     "missingGeometryCount": 0,
-    "ifctolbd": "Java or Maven not found, used IFC-derived fallback LBD graph",
+    "ifctolbd": "raw graph created by IFCtoLBD",
     "shacl": {
       "available": true,
       "conforms": true,
@@ -13,7 +13,7 @@
       "resultCount": 0,
       "message": "Conforms: True. Constraint violations: 0. Full report is in shacl_report.ttl."
     },
-    "ruleSource": "Indoor wheelchair rules: door width, route width, turning space, stair blockers, and ramp width/slope"
+    "ruleSource": "SHACL rules over IFCtoLBD RDF plus IFC-derived geometry measurements"
   },
   "rules": {
     "door_width_m": 0.9,
@@ -9094,64 +9094,7 @@
       "extra": {}
     }
   ],
-  "issues": [
-    {
-      "issue_id": "I0001",
-      "element_guid": "0o_5lbt6jCpRs3V3FoLyNr",
-      "element_label": "IfcStair Treppe-KG",
-      "element_type": "IfcStair",
-      "rule_id": "stair_block",
-      "severity": "fail",
-      "measured": 6.410451862897743,
-      "required": 0.0,
-      "unit": "m",
-      "source": "Stair approach check",
-      "short_text": "stair blocks route",
-      "details": "Approach from IfcDoor T\u00fcr-018 reaches IfcStair Treppe-KG. Stairs are not a wheelchair route."
-    },
-    {
-      "issue_id": "I0002",
-      "element_guid": "1Kl5_Wzb98HOSGZ8eaBX2f",
-      "element_label": "IfcStair Treppe-EG",
-      "element_type": "IfcStair",
-      "rule_id": "stair_block",
-      "severity": "fail",
-      "measured": 6.410451862897743,
-      "required": 0.0,
-      "unit": "m",
-      "source": "Stair approach check",
-      "short_text": "stair blocks route",
-      "details": "Approach from IfcDoor T\u00fcr-018 reaches IfcStair Treppe-EG. Stairs are not a wheelchair route."
-    },
-    {
-      "issue_id": "I0003",
-      "element_guid": "3Zb0LaH4z9HPmaVjAzVngL",
-      "element_label": "IfcStair Treppe-1-OG",
-      "element_type": "IfcStair",
-      "rule_id": "stair_block",
-      "severity": "fail",
-      "measured": 6.410451862897743,
-      "required": 0.0,
-      "unit": "m",
-      "source": "Stair approach check",
-      "short_text": "stair blocks route",
-      "details": "Approach from IfcDoor T\u00fcr-018 reaches IfcStair Treppe-1-OG. Stairs are not a wheelchair route."
-    },
-    {
-      "issue_id": "I0004",
-      "element_guid": "0xQhptVzf44Qzhs9jMEILa",
-      "element_label": "IfcStair Treppe-2-OG",
-      "element_type": "IfcStair",
-      "rule_id": "stair_block",
-      "severity": "fail",
-      "measured": 6.410451862897743,
-      "required": 0.0,
-      "unit": "m",
-      "source": "Stair approach check",
-      "short_text": "stair blocks route",
-      "details": "Approach from IfcDoor T\u00fcr-018 reaches IfcStair Treppe-2-OG. Stairs are not a wheelchair route."
-    }
-  ],
+  "issues": [],
   "routeEdges": [
     {
       "edgeId": "E00001",
@@ -9194,7 +9137,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00002",
@@ -9237,7 +9187,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00003",
@@ -9280,7 +9237,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00004",
@@ -9323,7 +9287,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00005",
@@ -9361,7 +9332,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00006",
@@ -9404,7 +9382,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00007",
@@ -9447,7 +9432,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00008",
@@ -9490,7 +9482,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00009",
@@ -9528,7 +9527,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": false,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00010",
@@ -9571,7 +9577,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00011",
@@ -9614,7 +9627,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00012",
@@ -9652,7 +9672,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00013",
@@ -9695,7 +9722,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00014",
@@ -9738,7 +9772,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00015",
@@ -9781,7 +9822,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00016",
@@ -9824,7 +9872,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00017",
@@ -9867,7 +9922,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00018",
@@ -9905,7 +9967,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00019",
@@ -9948,7 +10017,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00020",
@@ -9991,7 +10067,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00021",
@@ -10034,7 +10117,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00022",
@@ -10077,7 +10167,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00023",
@@ -10115,7 +10212,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00024",
@@ -10158,7 +10262,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00025",
@@ -10201,7 +10312,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00026",
@@ -10244,7 +10362,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00027",
@@ -10282,7 +10407,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00028",
@@ -10325,7 +10457,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00029",
@@ -10368,7 +10507,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00030",
@@ -10411,7 +10557,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00031",
@@ -10449,7 +10602,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00032",
@@ -10487,7 +10647,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00033",
@@ -10525,7 +10692,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00034",
@@ -10568,7 +10742,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00035",
@@ -10611,7 +10792,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00036",
@@ -10654,7 +10842,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0_TtqXcOrDbeTXyb5q0Uxb",
-      "viaSpaceLabel": "IfcSpace 118"
+      "viaSpaceLabel": "IfcSpace 118",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00037",
@@ -10697,7 +10892,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0uPiF9LkPAqeB8f54Uy3_C",
-      "viaSpaceLabel": "IfcSpace 221"
+      "viaSpaceLabel": "IfcSpace 221",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 5.400000000000002,
+        "routeTurningSpaceM": 5.400000000000002,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00038",
@@ -10740,7 +10942,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0uPiF9LkPAqeB8f54Uy3_C",
-      "viaSpaceLabel": "IfcSpace 221"
+      "viaSpaceLabel": "IfcSpace 221",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 5.400000000000002,
+        "routeTurningSpaceM": 5.400000000000002,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00039",
@@ -10778,7 +10987,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "0uPiF9LkPAqeB8f54Uy3_C",
-      "viaSpaceLabel": "IfcSpace 221"
+      "viaSpaceLabel": "IfcSpace 221",
+      "measurements": {
+        "routeDoorWidthMinM": 1.8,
+        "routeClearWidthM": 5.400000000000002,
+        "routeTurningSpaceM": 5.400000000000002,
+        "routeHasTurn": false,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00040",
@@ -10816,7 +11032,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "1RP4kkhTDFJuLugWfrM_1s",
-      "viaSpaceLabel": "IfcSpace 117"
+      "viaSpaceLabel": "IfcSpace 117",
+      "measurements": {
+        "routeDoorWidthMinM": 1.8,
+        "routeClearWidthM": 5.400000000000002,
+        "routeTurningSpaceM": 5.400000000000002,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00041",
@@ -10854,7 +11077,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "1RP4kkhTDFJuLugWfrM_1s",
-      "viaSpaceLabel": "IfcSpace 117"
+      "viaSpaceLabel": "IfcSpace 117",
+      "measurements": {
+        "routeDoorWidthMinM": 1.8,
+        "routeClearWidthM": 5.400000000000002,
+        "routeTurningSpaceM": 5.400000000000002,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00042",
@@ -10892,7 +11122,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "1RP4kkhTDFJuLugWfrM_1s",
-      "viaSpaceLabel": "IfcSpace 117"
+      "viaSpaceLabel": "IfcSpace 117",
+      "measurements": {
+        "routeDoorWidthMinM": 1.8,
+        "routeClearWidthM": 5.400000000000002,
+        "routeTurningSpaceM": 5.400000000000002,
+        "routeHasTurn": false,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00043",
@@ -10935,7 +11172,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "24vVAUYDH2SetutQQsZBMv",
-      "viaSpaceLabel": "IfcSpace 207"
+      "viaSpaceLabel": "IfcSpace 207",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 4.4,
+        "routeTurningSpaceM": 4.4,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00044",
@@ -10978,7 +11222,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00045",
@@ -11021,7 +11272,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00046",
@@ -11059,7 +11317,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00047",
@@ -11102,7 +11367,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00048",
@@ -11145,7 +11417,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00049",
@@ -11188,7 +11467,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00050",
@@ -11231,7 +11517,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00051",
@@ -11274,7 +11567,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00052",
@@ -11317,7 +11617,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00053",
@@ -11360,7 +11667,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00054",
@@ -11398,7 +11712,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00055",
@@ -11441,7 +11762,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00056",
@@ -11484,7 +11812,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00057",
@@ -11527,7 +11862,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00058",
@@ -11570,7 +11912,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00059",
@@ -11613,7 +11962,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00060",
@@ -11656,7 +12012,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00061",
@@ -11694,7 +12057,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00062",
@@ -11737,7 +12107,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00063",
@@ -11780,7 +12157,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00064",
@@ -11823,7 +12207,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00065",
@@ -11866,7 +12257,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00066",
@@ -11909,7 +12307,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00067",
@@ -11952,7 +12357,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00068",
@@ -11990,7 +12402,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00069",
@@ -12028,7 +12447,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00070",
@@ -12066,7 +12492,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00071",
@@ -12104,7 +12537,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00072",
@@ -12142,7 +12582,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00073",
@@ -12180,7 +12627,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00074",
@@ -12223,7 +12677,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00075",
@@ -12266,7 +12727,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00076",
@@ -12309,7 +12777,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00077",
@@ -12352,7 +12827,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00078",
@@ -12395,7 +12877,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00079",
@@ -12438,7 +12927,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00080",
@@ -12481,7 +12977,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00081",
@@ -12524,7 +13027,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00082",
@@ -12567,7 +13077,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00083",
@@ -12610,7 +13127,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00084",
@@ -12653,7 +13177,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00085",
@@ -12696,7 +13227,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00086",
@@ -12739,7 +13277,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00087",
@@ -12782,7 +13327,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00088",
@@ -12825,7 +13377,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "25CC32yK130ALlKsnej9JW",
-      "viaSpaceLabel": "IfcSpace 220"
+      "viaSpaceLabel": "IfcSpace 220",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00089",
@@ -12863,7 +13422,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "2Zmi8kumn3P9N9wBPT48lG",
-      "viaSpaceLabel": "IfcSpace 017"
+      "viaSpaceLabel": "IfcSpace 017",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00090",
@@ -12901,7 +13467,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "2Zmi8kumn3P9N9wBPT48lG",
-      "viaSpaceLabel": "IfcSpace 017"
+      "viaSpaceLabel": "IfcSpace 017",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00091",
@@ -12939,7 +13512,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "2Zmi8kumn3P9N9wBPT48lG",
-      "viaSpaceLabel": "IfcSpace 017"
+      "viaSpaceLabel": "IfcSpace 017",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00092",
@@ -12972,7 +13552,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "2Zmi8kumn3P9N9wBPT48lG",
-      "viaSpaceLabel": "IfcSpace 017"
+      "viaSpaceLabel": "IfcSpace 017",
+      "measurements": {
+        "routeDoorWidthMinM": 1.8,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": false,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00093",
@@ -13010,7 +13597,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "2Zmi8kumn3P9N9wBPT48lG",
-      "viaSpaceLabel": "IfcSpace 017"
+      "viaSpaceLabel": "IfcSpace 017",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": false,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00094",
@@ -13053,7 +13647,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "2Zmi8kumn3P9N9wBPT48lG",
-      "viaSpaceLabel": "IfcSpace 017"
+      "viaSpaceLabel": "IfcSpace 017",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00095",
@@ -13091,7 +13692,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "2Zmi8kumn3P9N9wBPT48lG",
-      "viaSpaceLabel": "IfcSpace 017"
+      "viaSpaceLabel": "IfcSpace 017",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00096",
@@ -13134,7 +13742,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "2Zmi8kumn3P9N9wBPT48lG",
-      "viaSpaceLabel": "IfcSpace 017"
+      "viaSpaceLabel": "IfcSpace 017",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00097",
@@ -13172,7 +13787,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "2Zmi8kumn3P9N9wBPT48lG",
-      "viaSpaceLabel": "IfcSpace 017"
+      "viaSpaceLabel": "IfcSpace 017",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00098",
@@ -13210,7 +13832,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "2Zmi8kumn3P9N9wBPT48lG",
-      "viaSpaceLabel": "IfcSpace 017"
+      "viaSpaceLabel": "IfcSpace 017",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00099",
@@ -13253,7 +13882,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "2goaA6RR92B9xducYbaQVU",
-      "viaSpaceLabel": "IfcSpace 206"
+      "viaSpaceLabel": "IfcSpace 206",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 4.4,
+        "routeTurningSpaceM": 4.4,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00100",
@@ -13296,7 +13932,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "2mSYEw1YLDvhMYvUr3eREJ",
-      "viaSpaceLabel": "IfcSpace 321"
+      "viaSpaceLabel": "IfcSpace 321",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 5.400000000000002,
+        "routeTurningSpaceM": 5.400000000000002,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00101",
@@ -13334,7 +13977,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "2mSYEw1YLDvhMYvUr3eREJ",
-      "viaSpaceLabel": "IfcSpace 321"
+      "viaSpaceLabel": "IfcSpace 321",
+      "measurements": {
+        "routeDoorWidthMinM": 1.8,
+        "routeClearWidthM": 5.400000000000002,
+        "routeTurningSpaceM": 5.400000000000002,
+        "routeHasTurn": false,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00102",
@@ -13377,7 +14027,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "2mSYEw1YLDvhMYvUr3eREJ",
-      "viaSpaceLabel": "IfcSpace 321"
+      "viaSpaceLabel": "IfcSpace 321",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 5.400000000000002,
+        "routeTurningSpaceM": 5.400000000000002,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00103",
@@ -13420,7 +14077,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00104",
@@ -13463,7 +14127,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00105",
@@ -13506,7 +14177,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00106",
@@ -13549,7 +14227,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00107",
@@ -13587,7 +14272,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00108",
@@ -13630,7 +14322,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00109",
@@ -13673,7 +14372,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00110",
@@ -13716,7 +14422,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00111",
@@ -13759,7 +14472,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00112",
@@ -13802,7 +14522,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00113",
@@ -13845,7 +14572,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00114",
@@ -13888,7 +14622,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00115",
@@ -13926,7 +14667,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00116",
@@ -13969,7 +14717,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00117",
@@ -14007,7 +14762,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": false,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00118",
@@ -14050,7 +14812,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00119",
@@ -14093,7 +14862,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00120",
@@ -14136,7 +14912,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00121",
@@ -14179,7 +14962,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00122",
@@ -14217,7 +15007,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00123",
@@ -14260,7 +15057,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00124",
@@ -14303,7 +15107,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00125",
@@ -14346,7 +15157,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00126",
@@ -14389,7 +15207,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00127",
@@ -14432,7 +15257,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00128",
@@ -14470,7 +15302,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00129",
@@ -14513,7 +15352,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00130",
@@ -14556,7 +15402,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00131",
@@ -14599,7 +15452,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00132",
@@ -14642,7 +15502,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00133",
@@ -14680,7 +15547,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00134",
@@ -14723,7 +15597,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00135",
@@ -14766,7 +15647,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00136",
@@ -14809,7 +15697,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00137",
@@ -14852,7 +15747,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00138",
@@ -14890,7 +15792,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00139",
@@ -14928,7 +15837,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00140",
@@ -14966,7 +15882,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00141",
@@ -15004,7 +15927,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00142",
@@ -15047,7 +15977,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00143",
@@ -15090,7 +16027,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00144",
@@ -15133,7 +16077,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00145",
@@ -15176,7 +16127,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00146",
@@ -15219,7 +16177,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00147",
@@ -15262,7 +16227,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3CXBDjcSTES8AedjLKSfJe",
-      "viaSpaceLabel": "IfcSpace 322"
+      "viaSpaceLabel": "IfcSpace 322",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00148",
@@ -15305,7 +16277,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3Gz7u_d1P7IA35Wmtg48Rc",
-      "viaSpaceLabel": "IfcSpace 016"
+      "viaSpaceLabel": "IfcSpace 016",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 5.400000000000002,
+        "routeTurningSpaceM": 5.400000000000002,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00149",
@@ -15343,7 +16322,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3Gz7u_d1P7IA35Wmtg48Rc",
-      "viaSpaceLabel": "IfcSpace 016"
+      "viaSpaceLabel": "IfcSpace 016",
+      "measurements": {
+        "routeDoorWidthMinM": 1.8,
+        "routeClearWidthM": 5.400000000000002,
+        "routeTurningSpaceM": 5.400000000000002,
+        "routeHasTurn": false,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00150",
@@ -15386,7 +16372,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3Gz7u_d1P7IA35Wmtg48Rc",
-      "viaSpaceLabel": "IfcSpace 016"
+      "viaSpaceLabel": "IfcSpace 016",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 5.400000000000002,
+        "routeTurningSpaceM": 5.400000000000002,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00151",
@@ -15429,7 +16422,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00152",
@@ -15467,7 +16467,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00153",
@@ -15510,7 +16517,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00154",
@@ -15553,7 +16567,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00155",
@@ -15596,7 +16617,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00156",
@@ -15639,7 +16667,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00157",
@@ -15682,7 +16717,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00158",
@@ -15720,7 +16762,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00159",
@@ -15763,7 +16812,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00160",
@@ -15806,7 +16862,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00161",
@@ -15849,7 +16912,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00162",
@@ -15892,7 +16962,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00163",
@@ -15935,7 +17012,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00164",
@@ -15973,7 +17057,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00165",
@@ -16011,7 +17102,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00166",
@@ -16049,7 +17147,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00167",
@@ -16087,7 +17192,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00168",
@@ -16125,7 +17237,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00169",
@@ -16163,7 +17282,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": false,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00170",
@@ -16206,7 +17332,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00171",
@@ -16249,7 +17382,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00172",
@@ -16292,7 +17432,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00173",
@@ -16335,7 +17482,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00174",
@@ -16378,7 +17532,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00175",
@@ -16421,7 +17582,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00176",
@@ -16464,7 +17632,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00177",
@@ -16507,7 +17682,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00178",
@@ -16550,7 +17732,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3KaloR8018sAKZVwuYVbSu",
-      "viaSpaceLabel": "IfcSpace 116"
+      "viaSpaceLabel": "IfcSpace 116",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00179",
@@ -16593,7 +17782,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00180",
@@ -16631,7 +17827,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00181",
@@ -16674,7 +17877,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00182",
@@ -16717,7 +17927,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00183",
@@ -16760,7 +17977,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00184",
@@ -16803,7 +18027,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00185",
@@ -16846,7 +18077,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00186",
@@ -16889,7 +18127,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00187",
@@ -16932,7 +18177,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00188",
@@ -16970,7 +18222,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00189",
@@ -17013,7 +18272,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00190",
@@ -17056,7 +18322,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00191",
@@ -17099,7 +18372,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00192",
@@ -17142,7 +18422,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00193",
@@ -17185,7 +18472,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00194",
@@ -17228,7 +18522,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00195",
@@ -17271,7 +18572,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00196",
@@ -17309,7 +18617,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00197",
@@ -17347,7 +18662,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00198",
@@ -17385,7 +18707,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00199",
@@ -17423,7 +18752,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00200",
@@ -17461,7 +18797,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00201",
@@ -17499,7 +18842,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00202",
@@ -17537,7 +18887,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00203",
@@ -17580,7 +18937,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00204",
@@ -17623,7 +18987,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00205",
@@ -17666,7 +19037,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00206",
@@ -17709,7 +19087,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00207",
@@ -17752,7 +19137,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00208",
@@ -17795,7 +19187,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00209",
@@ -17838,7 +19237,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00210",
@@ -17881,7 +19287,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00211",
@@ -17919,7 +19332,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": false,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00212",
@@ -17962,7 +19382,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00213",
@@ -18005,7 +19432,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00214",
@@ -18048,7 +19482,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00215",
@@ -18091,7 +19532,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00216",
@@ -18134,7 +19582,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00217",
@@ -18177,7 +19632,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00218",
@@ -18220,7 +19682,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00219",
@@ -18263,7 +19732,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00220",
@@ -18306,7 +19782,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00221",
@@ -18349,7 +19832,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00222",
@@ -18392,7 +19882,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00223",
@@ -18435,7 +19932,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3XJSZHVdLFTQTPYNfhA6a2",
-      "viaSpaceLabel": "IfcSpace 222"
+      "viaSpaceLabel": "IfcSpace 222",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00224",
@@ -18478,7 +19982,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00225",
@@ -18521,7 +20032,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00226",
@@ -18564,7 +20082,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00227",
@@ -18607,7 +20132,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00228",
@@ -18650,7 +20182,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00229",
@@ -18688,7 +20227,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00230",
@@ -18731,7 +20277,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00231",
@@ -18774,7 +20327,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00232",
@@ -18817,7 +20377,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00233",
@@ -18860,7 +20427,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00234",
@@ -18903,7 +20477,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00235",
@@ -18946,7 +20527,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00236",
@@ -18989,7 +20577,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00237",
@@ -19027,7 +20622,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00238",
@@ -19070,7 +20672,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00239",
@@ -19113,7 +20722,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00240",
@@ -19156,7 +20772,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00241",
@@ -19199,7 +20822,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00242",
@@ -19242,7 +20872,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00243",
@@ -19285,7 +20922,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00244",
@@ -19323,7 +20967,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00245",
@@ -19366,7 +21017,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00246",
@@ -19409,7 +21067,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00247",
@@ -19452,7 +21117,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00248",
@@ -19495,7 +21167,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00249",
@@ -19538,7 +21217,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00250",
@@ -19576,7 +21262,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00251",
@@ -19619,7 +21312,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00252",
@@ -19662,7 +21362,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00253",
@@ -19705,7 +21412,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00254",
@@ -19748,7 +21462,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00255",
@@ -19786,7 +21507,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00256",
@@ -19829,7 +21557,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00257",
@@ -19872,7 +21607,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00258",
@@ -19915,7 +21657,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00259",
@@ -19953,7 +21702,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00260",
@@ -19996,7 +21752,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00261",
@@ -20039,7 +21802,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00262",
@@ -20082,7 +21852,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00263",
@@ -20120,7 +21897,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00264",
@@ -20158,7 +21942,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00265",
@@ -20196,7 +21987,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00266",
@@ -20239,7 +22037,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00267",
@@ -20282,7 +22087,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00268",
@@ -20325,7 +22137,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3cjnMny5DF0g1J6kKZWO4Y",
-      "viaSpaceLabel": "IfcSpace 015"
+      "viaSpaceLabel": "IfcSpace 015",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00269",
@@ -20368,7 +22187,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00270",
@@ -20411,7 +22237,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00271",
@@ -20454,7 +22287,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00272",
@@ -20497,7 +22337,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00273",
@@ -20540,7 +22387,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00274",
@@ -20583,7 +22437,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00275",
@@ -20626,7 +22487,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00276",
@@ -20669,7 +22537,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00277",
@@ -20707,7 +22582,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00278",
@@ -20750,7 +22632,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00279",
@@ -20793,7 +22682,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00280",
@@ -20836,7 +22732,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00281",
@@ -20879,7 +22782,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00282",
@@ -20922,7 +22832,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00283",
@@ -20965,7 +22882,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00284",
@@ -21008,7 +22932,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00285",
@@ -21046,7 +22977,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00286",
@@ -21089,7 +23027,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00287",
@@ -21132,7 +23077,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00288",
@@ -21175,7 +23127,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00289",
@@ -21218,7 +23177,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00290",
@@ -21261,7 +23227,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00291",
@@ -21304,7 +23277,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00292",
@@ -21342,7 +23322,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00293",
@@ -21385,7 +23372,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00294",
@@ -21428,7 +23422,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00295",
@@ -21471,7 +23472,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00296",
@@ -21514,7 +23522,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00297",
@@ -21557,7 +23572,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00298",
@@ -21595,7 +23617,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00299",
@@ -21638,7 +23667,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00300",
@@ -21681,7 +23717,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00301",
@@ -21724,7 +23767,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00302",
@@ -21767,7 +23817,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00303",
@@ -21805,7 +23862,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00304",
@@ -21848,7 +23912,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00305",
@@ -21891,7 +23962,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00306",
@@ -21934,7 +24012,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00307",
@@ -21972,7 +24057,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00308",
@@ -22015,7 +24107,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00309",
@@ -22058,7 +24157,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00310",
@@ -22096,7 +24202,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00311",
@@ -22139,7 +24252,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00312",
@@ -22177,7 +24297,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     },
     {
       "edgeId": "E00313",
@@ -22215,7 +24342,14 @@
       ],
       "source": "IFC space boundaries and floor geometry",
       "viaSpaceGuid": "3gYFdGsxTBa9PFlMvRAaiF",
-      "viaSpaceLabel": "IfcSpace 320"
+      "viaSpaceLabel": "IfcSpace 320",
+      "measurements": {
+        "routeDoorWidthMinM": 1.0,
+        "routeClearWidthM": 2.0,
+        "routeTurningSpaceM": 2.0,
+        "routeHasTurn": true,
+        "routeHitsStair": false
+      }
     }
   ],
   "routesByDoor": {
@@ -45225,8 +47359,25 @@
   "floors": [
     {
       "name": "Keller",
-      "elevation": -1.95,
+      "elevation": -1.65,
       "elementGuids": [
+        "3UEb2iq7D2tOgbX6Mufs$X",
+        "2xcLNHPon6VO6wB_n0EQLF",
+        "2Hh$tXimL1_Aogi9jn1cZ4",
+        "2sVpKMTdb3u8IUv50wOLpo",
+        "0V74RtuUH1zQt_CcawQbBc",
+        "0dXE$xLxz8MwbtYoTqJPiO",
+        "2G3Zgh3YLFBxViczryC8tv",
+        "1pG7ErnqL79fYOSoJhY$mD",
+        "2NO$Il8fr1n8x3zsU1IoYc",
+        "3vTaz$m4D7Mw20Cj4ZCMEW",
+        "29dtO28k16G9baf14UO37j",
+        "3YOWN6kp53UhVDk7gccfjD",
+        "25NDKbpWH5r94ho13fJMeb",
+        "3cjnMny5DF0g1J6kKZWO4Y",
+        "2Zmi8kumn3P9N9wBPT48lG",
+        "3Gz7u_d1P7IA35Wmtg48Rc",
+        "1nsRm1QQb1xwWpzzFR7Ax3",
         "3qloCPnZDEQBom1ZjBlwJP",
         "0_flqizUv5_A_EGt7DzP3T",
         "17n0YjYkvEshOmsrIPLGOb",
@@ -45288,12 +47439,30 @@
         "2pe3RqZ0j8ogoAvp7iGUAH",
         "3sXEZFiePFsxi_o7909$c3"
       ],
-      "spaceGuids": [],
+      "spaceGuids": [
+        "3UEb2iq7D2tOgbX6Mufs$X",
+        "2xcLNHPon6VO6wB_n0EQLF",
+        "2Hh$tXimL1_Aogi9jn1cZ4",
+        "2sVpKMTdb3u8IUv50wOLpo",
+        "0V74RtuUH1zQt_CcawQbBc",
+        "0dXE$xLxz8MwbtYoTqJPiO",
+        "2G3Zgh3YLFBxViczryC8tv",
+        "1pG7ErnqL79fYOSoJhY$mD",
+        "2NO$Il8fr1n8x3zsU1IoYc",
+        "3vTaz$m4D7Mw20Cj4ZCMEW",
+        "29dtO28k16G9baf14UO37j",
+        "3YOWN6kp53UhVDk7gccfjD",
+        "25NDKbpWH5r94ho13fJMeb",
+        "3cjnMny5DF0g1J6kKZWO4Y",
+        "2Zmi8kumn3P9N9wBPT48lG",
+        "3Gz7u_d1P7IA35Wmtg48Rc",
+        "1nsRm1QQb1xwWpzzFR7Ax3"
+      ],
       "stairGuids": [
         "0o_5lbt6jCpRs3V3FoLyNr"
       ],
       "rampGuids": [],
-      "issueCount": 1,
+      "issueCount": 0,
       "routeEdgeIds": [
         "E00089",
         "E00090",
@@ -45360,58 +47529,27 @@
       "failureReasonCounts": {}
     },
     {
-      "name": "z=-1.65",
-      "elevation": -1.65,
-      "elementGuids": [
-        "3UEb2iq7D2tOgbX6Mufs$X",
-        "2xcLNHPon6VO6wB_n0EQLF",
-        "2Hh$tXimL1_Aogi9jn1cZ4",
-        "2sVpKMTdb3u8IUv50wOLpo",
-        "0V74RtuUH1zQt_CcawQbBc",
-        "0dXE$xLxz8MwbtYoTqJPiO",
-        "2G3Zgh3YLFBxViczryC8tv",
-        "1pG7ErnqL79fYOSoJhY$mD",
-        "2NO$Il8fr1n8x3zsU1IoYc",
-        "3vTaz$m4D7Mw20Cj4ZCMEW",
-        "29dtO28k16G9baf14UO37j",
-        "3YOWN6kp53UhVDk7gccfjD",
-        "25NDKbpWH5r94ho13fJMeb",
-        "3cjnMny5DF0g1J6kKZWO4Y",
-        "2Zmi8kumn3P9N9wBPT48lG",
-        "3Gz7u_d1P7IA35Wmtg48Rc",
-        "1nsRm1QQb1xwWpzzFR7Ax3"
-      ],
-      "doorGuids": [],
-      "spaceGuids": [
-        "3UEb2iq7D2tOgbX6Mufs$X",
-        "2xcLNHPon6VO6wB_n0EQLF",
-        "2Hh$tXimL1_Aogi9jn1cZ4",
-        "2sVpKMTdb3u8IUv50wOLpo",
-        "0V74RtuUH1zQt_CcawQbBc",
-        "0dXE$xLxz8MwbtYoTqJPiO",
-        "2G3Zgh3YLFBxViczryC8tv",
-        "1pG7ErnqL79fYOSoJhY$mD",
-        "2NO$Il8fr1n8x3zsU1IoYc",
-        "3vTaz$m4D7Mw20Cj4ZCMEW",
-        "29dtO28k16G9baf14UO37j",
-        "3YOWN6kp53UhVDk7gccfjD",
-        "25NDKbpWH5r94ho13fJMeb",
-        "3cjnMny5DF0g1J6kKZWO4Y",
-        "2Zmi8kumn3P9N9wBPT48lG",
-        "3Gz7u_d1P7IA35Wmtg48Rc",
-        "1nsRm1QQb1xwWpzzFR7Ax3"
-      ],
-      "stairGuids": [],
-      "rampGuids": [],
-      "issueCount": 0,
-      "routeEdgeIds": [],
-      "routeStatusCounts": {},
-      "failureReasonCounts": {}
-    },
-    {
       "name": "Erdgeschoss",
-      "elevation": 1.05,
+      "elevation": 1.35,
       "elementGuids": [
+        "3EN96kdYDB2OOGjNLp8e86",
+        "1_Evy7T$DCiwLgTMLHCRoe",
+        "3eQ_MQ5er5UeRXq4xxAoKl",
+        "3KaloR8018sAKZVwuYVbSu",
+        "03hhkFXKT4RPFNu5rDrZPL",
+        "1oKaKV7Wz8IOJ10cA1PGWP",
+        "3j5r$vfHT3JfqUfpdRoXnP",
+        "3t8qjHTuTAigDlC1x7D16b",
+        "1DxredyET5bf_85HZe8$FO",
+        "2ED0MLfrf17BXIsuJYCs7R",
+        "1loQAAB191MA5YmsaMJHkI",
+        "3Xu6SpY4vC89stuKlMWE2n",
+        "3yAAZZ86j388XApaG$h1X6",
+        "3$FatfHY1Cg9apAMwbKPN8",
+        "0_TtqXcOrDbeTXyb5q0Uxb",
+        "25QUQJ9jHAFengkpc9N7GR",
+        "0jhU4VZ6XCxee3pjfx5VMh",
+        "1RP4kkhTDFJuLugWfrM_1s",
         "18PQUIFELEARLM4c0brquf",
         "2d24khq3H2EhLI7osiekrD",
         "0nixpH$hD2$xLwip3vL96O",
@@ -45484,12 +47622,31 @@
         "1_hrYGMATEmeNbEHgfoKxd",
         "31UFds84f5oAxxal4G6S8P"
       ],
-      "spaceGuids": [],
+      "spaceGuids": [
+        "3EN96kdYDB2OOGjNLp8e86",
+        "1_Evy7T$DCiwLgTMLHCRoe",
+        "3eQ_MQ5er5UeRXq4xxAoKl",
+        "3KaloR8018sAKZVwuYVbSu",
+        "03hhkFXKT4RPFNu5rDrZPL",
+        "1oKaKV7Wz8IOJ10cA1PGWP",
+        "3j5r$vfHT3JfqUfpdRoXnP",
+        "3t8qjHTuTAigDlC1x7D16b",
+        "1DxredyET5bf_85HZe8$FO",
+        "2ED0MLfrf17BXIsuJYCs7R",
+        "1loQAAB191MA5YmsaMJHkI",
+        "3Xu6SpY4vC89stuKlMWE2n",
+        "3yAAZZ86j388XApaG$h1X6",
+        "3$FatfHY1Cg9apAMwbKPN8",
+        "0_TtqXcOrDbeTXyb5q0Uxb",
+        "25QUQJ9jHAFengkpc9N7GR",
+        "0jhU4VZ6XCxee3pjfx5VMh",
+        "1RP4kkhTDFJuLugWfrM_1s"
+      ],
       "stairGuids": [
         "1Kl5_Wzb98HOSGZ8eaBX2f"
       ],
       "rampGuids": [],
-      "issueCount": 1,
+      "issueCount": 0,
       "routeEdgeIds": [
         "E00001",
         "E00002",
@@ -45565,60 +47722,31 @@
       "failureReasonCounts": {}
     },
     {
-      "name": "z=1.35",
-      "elevation": 1.35,
-      "elementGuids": [
-        "3EN96kdYDB2OOGjNLp8e86",
-        "1_Evy7T$DCiwLgTMLHCRoe",
-        "3eQ_MQ5er5UeRXq4xxAoKl",
-        "3KaloR8018sAKZVwuYVbSu",
-        "03hhkFXKT4RPFNu5rDrZPL",
-        "1oKaKV7Wz8IOJ10cA1PGWP",
-        "3j5r$vfHT3JfqUfpdRoXnP",
-        "3t8qjHTuTAigDlC1x7D16b",
-        "1DxredyET5bf_85HZe8$FO",
-        "2ED0MLfrf17BXIsuJYCs7R",
-        "1loQAAB191MA5YmsaMJHkI",
-        "3Xu6SpY4vC89stuKlMWE2n",
-        "3yAAZZ86j388XApaG$h1X6",
-        "3$FatfHY1Cg9apAMwbKPN8",
-        "0_TtqXcOrDbeTXyb5q0Uxb",
-        "25QUQJ9jHAFengkpc9N7GR",
-        "0jhU4VZ6XCxee3pjfx5VMh",
-        "1RP4kkhTDFJuLugWfrM_1s"
-      ],
-      "doorGuids": [],
-      "spaceGuids": [
-        "3EN96kdYDB2OOGjNLp8e86",
-        "1_Evy7T$DCiwLgTMLHCRoe",
-        "3eQ_MQ5er5UeRXq4xxAoKl",
-        "3KaloR8018sAKZVwuYVbSu",
-        "03hhkFXKT4RPFNu5rDrZPL",
-        "1oKaKV7Wz8IOJ10cA1PGWP",
-        "3j5r$vfHT3JfqUfpdRoXnP",
-        "3t8qjHTuTAigDlC1x7D16b",
-        "1DxredyET5bf_85HZe8$FO",
-        "2ED0MLfrf17BXIsuJYCs7R",
-        "1loQAAB191MA5YmsaMJHkI",
-        "3Xu6SpY4vC89stuKlMWE2n",
-        "3yAAZZ86j388XApaG$h1X6",
-        "3$FatfHY1Cg9apAMwbKPN8",
-        "0_TtqXcOrDbeTXyb5q0Uxb",
-        "25QUQJ9jHAFengkpc9N7GR",
-        "0jhU4VZ6XCxee3pjfx5VMh",
-        "1RP4kkhTDFJuLugWfrM_1s"
-      ],
-      "stairGuids": [],
-      "rampGuids": [],
-      "issueCount": 0,
-      "routeEdgeIds": [],
-      "routeStatusCounts": {},
-      "failureReasonCounts": {}
-    },
-    {
       "name": "1. Obergeschoss",
-      "elevation": 4.05,
+      "elevation": 4.35,
       "elementGuids": [
+        "25CC32yK130ALlKsnej9JW",
+        "37pP75EaP1axQNg3rWc_WT",
+        "0f6kjO4cnBngLgZgtaoBTE",
+        "3XJSZHVdLFTQTPYNfhA6a2",
+        "1AW8GAtUnEYB9XPWOUYKK5",
+        "0uPiF9LkPAqeB8f54Uy3_C",
+        "24vVAUYDH2SetutQQsZBMv",
+        "2goaA6RR92B9xducYbaQVU",
+        "0i4GPkF$j1$P1_N4yoKfHm",
+        "2Yd3UbuHLF0P7Q5pq$wqrF",
+        "1GtYUXG753_h6i4vKAf46v",
+        "0VWZeARNT8IAUcPL5OoYiA",
+        "3kV3mGMIX3BvUw5dL_lJVg",
+        "1yZQvqj15Ab8eMXDuz85Dy",
+        "0uC7OD3$5F7v$zL3aaoEig",
+        "2E2TaOnqD0chpbuH8tXCpW",
+        "3shuyF_Yb7yu2P$QLB2s8G",
+        "0UiHARbFzF1RT4g_GKem_B",
+        "1LVv$xQpj6k8KE6pcNlDDU",
+        "1a3ixYyUn0QO4HWUYKN$4p",
+        "3iSzpa9d93jhTDB7hG0QBW",
+        "0K6ICBa1zCjvUnsy8qMIRC",
         "17HzXMa29CgeqdGTriCwwh",
         "37NUOXsmX3z9p4Kk0VJikq",
         "2VGdy0IID6LxPfFQdDE_rz",
@@ -45697,12 +47825,35 @@
         "1p4YfqvYLCyfRRiNruiahD",
         "1MlsdMSb17ygNfEs7N22qC"
       ],
-      "spaceGuids": [],
+      "spaceGuids": [
+        "25CC32yK130ALlKsnej9JW",
+        "37pP75EaP1axQNg3rWc_WT",
+        "0f6kjO4cnBngLgZgtaoBTE",
+        "3XJSZHVdLFTQTPYNfhA6a2",
+        "1AW8GAtUnEYB9XPWOUYKK5",
+        "0uPiF9LkPAqeB8f54Uy3_C",
+        "24vVAUYDH2SetutQQsZBMv",
+        "2goaA6RR92B9xducYbaQVU",
+        "0i4GPkF$j1$P1_N4yoKfHm",
+        "2Yd3UbuHLF0P7Q5pq$wqrF",
+        "1GtYUXG753_h6i4vKAf46v",
+        "0VWZeARNT8IAUcPL5OoYiA",
+        "3kV3mGMIX3BvUw5dL_lJVg",
+        "1yZQvqj15Ab8eMXDuz85Dy",
+        "0uC7OD3$5F7v$zL3aaoEig",
+        "2E2TaOnqD0chpbuH8tXCpW",
+        "3shuyF_Yb7yu2P$QLB2s8G",
+        "0UiHARbFzF1RT4g_GKem_B",
+        "1LVv$xQpj6k8KE6pcNlDDU",
+        "1a3ixYyUn0QO4HWUYKN$4p",
+        "3iSzpa9d93jhTDB7hG0QBW",
+        "0K6ICBa1zCjvUnsy8qMIRC"
+      ],
       "stairGuids": [
         "3Zb0LaH4z9HPmaVjAzVngL"
       ],
       "rampGuids": [],
-      "issueCount": 1,
+      "issueCount": 0,
       "routeEdgeIds": [
         "E00037",
         "E00038",
@@ -45806,68 +47957,31 @@
       "failureReasonCounts": {}
     },
     {
-      "name": "z=4.35",
-      "elevation": 4.35,
-      "elementGuids": [
-        "25CC32yK130ALlKsnej9JW",
-        "37pP75EaP1axQNg3rWc_WT",
-        "0f6kjO4cnBngLgZgtaoBTE",
-        "3XJSZHVdLFTQTPYNfhA6a2",
-        "1AW8GAtUnEYB9XPWOUYKK5",
-        "0uPiF9LkPAqeB8f54Uy3_C",
-        "24vVAUYDH2SetutQQsZBMv",
-        "2goaA6RR92B9xducYbaQVU",
-        "0i4GPkF$j1$P1_N4yoKfHm",
-        "2Yd3UbuHLF0P7Q5pq$wqrF",
-        "1GtYUXG753_h6i4vKAf46v",
-        "0VWZeARNT8IAUcPL5OoYiA",
-        "3kV3mGMIX3BvUw5dL_lJVg",
-        "1yZQvqj15Ab8eMXDuz85Dy",
-        "0uC7OD3$5F7v$zL3aaoEig",
-        "2E2TaOnqD0chpbuH8tXCpW",
-        "3shuyF_Yb7yu2P$QLB2s8G",
-        "0UiHARbFzF1RT4g_GKem_B",
-        "1LVv$xQpj6k8KE6pcNlDDU",
-        "1a3ixYyUn0QO4HWUYKN$4p",
-        "3iSzpa9d93jhTDB7hG0QBW",
-        "0K6ICBa1zCjvUnsy8qMIRC"
-      ],
-      "doorGuids": [],
-      "spaceGuids": [
-        "25CC32yK130ALlKsnej9JW",
-        "37pP75EaP1axQNg3rWc_WT",
-        "0f6kjO4cnBngLgZgtaoBTE",
-        "3XJSZHVdLFTQTPYNfhA6a2",
-        "1AW8GAtUnEYB9XPWOUYKK5",
-        "0uPiF9LkPAqeB8f54Uy3_C",
-        "24vVAUYDH2SetutQQsZBMv",
-        "2goaA6RR92B9xducYbaQVU",
-        "0i4GPkF$j1$P1_N4yoKfHm",
-        "2Yd3UbuHLF0P7Q5pq$wqrF",
-        "1GtYUXG753_h6i4vKAf46v",
-        "0VWZeARNT8IAUcPL5OoYiA",
-        "3kV3mGMIX3BvUw5dL_lJVg",
-        "1yZQvqj15Ab8eMXDuz85Dy",
-        "0uC7OD3$5F7v$zL3aaoEig",
-        "2E2TaOnqD0chpbuH8tXCpW",
-        "3shuyF_Yb7yu2P$QLB2s8G",
-        "0UiHARbFzF1RT4g_GKem_B",
-        "1LVv$xQpj6k8KE6pcNlDDU",
-        "1a3ixYyUn0QO4HWUYKN$4p",
-        "3iSzpa9d93jhTDB7hG0QBW",
-        "0K6ICBa1zCjvUnsy8qMIRC"
-      ],
-      "stairGuids": [],
-      "rampGuids": [],
-      "issueCount": 0,
-      "routeEdgeIds": [],
-      "routeStatusCounts": {},
-      "failureReasonCounts": {}
-    },
-    {
       "name": "2. Obergeschoss",
-      "elevation": 7.05,
+      "elevation": 7.35,
       "elementGuids": [
+        "3M3dydUxH2hR7Uvg9QNhS$",
+        "2lebmw3XD9w9PIIn4HKbwh",
+        "09m2tgyfr9UfikvrKFMkeD",
+        "0dc6ovxJLDww6sjSpu_cfN",
+        "0U5AcnRYX7aw$OIZXqMUaR",
+        "1jJ7opRcX6uevup8Hnq0$2",
+        "30oDtenHrAwuYDgWTayiN$",
+        "3$PC9MkEH1Ex24UD3VHyzP",
+        "0Veunyhgf7QxfJXezc1Ydu",
+        "1vWhxAiTL1RR3r4R3eC2Vv",
+        "3uvYP4OyH5ufyPIMbZD86h",
+        "0oB0YIgnPE49CsBpGIdxOR",
+        "3jurQKaejCqgtlRMQvYO$h",
+        "1I4mvNGj58VPS4IqdvGDOQ",
+        "3BlfjPTqH1qeG63Yox0pCX",
+        "1qHIiTcLf7zwz3pTXujZ3t",
+        "0jh6L39QvEQu8mVKX3j43f",
+        "3zaEFaiGrF1ftyFPQrOe_i",
+        "3i9iiZlcT5eQkuRPP$TrLS",
+        "3gYFdGsxTBa9PFlMvRAaiF",
+        "2mSYEw1YLDvhMYvUr3eREJ",
+        "3CXBDjcSTES8AedjLKSfJe",
         "2GIKSl4yvD7wO8pi7zg$sQ",
         "3UcRuggsrAXPWkQpXc3dLn",
         "3KiAVCT1D1t8Xn0nRB8nld",
@@ -45944,12 +48058,35 @@
         "3XIgDIN6vBjxvjdvI7ngjF",
         "2N6esOMjP29AvhRLQ1Jz3$"
       ],
-      "spaceGuids": [],
+      "spaceGuids": [
+        "3M3dydUxH2hR7Uvg9QNhS$",
+        "2lebmw3XD9w9PIIn4HKbwh",
+        "09m2tgyfr9UfikvrKFMkeD",
+        "0dc6ovxJLDww6sjSpu_cfN",
+        "0U5AcnRYX7aw$OIZXqMUaR",
+        "1jJ7opRcX6uevup8Hnq0$2",
+        "30oDtenHrAwuYDgWTayiN$",
+        "3$PC9MkEH1Ex24UD3VHyzP",
+        "0Veunyhgf7QxfJXezc1Ydu",
+        "1vWhxAiTL1RR3r4R3eC2Vv",
+        "3uvYP4OyH5ufyPIMbZD86h",
+        "0oB0YIgnPE49CsBpGIdxOR",
+        "3jurQKaejCqgtlRMQvYO$h",
+        "1I4mvNGj58VPS4IqdvGDOQ",
+        "3BlfjPTqH1qeG63Yox0pCX",
+        "1qHIiTcLf7zwz3pTXujZ3t",
+        "0jh6L39QvEQu8mVKX3j43f",
+        "3zaEFaiGrF1ftyFPQrOe_i",
+        "3i9iiZlcT5eQkuRPP$TrLS",
+        "3gYFdGsxTBa9PFlMvRAaiF",
+        "2mSYEw1YLDvhMYvUr3eREJ",
+        "3CXBDjcSTES8AedjLKSfJe"
+      ],
       "stairGuids": [
         "0xQhptVzf44Qzhs9jMEILa"
       ],
       "rampGuids": [],
-      "issueCount": 1,
+      "issueCount": 0,
       "routeEdgeIds": [
         "E00100",
         "E00101",
@@ -46049,153 +48186,12 @@
         "pass": 93
       },
       "failureReasonCounts": {}
-    },
-    {
-      "name": "z=7.35",
-      "elevation": 7.35,
-      "elementGuids": [
-        "3M3dydUxH2hR7Uvg9QNhS$",
-        "2lebmw3XD9w9PIIn4HKbwh",
-        "09m2tgyfr9UfikvrKFMkeD",
-        "0dc6ovxJLDww6sjSpu_cfN",
-        "0U5AcnRYX7aw$OIZXqMUaR",
-        "1jJ7opRcX6uevup8Hnq0$2",
-        "30oDtenHrAwuYDgWTayiN$",
-        "3$PC9MkEH1Ex24UD3VHyzP",
-        "0Veunyhgf7QxfJXezc1Ydu",
-        "1vWhxAiTL1RR3r4R3eC2Vv",
-        "3uvYP4OyH5ufyPIMbZD86h",
-        "0oB0YIgnPE49CsBpGIdxOR",
-        "3jurQKaejCqgtlRMQvYO$h",
-        "1I4mvNGj58VPS4IqdvGDOQ",
-        "3BlfjPTqH1qeG63Yox0pCX",
-        "1qHIiTcLf7zwz3pTXujZ3t",
-        "0jh6L39QvEQu8mVKX3j43f",
-        "3zaEFaiGrF1ftyFPQrOe_i",
-        "3i9iiZlcT5eQkuRPP$TrLS",
-        "3gYFdGsxTBa9PFlMvRAaiF",
-        "2mSYEw1YLDvhMYvUr3eREJ",
-        "3CXBDjcSTES8AedjLKSfJe"
-      ],
-      "doorGuids": [],
-      "spaceGuids": [
-        "3M3dydUxH2hR7Uvg9QNhS$",
-        "2lebmw3XD9w9PIIn4HKbwh",
-        "09m2tgyfr9UfikvrKFMkeD",
-        "0dc6ovxJLDww6sjSpu_cfN",
-        "0U5AcnRYX7aw$OIZXqMUaR",
-        "1jJ7opRcX6uevup8Hnq0$2",
-        "30oDtenHrAwuYDgWTayiN$",
-        "3$PC9MkEH1Ex24UD3VHyzP",
-        "0Veunyhgf7QxfJXezc1Ydu",
-        "1vWhxAiTL1RR3r4R3eC2Vv",
-        "3uvYP4OyH5ufyPIMbZD86h",
-        "0oB0YIgnPE49CsBpGIdxOR",
-        "3jurQKaejCqgtlRMQvYO$h",
-        "1I4mvNGj58VPS4IqdvGDOQ",
-        "3BlfjPTqH1qeG63Yox0pCX",
-        "1qHIiTcLf7zwz3pTXujZ3t",
-        "0jh6L39QvEQu8mVKX3j43f",
-        "3zaEFaiGrF1ftyFPQrOe_i",
-        "3i9iiZlcT5eQkuRPP$TrLS",
-        "3gYFdGsxTBa9PFlMvRAaiF",
-        "2mSYEw1YLDvhMYvUr3eREJ",
-        "3CXBDjcSTES8AedjLKSfJe"
-      ],
-      "stairGuids": [],
-      "rampGuids": [],
-      "issueCount": 0,
-      "routeEdgeIds": [],
-      "routeStatusCounts": {},
-      "failureReasonCounts": {}
-    },
-    {
-      "name": "z=9.82",
-      "elevation": 9.82008384029,
-      "elementGuids": [
-        "3txvJd9V1BPhyU$48F$mnF",
-        "0jbV$RErb7o9P7rp7ALEd$"
-      ],
-      "doorGuids": [],
-      "spaceGuids": [
-        "3txvJd9V1BPhyU$48F$mnF",
-        "0jbV$RErb7o9P7rp7ALEd$"
-      ],
-      "stairGuids": [],
-      "rampGuids": [],
-      "issueCount": 0,
-      "routeEdgeIds": [],
-      "routeStatusCounts": {},
-      "failureReasonCounts": {}
-    },
-    {
-      "name": "Dachgeschoss",
-      "elevation": 9.82008384029028,
-      "elementGuids": [
-        "3xKoz5lYr2kBHotkF1f8iz",
-        "2OU4curhvDMPArGs3c5lc0",
-        "12gYtU2FL0SvTEriHSUNbg",
-        "3hyPFx8vT6mvi6nf7P7n2u",
-        "05pt4VPQf37w1V18yX4Rbi",
-        "0CfDD9v019POgJaaj_XgfQ",
-        "0cxniC0UzD0wuIz01g7Uyw",
-        "1u4dzm1Ej6VxuWWX2hSHEy",
-        "0bg0AtKu104BS2oVEJMTxV",
-        "3hmLvediX7gRVGzmAdPrx3",
-        "2qBBp57vj5yguk4qD5Rp6P",
-        "0hEXM06OrA5gv_ZOu0dPhm",
-        "0NhW4VLIbBiuXKiyGrq3kz",
-        "0_6U2wqx5EygCAIw2ocirl",
-        "0UobTn5dzETeVPsaqJjGpw",
-        "3Kn4W2ZqD4K8KzX7iS3xhj",
-        "3x663a8XD65viEHNLVdTxd",
-        "09JX$lRj14w8LMwtAomZqY",
-        "2s4YT_DyvEIwBQu$XLcqVB",
-        "1mNoyQNRjFqALu0EZLqVjE",
-        "0y2gVbrHLBEQOsZrBF1Kyc",
-        "2xTaNf8DzFMfTdt$AJsD2d",
-        "2sqOrgHH1BIwrN$KcJhc_B",
-        "0LG1dnAtn4qQamxBPgaWX7",
-        "1GL3Bl4yrCY9XKlcdMQiXb",
-        "1sX1eJEdn4tx6WnOEIL8As",
-        "03TjDzhOTFX9jbLMrZ04Ko",
-        "2j5_0TlNP02vq$h$fhXZI2",
-        "1m13_kW2X8DhPK7Uom15kV",
-        "01Q5XSApT1A8MVwFMrw27s",
-        "3qT9lE$bTCQB_T41jFK_q6",
-        "01DPZ9SBn5r9Sivd0bV8Ar"
-      ],
-      "doorGuids": [],
-      "spaceGuids": [],
-      "stairGuids": [],
-      "rampGuids": [],
-      "issueCount": 0,
-      "routeEdgeIds": [],
-      "routeStatusCounts": {},
-      "failureReasonCounts": {}
-    },
-    {
-      "name": "z=10.33",
-      "elevation": 10.33465940496,
-      "elementGuids": [
-        "2_rG4oliv3CxmStpGPieup"
-      ],
-      "doorGuids": [],
-      "spaceGuids": [
-        "2_rG4oliv3CxmStpGPieup"
-      ],
-      "stairGuids": [],
-      "rampGuids": [],
-      "issueCount": 0,
-      "routeEdgeIds": [],
-      "routeStatusCounts": {},
-      "failureReasonCounts": {}
     }
   ],
   "missingGeometry": [],
   "sources": {
     "measurements": "IfcOpenShell geometry or explicit IFC properties",
-    "rules": "Indoor wheelchair route rules",
-    "routes": "precomputed door graph from IFC geometry"
+    "rules": "SHACL validation report",
+    "routes": "precomputed door graph from IFC space boundaries"
   }
 }

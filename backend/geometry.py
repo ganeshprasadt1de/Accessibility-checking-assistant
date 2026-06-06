@@ -22,11 +22,13 @@ def _bbox_from_shape(shape) -> tuple[tuple[float, float, float], tuple[float, fl
     return (min(xs), min(ys), min(zs)), (max(xs), max(ys), max(zs))
 
 
-def _bbox_fallback_from_placement(obj) -> tuple[tuple[float, float, float], tuple[float, float, float]] | None:
+def _bbox_from_placement(obj, unit_scale: float = 1.0) -> tuple[tuple[float, float, float], tuple[float, float, float]] | None:
     placement = getattr(obj, "ObjectPlacement", None)
     try:
         loc = placement.RelativePlacement.Location.Coordinates
-        x, y, z = float(loc[0]), float(loc[1]), float(loc[2] if len(loc) > 2 else 0)
+        x = float(loc[0]) * unit_scale
+        y = float(loc[1]) * unit_scale
+        z = float(loc[2] if len(loc) > 2 else 0) * unit_scale
         return (x - 0.25, y - 0.25, z), (x + 0.25, y + 0.25, z + 2.1)
     except Exception:
         return None
@@ -46,8 +48,13 @@ def _storey_name(obj) -> str | None:
 def extract_elements(ifc_path: Path) -> tuple[list[Element], list[str]]:
     import ifcopenshell
     import ifcopenshell.geom
+    try:
+        from ifcopenshell.util.unit import calculate_unit_scale
+    except Exception:
+        calculate_unit_scale = None
 
     model = ifcopenshell.open(str(ifc_path))
+    unit_scale = calculate_unit_scale(model) if calculate_unit_scale else 1.0
     settings = ifcopenshell.geom.settings()
     settings.set(settings.USE_WORLD_COORDS, True)
     wanted = [
@@ -56,7 +63,9 @@ def extract_elements(ifc_path: Path) -> tuple[list[Element], list[str]]:
         "IfcWall",
         "IfcSlab",
         "IfcRamp",
+        "IfcRampFlight",
         "IfcStair",
+        "IfcStairFlight",
         "IfcColumn",
         "IfcTransportElement",
     ]
@@ -69,7 +78,7 @@ def extract_elements(ifc_path: Path) -> tuple[list[Element], list[str]]:
             try:
                 bbox = _bbox_from_shape(ifcopenshell.geom.create_shape(settings, obj))
             except Exception:
-                bbox = _bbox_fallback_from_placement(obj)
+                bbox = _bbox_from_placement(obj, unit_scale)
             if not bbox:
                 missing_geometry.append(guid)
                 element = Element(guid, ifc_type, _safe_name(obj), f"{ifc_type} {guid}", storey=_storey_name(obj))
@@ -82,16 +91,16 @@ def extract_elements(ifc_path: Path) -> tuple[list[Element], list[str]]:
             center = ((mn[0] + mx[0]) / 2, (mn[1] + mx[1]) / 2, (mn[2] + mx[2]) / 2)
             extra: dict[str, float | str | bool | None] = {}
             if ifc_type == "IfcDoor":
-                declared_width = _attribute_number(obj, "OverallWidth") or _property_number(obj, ["OverallWidth", "Width", "ClearWidth"])
+                declared_width = _length_attribute_number(obj, "OverallWidth", unit_scale) or _length_property_number(obj, ["OverallWidth", "Width", "ClearWidth"], unit_scale)
                 extra["derivedDoorWidthM"] = declared_width or _door_opening_width(width, depth)
                 extra["routeDoorCenterPoint"] = ",".join(f"{v:.4f}" for v in center)
-            if ifc_type == "IfcRamp":
+            if ifc_type in {"IfcRamp", "IfcRampFlight"}:
                 run = max(width, depth)
                 rise = height
                 extra["rampRunLengthM"] = run
                 extra["rampUsableWidthM"] = min(width, depth)
                 extra["rampSlopePercent"] = (rise / run * 100) if run > 0 else None
-                extra["rampPlatformLengthM"] = _property_number(obj, ["PlatformLength", "LandingLength"])
+                extra["rampPlatformLengthM"] = _length_property_number(obj, ["PlatformLength", "LandingLength"], unit_scale)
             if ifc_type == "IfcSpace":
                 extra["derivedClearSpaceWidthM"] = min(width, depth)
                 extra["movementAreaWidthM"] = min(width, depth)
@@ -139,6 +148,24 @@ def _attribute_number(obj, name: str) -> float | None:
         return None
 
 
+def _length_property_number(obj, names: list[str], unit_scale: float) -> float | None:
+    value = _property_number(obj, names)
+    return _scale_if_project_length(value, unit_scale)
+
+
+def _length_attribute_number(obj, name: str, unit_scale: float) -> float | None:
+    value = _attribute_number(obj, name)
+    return _scale_if_project_length(value, unit_scale)
+
+
+def _scale_if_project_length(value: float | None, unit_scale: float) -> float | None:
+    if value is None:
+        return None
+    # IFC attributes such as IfcDoor.OverallWidth are stored in project units.
+    # IfcOpenShell geometry is already returned in metres in this setup.
+    return value * unit_scale if unit_scale != 1.0 else value
+
+
 def _door_opening_width(width: float, depth: float) -> float | None:
     horizontal = sorted([abs(width), abs(depth)])
     if horizontal[1] <= 0:
@@ -149,7 +176,7 @@ def _door_opening_width(width: float, depth: float) -> float | None:
 
 
 def obstacle_elements(elements: list[Element]) -> list[Element]:
-    return [e for e in elements if e.ifc_type in {"IfcWall", "IfcColumn", "IfcStair", "IfcRamp"} and e.bbox_min and e.bbox_max]
+    return [e for e in elements if e.ifc_type in {"IfcWall", "IfcColumn", "IfcStair", "IfcStairFlight", "IfcRamp", "IfcRampFlight"} and e.bbox_min and e.bbox_max]
 
 
 def intersects_box(a_min, a_max, b_min, b_max) -> bool:

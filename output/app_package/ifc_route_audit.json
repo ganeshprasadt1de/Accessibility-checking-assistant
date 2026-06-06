@@ -37,19 +37,22 @@
     "IfcDoor": 153
   },
   "route_graph": {
-    "route_edges": 313,
-    "doors_with_route_edges": 77,
-    "doors_without_route_edges": 0,
+    "route_edges": 317,
+    "doors_with_route_edges": 81,
+    "doors_without_route_edges": -4,
     "connected_component_sizes": [
+      23,
       22,
-      21,
-      18,
-      16
+      19,
+      17
     ],
     "status_counts": {
-      "pass": 313
+      "pass": 313,
+      "fail": 4
     },
-    "failure_reason_counts": {}
+    "failure_reason_counts": {
+      "stair_block": 4
+    }
   },
   "shacl_route_rule_note": "Route geometry measurements are written to RDF first. SHACL then checks route door width, route clear width, turning space, stair intersection, and ramp measurements. The app route status is copied from the SHACL validation results."
 }

@@ -1,6 +1,48 @@
+@prefix acc: <https://example.org/wheelchair-accessibility#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 [] a sh:ValidationReport ;
-    sh:conforms true .
+    sh:conforms false ;
+    sh:result [ a sh:ValidationResult ;
+            sh:focusNode <https://example.org/wheelchair-accessibility#route/E00316> ;
+            sh:resultMessage "stair_block|Route intersects a stair volume." ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraint _:nde404d3f4ac64af982a517bb19dadb8ab10 ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape acc:RouteShape ;
+            sh:value <https://example.org/wheelchair-accessibility#route/E00316> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <https://example.org/wheelchair-accessibility#route/E00317> ;
+            sh:resultMessage "stair_block|Route intersects a stair volume." ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraint _:nde404d3f4ac64af982a517bb19dadb8ab10 ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape acc:RouteShape ;
+            sh:value <https://example.org/wheelchair-accessibility#route/E00317> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <https://example.org/wheelchair-accessibility#route/E00315> ;
+            sh:resultMessage "stair_block|Route intersects a stair volume." ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraint _:nde404d3f4ac64af982a517bb19dadb8ab10 ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape acc:RouteShape ;
+            sh:value <https://example.org/wheelchair-accessibility#route/E00315> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <https://example.org/wheelchair-accessibility#route/E00314> ;
+            sh:resultMessage "stair_block|Route intersects a stair volume." ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraint _:nde404d3f4ac64af982a517bb19dadb8ab10 ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape acc:RouteShape ;
+            sh:value <https://example.org/wheelchair-accessibility#route/E00314> ] .
+
+_:nde404d3f4ac64af982a517bb19dadb8ab10 a sh:SPARQLConstraint ;
+    sh:message "stair_block|Route intersects a stair volume." ;
+    sh:select """
+            PREFIX acc: <https://example.org/wheelchair-accessibility#>
+            SELECT $this WHERE {
+                $this acc:routeHitsStair true .
+            }
+        """ .
 

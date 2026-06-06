@@ -9,4 +9,5 @@
 - Kept Python only for IFC geometry extraction, route geometry preparation, and RDF measurement enrichment.
 - Removed nearest-door route fallback when IFC space-boundary routes are unavailable.
 - Added SHACL checks for door width, corridor width, route width, turning space, stair blockers, and ramp measurements.
+- Added backend stair approach route edges so Python writes `acc:routeHitsStair true` and SHACL reports real `stair_block` issues.
 - Changed the website assistant so missing Ollama requires `python server.py --yes` and returns SHACL report data instead of local generated text.

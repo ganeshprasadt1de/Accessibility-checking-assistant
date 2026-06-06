@@ -2,16 +2,16 @@
   "summary": {
     "elementCount": 312,
     "doorCount": 77,
-    "routeEdgeCount": 313,
-    "issueCount": 0,
+    "routeEdgeCount": 317,
+    "issueCount": 4,
     "missingGeometryCount": 0,
     "ifctolbd": "raw graph created by IFCtoLBD",
     "shacl": {
       "available": true,
-      "conforms": true,
+      "conforms": false,
       "source": "SHACL SPARQL constraints through pySHACL",
-      "resultCount": 0,
-      "message": "Conforms: True. Constraint violations: 0. Full report is in shacl_report.ttl."
+      "resultCount": 4,
+      "message": "Conforms: False. Constraint violations: 4. Full report is in shacl_report.ttl."
     },
     "ruleSource": "SHACL rules over IFCtoLBD RDF plus IFC-derived geometry measurements"
   },
@@ -9094,7 +9094,64 @@
       "extra": {}
     }
   ],
-  "issues": [],
+  "issues": [
+    {
+      "issue_id": "I0001",
+      "element_guid": "1Kl5_Wzb98HOSGZ8eaBX2f",
+      "element_label": "IfcStair Treppe-EG",
+      "element_type": "IfcStair",
+      "rule_id": "stair_block",
+      "severity": "fail",
+      "measured": 1.0,
+      "required": 0.0,
+      "unit": "bool",
+      "source": "SHACL validation report",
+      "short_text": "route intersects stair",
+      "details": "Route intersects a stair volume."
+    },
+    {
+      "issue_id": "I0002",
+      "element_guid": "3Zb0LaH4z9HPmaVjAzVngL",
+      "element_label": "IfcStair Treppe-1-OG",
+      "element_type": "IfcStair",
+      "rule_id": "stair_block",
+      "severity": "fail",
+      "measured": 1.0,
+      "required": 0.0,
+      "unit": "bool",
+      "source": "SHACL validation report",
+      "short_text": "route intersects stair",
+      "details": "Route intersects a stair volume."
+    },
+    {
+      "issue_id": "I0003",
+      "element_guid": "0xQhptVzf44Qzhs9jMEILa",
+      "element_label": "IfcStair Treppe-2-OG",
+      "element_type": "IfcStair",
+      "rule_id": "stair_block",
+      "severity": "fail",
+      "measured": 1.0,
+      "required": 0.0,
+      "unit": "bool",
+      "source": "SHACL validation report",
+      "short_text": "route intersects stair",
+      "details": "Route intersects a stair volume."
+    },
+    {
+      "issue_id": "I0004",
+      "element_guid": "0o_5lbt6jCpRs3V3FoLyNr",
+      "element_label": "IfcStair Treppe-KG",
+      "element_type": "IfcStair",
+      "rule_id": "stair_block",
+      "severity": "fail",
+      "measured": 1.0,
+      "required": 0.0,
+      "unit": "bool",
+      "source": "SHACL validation report",
+      "short_text": "route intersects stair",
+      "details": "Route intersects a stair volume."
+    }
+  ],
   "routeEdges": [
     {
       "edgeId": "E00001",
@@ -24350,6 +24407,130 @@
         "routeHasTurn": true,
         "routeHitsStair": false
       }
+    },
+    {
+      "edgeId": "E00314",
+      "startGuid": "3sXEZFiePFsxi_o7909$c3",
+      "endGuid": "0o_5lbt6jCpRs3V3FoLyNr",
+      "distanceM": 6.410451862897743,
+      "status": "fail",
+      "reasons": [
+        "stair_block"
+      ],
+      "path": [
+        [
+          23.835,
+          8.0,
+          -1.95
+        ],
+        [
+          21.0,
+          13.7,
+          -1.1972264042029999
+        ]
+      ],
+      "source": "IFC stair approach geometry",
+      "viaSpaceGuid": "0o_5lbt6jCpRs3V3FoLyNr",
+      "viaSpaceLabel": "IfcStair Treppe-KG",
+      "measurements": {
+        "routeApproachType": "stair",
+        "routeHitsStair": true,
+        "routeHasTurn": false,
+        "routeDoorWidthMinM": 1.8
+      }
+    },
+    {
+      "edgeId": "E00315",
+      "startGuid": "2N6esOMjP29AvhRLQ1Jz3$",
+      "endGuid": "0xQhptVzf44Qzhs9jMEILa",
+      "distanceM": 6.410451862897743,
+      "status": "fail",
+      "reasons": [
+        "stair_block"
+      ],
+      "path": [
+        [
+          23.835,
+          8.0,
+          7.05
+        ],
+        [
+          21.0,
+          13.7,
+          7.802773595797
+        ]
+      ],
+      "source": "IFC stair approach geometry",
+      "viaSpaceGuid": "0xQhptVzf44Qzhs9jMEILa",
+      "viaSpaceLabel": "IfcStair Treppe-2-OG",
+      "measurements": {
+        "routeApproachType": "stair",
+        "routeHitsStair": true,
+        "routeHasTurn": false,
+        "routeDoorWidthMinM": 1.8
+      }
+    },
+    {
+      "edgeId": "E00316",
+      "startGuid": "31UFds84f5oAxxal4G6S8P",
+      "endGuid": "1Kl5_Wzb98HOSGZ8eaBX2f",
+      "distanceM": 6.410451862897743,
+      "status": "fail",
+      "reasons": [
+        "stair_block"
+      ],
+      "path": [
+        [
+          23.835,
+          8.0,
+          1.05
+        ],
+        [
+          21.0,
+          13.7,
+          1.8027735957970001
+        ]
+      ],
+      "source": "IFC stair approach geometry",
+      "viaSpaceGuid": "1Kl5_Wzb98HOSGZ8eaBX2f",
+      "viaSpaceLabel": "IfcStair Treppe-EG",
+      "measurements": {
+        "routeApproachType": "stair",
+        "routeHitsStair": true,
+        "routeHasTurn": false,
+        "routeDoorWidthMinM": 1.8
+      }
+    },
+    {
+      "edgeId": "E00317",
+      "startGuid": "1MlsdMSb17ygNfEs7N22qC",
+      "endGuid": "3Zb0LaH4z9HPmaVjAzVngL",
+      "distanceM": 6.410451862897743,
+      "status": "fail",
+      "reasons": [
+        "stair_block"
+      ],
+      "path": [
+        [
+          23.835,
+          8.0,
+          4.05
+        ],
+        [
+          21.0,
+          13.7,
+          4.802773595797
+        ]
+      ],
+      "source": "IFC stair approach geometry",
+      "viaSpaceGuid": "3Zb0LaH4z9HPmaVjAzVngL",
+      "viaSpaceLabel": "IfcStair Treppe-1-OG",
+      "measurements": {
+        "routeApproachType": "stair",
+        "routeHitsStair": true,
+        "routeHasTurn": false,
+        "routeDoorWidthMinM": 1.8
+      }
     }
   ],
   "routesByDoor": {
@@ -24451,6 +24632,15 @@
           "E00265",
           "E00149",
           "E00092"
+        ]
+      },
+      {
+        "target_guid": "0o_5lbt6jCpRs3V3FoLyNr",
+        "distance_m": 16.094060507247534,
+        "edge_ids": [
+          "E00265",
+          "E00149",
+          "E00314"
         ]
       },
       {
@@ -24578,6 +24768,15 @@
         ]
       },
       {
+        "target_guid": "0o_5lbt6jCpRs3V3FoLyNr",
+        "distance_m": 17.49406065063824,
+        "edge_ids": [
+          "E00237",
+          "E00149",
+          "E00314"
+        ]
+      },
+      {
         "target_guid": "2$tv64Cn5DZx8YisuS365o",
         "distance_m": 17.92664732779258,
         "edge_ids": [
@@ -24692,6 +24891,15 @@
           "E00244",
           "E00149",
           "E00092"
+        ]
+      },
+      {
+        "target_guid": "0o_5lbt6jCpRs3V3FoLyNr",
+        "distance_m": 26.49406065063824,
+        "edge_ids": [
+          "E00244",
+          "E00149",
+          "E00314"
         ]
       },
       {
@@ -24812,6 +25020,15 @@
         ]
       },
       {
+        "target_guid": "0o_5lbt6jCpRs3V3FoLyNr",
+        "distance_m": 23.494060478270463,
+        "edge_ids": [
+          "E00263",
+          "E00149",
+          "E00314"
+        ]
+      },
+      {
         "target_guid": "2$tv64Cn5DZx8YisuS365o",
         "distance_m": 23.926647155424803,
         "edge_ids": [
@@ -24926,6 +25143,15 @@
           "E00229",
           "E00149",
           "E00092"
+        ]
+      },
+      {
+        "target_guid": "0o_5lbt6jCpRs3V3FoLyNr",
+        "distance_m": 20.49406065063824,
+        "edge_ids": [
+          "E00229",
+          "E00149",
+          "E00314"
         ]
       },
       {
@@ -25046,6 +25272,15 @@
         ]
       },
       {
+        "target_guid": "0o_5lbt6jCpRs3V3FoLyNr",
+        "distance_m": 29.494060475034992,
+        "edge_ids": [
+          "E00264",
+          "E00149",
+          "E00314"
+        ]
+      },
+      {
         "target_guid": "2$tv64Cn5DZx8YisuS365o",
         "distance_m": 29.926647152189332,
         "edge_ids": [
@@ -25160,6 +25395,15 @@
           "E00250",
           "E00149",
           "E00092"
+        ]
+      },
+      {
+        "target_guid": "0o_5lbt6jCpRs3V3FoLyNr",
+        "distance_m": 30.894060650638238,
+        "edge_ids": [
+          "E00250",
+          "E00149",
+          "E00314"
         ]
       },
       {
@@ -25280,6 +25524,15 @@
         ]
       },
       {
+        "target_guid": "0o_5lbt6jCpRs3V3FoLyNr",
+        "distance_m": 25.09406065063824,
+        "edge_ids": [
+          "E00259",
+          "E00149",
+          "E00314"
+        ]
+      },
+      {
         "target_guid": "2$tv64Cn5DZx8YisuS365o",
         "distance_m": 25.52664732779258,
         "edge_ids": [
@@ -25397,6 +25650,15 @@
         ]
       },
       {
+        "target_guid": "0o_5lbt6jCpRs3V3FoLyNr",
+        "distance_m": 19.09406065063824,
+        "edge_ids": [
+          "E00255",
+          "E00149",
+          "E00314"
+        ]
+      },
+      {
         "target_guid": "2$tv64Cn5DZx8YisuS365o",
         "distance_m": 19.52664732779258,
         "edge_ids": [
@@ -25459,6 +25721,14 @@
         "edge_ids": [
           "E00150",
           "E00092"
+        ]
+      },
+      {
+        "target_guid": "0o_5lbt6jCpRs3V3FoLyNr",
+        "distance_m": 11.05102189581988,
+        "edge_ids": [
+          "E00150",
+          "E00314"
         ]
       },
       {
@@ -25569,6 +25839,14 @@
         "edge_ids": [
           "E00097",
           "E00149"
+        ]
+      },
+      {
+        "target_guid": "0o_5lbt6jCpRs3V3FoLyNr",
+        "distance_m": 10.253490402949824,
+        "edge_ids": [
+          "E00097",
+          "E00314"
         ]
       },
       {
@@ -25699,6 +25977,14 @@
         ]
       },
       {
+        "target_guid": "0o_5lbt6jCpRs3V3FoLyNr",
+        "distance_m": 13.253490402949826,
+        "edge_ids": [
+          "E00098",
+          "E00314"
+        ]
+      },
+      {
         "target_guid": "3qloCPnZDEQBom1ZjBlwJP",
         "distance_m": 16.526647184401874,
         "edge_ids": [
@@ -25826,6 +26112,14 @@
         ]
       },
       {
+        "target_guid": "0o_5lbt6jCpRs3V3FoLyNr",
+        "distance_m": 10.253490402949826,
+        "edge_ids": [
+          "E00095",
+          "E00314"
+        ]
+      },
+      {
         "target_guid": "3qloCPnZDEQBom1ZjBlwJP",
         "distance_m": 13.526647184401874,
         "edge_ids": [
@@ -25950,6 +26244,14 @@
         "edge_ids": [
           "E00092",
           "E00149"
+        ]
+      },
+      {
+        "target_guid": "0o_5lbt6jCpRs3V3FoLyNr",
+        "distance_m": 12.79055282647789,
+        "edge_ids": [
+          "E00092",
+          "E00314"
         ]
       },
       {
@@ -26109,6 +26411,14 @@
         ]
       },
       {
+        "target_guid": "0o_5lbt6jCpRs3V3FoLyNr",
+        "distance_m": 12.251021929838526,
+        "edge_ids": [
+          "E00149",
+          "E00314"
+        ]
+      },
+      {
         "target_guid": "2$tv64Cn5DZx8YisuS365o",
         "distance_m": 12.683608606992866,
         "edge_ids": [
@@ -26179,6 +26489,13 @@
         "distance_m": 6.380100963580148,
         "edge_ids": [
           "E00092"
+        ]
+      },
+      {
+        "target_guid": "0o_5lbt6jCpRs3V3FoLyNr",
+        "distance_m": 6.410451862897743,
+        "edge_ids": [
+          "E00314"
         ]
       },
       {
@@ -26306,6 +26623,14 @@
         "edge_ids": [
           "E00040",
           "E00152"
+        ]
+      },
+      {
+        "target_guid": "1Kl5_Wzb98HOSGZ8eaBX2f",
+        "distance_m": 17.25102189581988,
+        "edge_ids": [
+          "E00041",
+          "E00316"
         ]
       },
       {
@@ -26473,6 +26798,15 @@
         ]
       },
       {
+        "target_guid": "1Kl5_Wzb98HOSGZ8eaBX2f",
+        "distance_m": 30.894060474609837,
+        "edge_ids": [
+          "E00167",
+          "E00042",
+          "E00316"
+        ]
+      },
+      {
         "target_guid": "3c7FFURCHAIuL_Uqfwogkh",
         "distance_m": 31.326647151764178,
         "edge_ids": [
@@ -26609,6 +26943,15 @@
         "edge_ids": [
           "E00158",
           "E00040"
+        ]
+      },
+      {
+        "target_guid": "1Kl5_Wzb98HOSGZ8eaBX2f",
+        "distance_m": 28.09406065063824,
+        "edge_ids": [
+          "E00158",
+          "E00042",
+          "E00316"
         ]
       },
       {
@@ -26751,6 +27094,15 @@
         ]
       },
       {
+        "target_guid": "1Kl5_Wzb98HOSGZ8eaBX2f",
+        "distance_m": 22.094060479711715,
+        "edge_ids": [
+          "E00166",
+          "E00042",
+          "E00316"
+        ]
+      },
+      {
         "target_guid": "3c7FFURCHAIuL_Uqfwogkh",
         "distance_m": 22.52664715686605,
         "edge_ids": [
@@ -26880,6 +27232,15 @@
         "edge_ids": [
           "E00165",
           "E00040"
+        ]
+      },
+      {
+        "target_guid": "1Kl5_Wzb98HOSGZ8eaBX2f",
+        "distance_m": 16.09406050724753,
+        "edge_ids": [
+          "E00165",
+          "E00042",
+          "E00316"
         ]
       },
       {
@@ -27019,6 +27380,15 @@
         "edge_ids": [
           "E00164",
           "E00040"
+        ]
+      },
+      {
+        "target_guid": "1Kl5_Wzb98HOSGZ8eaBX2f",
+        "distance_m": 16.094060507247534,
+        "edge_ids": [
+          "E00164",
+          "E00042",
+          "E00316"
         ]
       },
       {
@@ -27168,6 +27538,15 @@
         ]
       },
       {
+        "target_guid": "1Kl5_Wzb98HOSGZ8eaBX2f",
+        "distance_m": 17.49406065063824,
+        "edge_ids": [
+          "E00152",
+          "E00042",
+          "E00316"
+        ]
+      },
+      {
         "target_guid": "3c7FFURCHAIuL_Uqfwogkh",
         "distance_m": 17.92664732779258,
         "edge_ids": [
@@ -27307,6 +27686,15 @@
         ]
       },
       {
+        "target_guid": "1Kl5_Wzb98HOSGZ8eaBX2f",
+        "distance_m": 26.49406047626571,
+        "edge_ids": [
+          "E00168",
+          "E00042",
+          "E00316"
+        ]
+      },
+      {
         "target_guid": "3c7FFURCHAIuL_Uqfwogkh",
         "distance_m": 26.92664715342005,
         "edge_ids": [
@@ -27433,6 +27821,14 @@
         "edge_ids": [
           "E00005",
           "E00042"
+        ]
+      },
+      {
+        "target_guid": "1Kl5_Wzb98HOSGZ8eaBX2f",
+        "distance_m": 25.053490402949826,
+        "edge_ids": [
+          "E00005",
+          "E00316"
         ]
       },
       {
@@ -27573,6 +27969,14 @@
         ]
       },
       {
+        "target_guid": "1Kl5_Wzb98HOSGZ8eaBX2f",
+        "distance_m": 22.253490402949822,
+        "edge_ids": [
+          "E00033",
+          "E00316"
+        ]
+      },
+      {
         "target_guid": "2FYBB$DerEng8G$eISvGgZ",
         "distance_m": 25.526647184401863,
         "edge_ids": [
@@ -27707,6 +28111,14 @@
         "edge_ids": [
           "E00031",
           "E00042"
+        ]
+      },
+      {
+        "target_guid": "1Kl5_Wzb98HOSGZ8eaBX2f",
+        "distance_m": 19.253490402949822,
+        "edge_ids": [
+          "E00031",
+          "E00316"
         ]
       },
       {
@@ -27847,6 +28259,14 @@
         ]
       },
       {
+        "target_guid": "1Kl5_Wzb98HOSGZ8eaBX2f",
+        "distance_m": 16.253490402949822,
+        "edge_ids": [
+          "E00018",
+          "E00316"
+        ]
+      },
+      {
         "target_guid": "2FYBB$DerEng8G$eISvGgZ",
         "distance_m": 19.526647184401863,
         "edge_ids": [
@@ -27977,6 +28397,14 @@
         ]
       },
       {
+        "target_guid": "1Kl5_Wzb98HOSGZ8eaBX2f",
+        "distance_m": 13.253490402949826,
+        "edge_ids": [
+          "E00032",
+          "E00316"
+        ]
+      },
+      {
         "target_guid": "0p1Mt3h7nDeQ1Q4N9eEl9H",
         "distance_m": 14.32148677945646,
         "edge_ids": [
@@ -28097,6 +28525,14 @@
         "distance_m": 9.92148677945646,
         "edge_ids": [
           "E00022"
+        ]
+      },
+      {
+        "target_guid": "1Kl5_Wzb98HOSGZ8eaBX2f",
+        "distance_m": 10.253490402949826,
+        "edge_ids": [
+          "E00023",
+          "E00316"
         ]
       },
       {
@@ -28258,6 +28694,14 @@
         ]
       },
       {
+        "target_guid": "1Kl5_Wzb98HOSGZ8eaBX2f",
+        "distance_m": 16.253490402949822,
+        "edge_ids": [
+          "E00012",
+          "E00316"
+        ]
+      },
+      {
         "target_guid": "2FYBB$DerEng8G$eISvGgZ",
         "distance_m": 19.526647184401863,
         "edge_ids": [
@@ -28395,6 +28839,14 @@
         ]
       },
       {
+        "target_guid": "1Kl5_Wzb98HOSGZ8eaBX2f",
+        "distance_m": 17.653490402949828,
+        "edge_ids": [
+          "E00027",
+          "E00316"
+        ]
+      },
+      {
         "target_guid": "2FYBB$DerEng8G$eISvGgZ",
         "distance_m": 20.92664718440187,
         "edge_ids": [
@@ -28518,6 +28970,14 @@
         ]
       },
       {
+        "target_guid": "1Kl5_Wzb98HOSGZ8eaBX2f",
+        "distance_m": 12.251021929838526,
+        "edge_ids": [
+          "E00042",
+          "E00316"
+        ]
+      },
+      {
         "target_guid": "3c7FFURCHAIuL_Uqfwogkh",
         "distance_m": 12.683608606992864,
         "edge_ids": [
@@ -28608,6 +29068,13 @@
         "distance_m": 5.840570066940782,
         "edge_ids": [
           "E00042"
+        ]
+      },
+      {
+        "target_guid": "1Kl5_Wzb98HOSGZ8eaBX2f",
+        "distance_m": 6.410451862897743,
+        "edge_ids": [
+          "E00316"
         ]
       },
       {
@@ -28824,6 +29291,15 @@
         ]
       },
       {
+        "target_guid": "3Zb0LaH4z9HPmaVjAzVngL",
+        "distance_m": 16.09406065063824,
+        "edge_ids": [
+          "E00061",
+          "E00039",
+          "E00317"
+        ]
+      },
+      {
         "target_guid": "35jd8lu1fDJAuZoKl4ldDk",
         "distance_m": 16.526647327792578,
         "edge_ids": [
@@ -29003,6 +29479,15 @@
         ]
       },
       {
+        "target_guid": "3Zb0LaH4z9HPmaVjAzVngL",
+        "distance_m": 17.494060492473608,
+        "edge_ids": [
+          "E00072",
+          "E00039",
+          "E00317"
+        ]
+      },
+      {
         "target_guid": "35jd8lu1fDJAuZoKl4ldDk",
         "distance_m": 17.926647169627945,
         "edge_ids": [
@@ -29172,6 +29657,15 @@
           "E00068",
           "E00039",
           "E00196"
+        ]
+      },
+      {
+        "target_guid": "3Zb0LaH4z9HPmaVjAzVngL",
+        "distance_m": 26.49406047626571,
+        "edge_ids": [
+          "E00068",
+          "E00039",
+          "E00317"
         ]
       },
       {
@@ -29347,6 +29841,15 @@
         ]
       },
       {
+        "target_guid": "3Zb0LaH4z9HPmaVjAzVngL",
+        "distance_m": 23.494060478270463,
+        "edge_ids": [
+          "E00071",
+          "E00039",
+          "E00317"
+        ]
+      },
+      {
         "target_guid": "35jd8lu1fDJAuZoKl4ldDk",
         "distance_m": 23.9266471554248,
         "edge_ids": [
@@ -29516,6 +30019,15 @@
           "E00070",
           "E00039",
           "E00196"
+        ]
+      },
+      {
+        "target_guid": "3Zb0LaH4z9HPmaVjAzVngL",
+        "distance_m": 20.49406048211443,
+        "edge_ids": [
+          "E00070",
+          "E00039",
+          "E00317"
         ]
       },
       {
@@ -29691,6 +30203,15 @@
         ]
       },
       {
+        "target_guid": "3Zb0LaH4z9HPmaVjAzVngL",
+        "distance_m": 29.494060475034992,
+        "edge_ids": [
+          "E00069",
+          "E00039",
+          "E00317"
+        ]
+      },
+      {
         "target_guid": "35jd8lu1fDJAuZoKl4ldDk",
         "distance_m": 29.926647152189332,
         "edge_ids": [
@@ -29841,6 +30362,14 @@
         "edge_ids": [
           "E00198",
           "E00039"
+        ]
+      },
+      {
+        "target_guid": "3Zb0LaH4z9HPmaVjAzVngL",
+        "distance_m": 25.053490402949826,
+        "edge_ids": [
+          "E00198",
+          "E00317"
         ]
       },
       {
@@ -30014,6 +30543,14 @@
         ]
       },
       {
+        "target_guid": "3Zb0LaH4z9HPmaVjAzVngL",
+        "distance_m": 22.253490402949822,
+        "edge_ids": [
+          "E00202",
+          "E00317"
+        ]
+      },
+      {
         "target_guid": "17HzXMa29CgeqdGTriCwwh",
         "distance_m": 25.526647327792574,
         "edge_ids": [
@@ -30181,6 +30718,14 @@
         "edge_ids": [
           "E00199",
           "E00039"
+        ]
+      },
+      {
+        "target_guid": "3Zb0LaH4z9HPmaVjAzVngL",
+        "distance_m": 19.253490402949822,
+        "edge_ids": [
+          "E00199",
+          "E00317"
         ]
       },
       {
@@ -30354,6 +30899,14 @@
         ]
       },
       {
+        "target_guid": "3Zb0LaH4z9HPmaVjAzVngL",
+        "distance_m": 16.253490402949822,
+        "edge_ids": [
+          "E00180",
+          "E00317"
+        ]
+      },
+      {
         "target_guid": "17HzXMa29CgeqdGTriCwwh",
         "distance_m": 19.526647327792574,
         "edge_ids": [
@@ -30517,6 +31070,14 @@
         ]
       },
       {
+        "target_guid": "3Zb0LaH4z9HPmaVjAzVngL",
+        "distance_m": 13.253490402949826,
+        "edge_ids": [
+          "E00201",
+          "E00317"
+        ]
+      },
+      {
         "target_guid": "2sSHD6n39BZQnSaHjLYpnc",
         "distance_m": 14.32148677945646,
         "edge_ids": [
@@ -30655,6 +31216,14 @@
         "edge_ids": [
           "E00200",
           "E00039"
+        ]
+      },
+      {
+        "target_guid": "3Zb0LaH4z9HPmaVjAzVngL",
+        "distance_m": 10.253490402949824,
+        "edge_ids": [
+          "E00200",
+          "E00317"
         ]
       },
       {
@@ -30883,6 +31452,15 @@
         ]
       },
       {
+        "target_guid": "3Zb0LaH4z9HPmaVjAzVngL",
+        "distance_m": 30.894060650638238,
+        "edge_ids": [
+          "E00054",
+          "E00039",
+          "E00317"
+        ]
+      },
+      {
         "target_guid": "35jd8lu1fDJAuZoKl4ldDk",
         "distance_m": 31.32664732779258,
         "edge_ids": [
@@ -31052,6 +31630,15 @@
           "E00073",
           "E00039",
           "E00196"
+        ]
+      },
+      {
+        "target_guid": "3Zb0LaH4z9HPmaVjAzVngL",
+        "distance_m": 25.09406047706689,
+        "edge_ids": [
+          "E00073",
+          "E00039",
+          "E00317"
         ]
       },
       {
@@ -31227,6 +31814,15 @@
         ]
       },
       {
+        "target_guid": "3Zb0LaH4z9HPmaVjAzVngL",
+        "distance_m": 19.09406065063824,
+        "edge_ids": [
+          "E00046",
+          "E00039",
+          "E00317"
+        ]
+      },
+      {
         "target_guid": "35jd8lu1fDJAuZoKl4ldDk",
         "distance_m": 19.526647327792578,
         "edge_ids": [
@@ -31344,6 +31940,14 @@
         "edge_ids": [
           "E00037",
           "E00196"
+        ]
+      },
+      {
+        "target_guid": "3Zb0LaH4z9HPmaVjAzVngL",
+        "distance_m": 11.05102189581988,
+        "edge_ids": [
+          "E00037",
+          "E00317"
         ]
       },
       {
@@ -31534,6 +32138,14 @@
         ]
       },
       {
+        "target_guid": "3Zb0LaH4z9HPmaVjAzVngL",
+        "distance_m": 11.65349040294982,
+        "edge_ids": [
+          "E00196",
+          "E00317"
+        ]
+      },
+      {
         "target_guid": "3ZJxNn9Nz6HQakewV2F393",
         "distance_m": 13.121486779456456,
         "edge_ids": [
@@ -31717,6 +32329,14 @@
         ]
       },
       {
+        "target_guid": "3Zb0LaH4z9HPmaVjAzVngL",
+        "distance_m": 20.553490402949826,
+        "edge_ids": [
+          "E00188",
+          "E00317"
+        ]
+      },
+      {
         "target_guid": "17HzXMa29CgeqdGTriCwwh",
         "distance_m": 23.82664732779258,
         "edge_ids": [
@@ -31848,6 +32468,14 @@
         "edge_ids": [
           "E00197",
           "E00039"
+        ]
+      },
+      {
+        "target_guid": "3Zb0LaH4z9HPmaVjAzVngL",
+        "distance_m": 10.253490402949822,
+        "edge_ids": [
+          "E00197",
+          "E00317"
         ]
       },
       {
@@ -32066,6 +32694,15 @@
         ]
       },
       {
+        "target_guid": "3Zb0LaH4z9HPmaVjAzVngL",
+        "distance_m": 20.137580937985042,
+        "edge_ids": [
+          "E00099",
+          "E00196",
+          "E00317"
+        ]
+      },
+      {
         "target_guid": "17HzXMa29CgeqdGTriCwwh",
         "distance_m": 23.410737862827794,
         "edge_ids": [
@@ -32231,6 +32868,14 @@
         ]
       },
       {
+        "target_guid": "3Zb0LaH4z9HPmaVjAzVngL",
+        "distance_m": 12.251021929838524,
+        "edge_ids": [
+          "E00039",
+          "E00317"
+        ]
+      },
+      {
         "target_guid": "35jd8lu1fDJAuZoKl4ldDk",
         "distance_m": 12.683608606992863,
         "edge_ids": [
@@ -32350,6 +32995,13 @@
         "distance_m": 5.840570066940781,
         "edge_ids": [
           "E00039"
+        ]
+      },
+      {
+        "target_guid": "3Zb0LaH4z9HPmaVjAzVngL",
+        "distance_m": 6.410451862897743,
+        "edge_ids": [
+          "E00317"
         ]
       },
       {
@@ -32567,6 +33219,15 @@
         ]
       },
       {
+        "target_guid": "0xQhptVzf44Qzhs9jMEILa",
+        "distance_m": 16.09406065063824,
+        "edge_ids": [
+          "E00303",
+          "E00101",
+          "E00315"
+        ]
+      },
+      {
         "target_guid": "0CFMpIkEzADxWz$xDSGgek",
         "distance_m": 16.526647327792578,
         "edge_ids": [
@@ -32736,6 +33397,15 @@
         ]
       },
       {
+        "target_guid": "0xQhptVzf44Qzhs9jMEILa",
+        "distance_m": 17.49406065063824,
+        "edge_ids": [
+          "E00313",
+          "E00101",
+          "E00315"
+        ]
+      },
+      {
         "target_guid": "0CFMpIkEzADxWz$xDSGgek",
         "distance_m": 17.926647327792576,
         "edge_ids": [
@@ -32895,6 +33565,15 @@
           "E00312",
           "E00101",
           "E00139"
+        ]
+      },
+      {
+        "target_guid": "0xQhptVzf44Qzhs9jMEILa",
+        "distance_m": 26.49406065063824,
+        "edge_ids": [
+          "E00312",
+          "E00101",
+          "E00315"
         ]
       },
       {
@@ -33060,6 +33739,15 @@
         ]
       },
       {
+        "target_guid": "0xQhptVzf44Qzhs9jMEILa",
+        "distance_m": 23.49406065063824,
+        "edge_ids": [
+          "E00310",
+          "E00101",
+          "E00315"
+        ]
+      },
+      {
         "target_guid": "0CFMpIkEzADxWz$xDSGgek",
         "distance_m": 23.926647327792576,
         "edge_ids": [
@@ -33219,6 +33907,15 @@
           "E00277",
           "E00101",
           "E00139"
+        ]
+      },
+      {
+        "target_guid": "0xQhptVzf44Qzhs9jMEILa",
+        "distance_m": 20.49406065063824,
+        "edge_ids": [
+          "E00277",
+          "E00101",
+          "E00315"
         ]
       },
       {
@@ -33384,6 +34081,15 @@
         ]
       },
       {
+        "target_guid": "0xQhptVzf44Qzhs9jMEILa",
+        "distance_m": 29.49406065063824,
+        "edge_ids": [
+          "E00307",
+          "E00101",
+          "E00315"
+        ]
+      },
+      {
         "target_guid": "0CFMpIkEzADxWz$xDSGgek",
         "distance_m": 29.926647327792576,
         "edge_ids": [
@@ -33525,6 +34231,14 @@
         "edge_ids": [
           "E00122",
           "E00101"
+        ]
+      },
+      {
+        "target_guid": "0xQhptVzf44Qzhs9jMEILa",
+        "distance_m": 25.053490402949826,
+        "edge_ids": [
+          "E00122",
+          "E00315"
         ]
       },
       {
@@ -33690,6 +34404,14 @@
         ]
       },
       {
+        "target_guid": "0xQhptVzf44Qzhs9jMEILa",
+        "distance_m": 22.253490402949822,
+        "edge_ids": [
+          "E00140",
+          "E00315"
+        ]
+      },
+      {
         "target_guid": "2GIKSl4yvD7wO8pi7zg$sQ",
         "distance_m": 25.526647327792574,
         "edge_ids": [
@@ -33849,6 +34571,14 @@
         "edge_ids": [
           "E00133",
           "E00101"
+        ]
+      },
+      {
+        "target_guid": "0xQhptVzf44Qzhs9jMEILa",
+        "distance_m": 19.253490402949822,
+        "edge_ids": [
+          "E00133",
+          "E00315"
         ]
       },
       {
@@ -34014,6 +34744,14 @@
         ]
       },
       {
+        "target_guid": "0xQhptVzf44Qzhs9jMEILa",
+        "distance_m": 16.253490402949822,
+        "edge_ids": [
+          "E00141",
+          "E00315"
+        ]
+      },
+      {
         "target_guid": "2GIKSl4yvD7wO8pi7zg$sQ",
         "distance_m": 19.526647327792574,
         "edge_ids": [
@@ -34169,6 +34907,14 @@
         ]
       },
       {
+        "target_guid": "0xQhptVzf44Qzhs9jMEILa",
+        "distance_m": 13.253490402949826,
+        "edge_ids": [
+          "E00107",
+          "E00315"
+        ]
+      },
+      {
         "target_guid": "1ufhCZbhH2Ifud2RWdYCPS",
         "distance_m": 14.32148677945646,
         "edge_ids": [
@@ -34307,6 +35053,14 @@
         "edge_ids": [
           "E00139",
           "E00101"
+        ]
+      },
+      {
+        "target_guid": "0xQhptVzf44Qzhs9jMEILa",
+        "distance_m": 10.253490402949824,
+        "edge_ids": [
+          "E00139",
+          "E00315"
         ]
       },
       {
@@ -34518,6 +35272,15 @@
         ]
       },
       {
+        "target_guid": "0xQhptVzf44Qzhs9jMEILa",
+        "distance_m": 30.894060650638238,
+        "edge_ids": [
+          "E00292",
+          "E00101",
+          "E00315"
+        ]
+      },
+      {
         "target_guid": "0CFMpIkEzADxWz$xDSGgek",
         "distance_m": 31.32664732779258,
         "edge_ids": [
@@ -34677,6 +35440,15 @@
           "E00285",
           "E00101",
           "E00139"
+        ]
+      },
+      {
+        "target_guid": "0xQhptVzf44Qzhs9jMEILa",
+        "distance_m": 25.09406065063824,
+        "edge_ids": [
+          "E00285",
+          "E00101",
+          "E00315"
         ]
       },
       {
@@ -34842,6 +35614,15 @@
         ]
       },
       {
+        "target_guid": "0xQhptVzf44Qzhs9jMEILa",
+        "distance_m": 19.09406065063824,
+        "edge_ids": [
+          "E00298",
+          "E00101",
+          "E00315"
+        ]
+      },
+      {
         "target_guid": "0CFMpIkEzADxWz$xDSGgek",
         "distance_m": 19.526647327792578,
         "edge_ids": [
@@ -34950,6 +35731,14 @@
         "edge_ids": [
           "E00102",
           "E00313"
+        ]
+      },
+      {
+        "target_guid": "0xQhptVzf44Qzhs9jMEILa",
+        "distance_m": 11.05102189581988,
+        "edge_ids": [
+          "E00100",
+          "E00315"
         ]
       },
       {
@@ -35146,6 +35935,14 @@
         ]
       },
       {
+        "target_guid": "0xQhptVzf44Qzhs9jMEILa",
+        "distance_m": 20.653490402949828,
+        "edge_ids": [
+          "E00128",
+          "E00315"
+        ]
+      },
+      {
         "target_guid": "2GIKSl4yvD7wO8pi7zg$sQ",
         "distance_m": 23.92664732779258,
         "edge_ids": [
@@ -35308,6 +36105,14 @@
         ]
       },
       {
+        "target_guid": "0xQhptVzf44Qzhs9jMEILa",
+        "distance_m": 14.653490402949823,
+        "edge_ids": [
+          "E00138",
+          "E00315"
+        ]
+      },
+      {
         "target_guid": "2GIKSl4yvD7wO8pi7zg$sQ",
         "distance_m": 17.926647327792576,
         "edge_ids": [
@@ -35439,6 +36244,14 @@
         "edge_ids": [
           "E00115",
           "E00101"
+        ]
+      },
+      {
+        "target_guid": "0xQhptVzf44Qzhs9jMEILa",
+        "distance_m": 10.253490402949822,
+        "edge_ids": [
+          "E00115",
+          "E00315"
         ]
       },
       {
@@ -35618,6 +36431,14 @@
         ]
       },
       {
+        "target_guid": "0xQhptVzf44Qzhs9jMEILa",
+        "distance_m": 12.251021929838524,
+        "edge_ids": [
+          "E00101",
+          "E00315"
+        ]
+      },
+      {
         "target_guid": "0CFMpIkEzADxWz$xDSGgek",
         "distance_m": 12.683608606992863,
         "edge_ids": [
@@ -35729,6 +36550,13 @@
         "distance_m": 5.840570066940781,
         "edge_ids": [
           "E00101"
+        ]
+      },
+      {
+        "target_guid": "0xQhptVzf44Qzhs9jMEILa",
+        "distance_m": 6.410451862897743,
+        "edge_ids": [
+          "E00315"
         ]
       },
       {
@@ -47462,7 +48290,7 @@
         "0o_5lbt6jCpRs3V3FoLyNr"
       ],
       "rampGuids": [],
-      "issueCount": 0,
+      "issueCount": 1,
       "routeEdgeIds": [
         "E00089",
         "E00090",
@@ -47521,12 +48349,16 @@
         "E00265",
         "E00266",
         "E00267",
-        "E00268"
+        "E00268",
+        "E00314"
       ],
       "routeStatusCounts": {
-        "pass": 58
+        "pass": 58,
+        "fail": 1
       },
-      "failureReasonCounts": {}
+      "failureReasonCounts": {
+        "stair_block": 1
+      }
     },
     {
       "name": "Erdgeschoss",
@@ -47646,7 +48478,7 @@
         "1Kl5_Wzb98HOSGZ8eaBX2f"
       ],
       "rampGuids": [],
-      "issueCount": 0,
+      "issueCount": 1,
       "routeEdgeIds": [
         "E00001",
         "E00002",
@@ -47714,12 +48546,16 @@
         "E00175",
         "E00176",
         "E00177",
-        "E00178"
+        "E00178",
+        "E00316"
       ],
       "routeStatusCounts": {
-        "pass": 67
+        "pass": 67,
+        "fail": 1
       },
-      "failureReasonCounts": {}
+      "failureReasonCounts": {
+        "stair_block": 1
+      }
     },
     {
       "name": "1. Obergeschoss",
@@ -47853,7 +48689,7 @@
         "3Zb0LaH4z9HPmaVjAzVngL"
       ],
       "rampGuids": [],
-      "issueCount": 0,
+      "issueCount": 1,
       "routeEdgeIds": [
         "E00037",
         "E00038",
@@ -47949,12 +48785,16 @@
         "E00220",
         "E00221",
         "E00222",
-        "E00223"
+        "E00223",
+        "E00317"
       ],
       "routeStatusCounts": {
-        "pass": 95
+        "pass": 95,
+        "fail": 1
       },
-      "failureReasonCounts": {}
+      "failureReasonCounts": {
+        "stair_block": 1
+      }
     },
     {
       "name": "2. Obergeschoss",
@@ -48086,7 +48926,7 @@
         "0xQhptVzf44Qzhs9jMEILa"
       ],
       "rampGuids": [],
-      "issueCount": 0,
+      "issueCount": 1,
       "routeEdgeIds": [
         "E00100",
         "E00101",
@@ -48180,12 +49020,16 @@
         "E00310",
         "E00311",
         "E00312",
-        "E00313"
+        "E00313",
+        "E00315"
       ],
       "routeStatusCounts": {
-        "pass": 93
+        "pass": 93,
+        "fail": 1
       },
-      "failureReasonCounts": {}
+      "failureReasonCounts": {
+        "stair_block": 1
+      }
     }
   ],
   "missingGeometry": [],

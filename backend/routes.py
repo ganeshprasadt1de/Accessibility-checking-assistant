@@ -72,6 +72,44 @@ def _space_boundary_route_edges(ifc_path: Path, elements: list[Element]) -> list
                     measurements=measurements,
                 )
             )
+    edges.extend(_stair_approach_route_edges(elements, len(edges)))
+    return edges
+
+
+def _stair_approach_route_edges(elements: list[Element], offset: int) -> list[RouteEdge]:
+    doors = [item for item in elements if item.ifc_type == "IfcDoor" and item.center]
+    stairs = [item for item in elements if item.ifc_type in {"IfcStair", "IfcStairFlight"} and item.center]
+    edges: list[RouteEdge] = []
+    for stair in sorted(stairs, key=lambda item: item.guid):
+        same_level_doors = [door for door in doors if _same_level(door, stair)]
+        if not same_level_doors:
+            continue
+        start = min(same_level_doors, key=lambda door: distance(door.center, stair.center))
+        path = [start.center, stair.center]
+        measurements: dict[str, float | str | bool | None] = {
+            "routeApproachType": "stair",
+            "routeHitsStair": _route_intersects_any(path, [stair]),
+            "routeHasTurn": False,
+        }
+        width = _num(start.extra.get("derivedDoorWidthM"))
+        if width is not None:
+            measurements["routeDoorWidthMinM"] = width
+        edge_id = f"E{offset + len(edges) + 1:05d}"
+        edges.append(
+            RouteEdge(
+                edge_id=edge_id,
+                start_guid=start.guid,
+                end_guid=stair.guid,
+                distance_m=distance(start.center, stair.center),
+                status="unchecked",
+                reasons=[],
+                path=path,
+                source="IFC stair approach geometry",
+                via_space_guid=stair.guid,
+                via_space_label=stair.label,
+                measurements=measurements,
+            )
+        )
     return edges
 
 
@@ -193,6 +231,12 @@ def _ramp_measurements(obstacles: list[Element], space: Element | None, path: li
         if width is not None:
             measurements["routeRampUsableWidthM"] = width
     return measurements
+
+
+def _same_level(a: Element, b: Element) -> bool:
+    if a.center and b.center and abs(a.center[2] - b.center[2]) <= 2.2:
+        return True
+    return bool(a.storey and b.storey and a.storey == b.storey)
 
 
 def _path_through_space(door_a: Element, door_b: Element, space: Element) -> list[tuple[float, float, float]]:

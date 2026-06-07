@@ -4,6 +4,8 @@ import json
 import urllib.request
 
 
+OLLAMA_GENERATE_TIMEOUT_SECONDS = 90
+
 RULE_LABELS = {
     "door_width": "door too narrow",
     "corridor_width": "corridor too narrow",
@@ -31,6 +33,8 @@ def explain_question(question: str, context: dict, model: str = "qwen3:8b", host
         "Use only the facts provided. Do not invent measurements. Do not claim legal approval. "
         "First explain the SHACL accessibility result. Then give 2 to 4 short architect-focused improvement suggestions. "
         "The suggestions must be practical design changes based only on the detected issues and route data. "
+        "Do not suggest door, corridor, ramp, or other fixes unless those issue types appear in the facts, except that ramps or lifts may be suggested as alternatives for stair blockers. "
+        "Do not mention unaffected issue types. "
         "Keep the whole answer around 80 to 120 words.\n\n"
         f"Question: {question}\n\n"
         "Facts:\n"
@@ -45,8 +49,11 @@ def explain_question(question: str, context: dict, model: str = "qwen3:8b", host
         headers={"Content-Type": "application/json"},
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=8) as response:
-        data = json.loads(response.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(req, timeout=OLLAMA_GENERATE_TIMEOUT_SECONDS) as response:
+            data = json.loads(response.read().decode("utf-8"))
+    except TimeoutError as exc:
+        raise RuntimeError(f"Ollama request timed out after {OLLAMA_GENERATE_TIMEOUT_SECONDS} seconds.") from exc
     text = str(data.get("response", "")).strip()
     if not text:
         raise RuntimeError("Ollama returned an empty response.")

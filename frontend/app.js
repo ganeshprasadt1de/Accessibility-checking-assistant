@@ -641,16 +641,6 @@ function chooseFloorStartDoors(floor, floorDoors, floorEdges) {
     edgeDegree.set(edge.startGuid, (edgeDegree.get(edge.startGuid) || 0) + 1);
     edgeDegree.set(edge.endGuid, (edgeDegree.get(edge.endGuid) || 0) + 1);
   }
-  const entranceFloor = guessEntranceFloor();
-  if (floor.name === entranceFloor) {
-    const entrance = [...floorDoors].sort((a, b) => {
-      const widthDiff = Number(b.extra?.derivedDoorWidthM || 0) - Number(a.extra?.derivedDoorWidthM || 0);
-      if (Math.abs(widthDiff) > 0.001) return widthDiff;
-      return (edgeDegree.get(a.guid) || 0) - (edgeDegree.get(b.guid) || 0);
-    })[0];
-    return entrance ? [entrance] : [];
-  }
-
   const doorByGuid = new Map(floorDoors.map((door) => [door.guid, door]));
   const stairStartGuids = new Set();
   for (const edge of floorEdges.filter((item) => item.reasons?.includes("stair_block"))) {
@@ -665,6 +655,16 @@ function chooseFloorStartDoors(floor, floorDoors, floorEdges) {
     .sort((a, b) => String(a.name || a.label).localeCompare(String(b.name || b.label)));
   if (stairStarts.length) return stairStarts;
 
+  const entranceFloor = guessEntranceFloor();
+  if (floor.name === entranceFloor) {
+    const entrance = [...floorDoors].sort((a, b) => {
+      const widthDiff = Number(b.extra?.derivedDoorWidthM || 0) - Number(a.extra?.derivedDoorWidthM || 0);
+      if (Math.abs(widthDiff) > 0.001) return widthDiff;
+      return (edgeDegree.get(a.guid) || 0) - (edgeDegree.get(b.guid) || 0);
+    })[0];
+    return entrance ? [entrance] : [];
+  }
+
   const bestStart = [...floorDoors].sort((a, b) => {
     const reachDiff = (appData.accessibleRoutesByDoor?.[b.guid]?.length || 0) - (appData.accessibleRoutesByDoor?.[a.guid]?.length || 0);
     if (reachDiff) return reachDiff;
@@ -678,13 +678,11 @@ function buildSimulationRoutesFromStarts(startDoors, floorEdges, transform, floo
   const routes = [];
   const seen = new Set();
   for (const startDoor of startDoors) {
-    const failedRoutes = appData.routesByDoor?.[startDoor.guid] || [];
-    for (const route of failedRoutes) {
-      const routeEdges = (route.edge_ids || []).map((edgeId) => edgeById.get(edgeId)).filter(Boolean);
-      if (!routeEdges.length || !routeEdges.some((edge) => edge.status === "fail")) continue;
-      const reasons = [...new Set(routeEdges.flatMap((edge) => edge.reasons || []))];
-      const item = routePathFromEdgeIds(startDoor.guid, route.edge_ids || [], edgeById, transform, "fail", reasons.map(reasonText).join(", ") || "blocked", route.target_guid);
-      prependFloorStart(item, floorStart, transform);
+    const failedEdges = floorEdges.filter((edge) => edge.status === "fail" && (edge.startGuid === startDoor.guid || edge.endGuid === startDoor.guid));
+    for (const edge of failedEdges) {
+      const startGuid = edge.startGuid === startDoor.guid ? edge.startGuid : edge.endGuid;
+      const targetGuid = edge.startGuid === startDoor.guid ? edge.endGuid : edge.startGuid;
+      const item = routePathFromEdgeIds(startGuid, [edge.edgeId], edgeById, transform, "fail", edge.reasons?.map(reasonText).join(", ") || "blocked", targetGuid);
       if (item && !seen.has(item.key)) {
         seen.add(item.key);
         routes.push(item);

@@ -4,6 +4,7 @@ import argparse
 import json
 import urllib.error
 import urllib.request
+from collections import Counter
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlparse
@@ -99,33 +100,60 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 def assistant_context(data: dict) -> dict:
-    rule_keys = [
-        "door_width_m",
-        "corridor_width_m",
-        "turning_space_m",
-        "ramp_width_m",
-        "ramp_slope_percent",
-    ]
+    elements_by_guid = {element.get("guid"): element for element in data.get("elements", [])}
+    issues = data.get("issues", [])[:20]
+    detected_rules = sorted({issue.get("rule_id") for issue in issues if issue.get("rule_id")})
+    issue_counts = Counter(issue.get("rule_id") for issue in issues if issue.get("rule_id"))
+    failed_routes = []
+    for edge in data.get("routeEdges", []):
+        if edge.get("status") != "fail":
+            continue
+        start = elements_by_guid.get(edge.get("startGuid"), {})
+        end = elements_by_guid.get(edge.get("endGuid"), {})
+        failed_routes.append(
+            {
+                "edgeId": edge.get("edgeId"),
+                "from": start.get("name") or start.get("label") or edge.get("startGuid"),
+                "to": end.get("name") or end.get("label") or edge.get("endGuid"),
+                "targetType": end.get("ifcType"),
+                "floor": start.get("storey") or end.get("storey"),
+                "distanceM": round(float(edge.get("distanceM") or 0), 2),
+                "reasons": edge.get("reasons", []),
+            }
+        )
     floors = []
     for floor in data.get("floors", []):
         door_count = len(floor.get("doorGuids", []))
         route_count = len(floor.get("routeEdgeIds", []))
+        failed_route_count = int(floor.get("routeStatusCounts", {}).get("fail", 0) or 0)
         if not door_count and not route_count:
+            continue
+        if not failed_route_count and not floor.get("failureReasonCounts"):
             continue
         floors.append(
             {
                 "name": floor.get("name") or "Unnamed floor",
                 "doors": door_count,
                 "routeEdges": route_count,
-                "failedRouteEdges": int(floor.get("routeStatusCounts", {}).get("fail", 0) or 0),
+                "failedRouteEdges": failed_route_count,
                 "failureReasons": floor.get("failureReasonCounts", {}),
             }
         )
     return {
         "summary": data.get("summary", {}),
-        "rules": {key: data.get("rules", {}).get(key) for key in rule_keys},
-        "floors": floors,
-        "issues": data.get("issues", [])[:20],
+        "detectedIssueTypes": detected_rules,
+        "issueCountsByType": dict(issue_counts),
+        "affectedElements": [
+            {
+                "name": issue.get("element_label"),
+                "type": issue.get("element_type"),
+                "rule": issue.get("rule_id"),
+                "details": issue.get("details"),
+            }
+            for issue in issues
+        ],
+        "failedRoutes": failed_routes[:20],
+        "floorsWithFailures": floors,
     }
 
 

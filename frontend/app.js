@@ -359,8 +359,7 @@ async function showRoutes(guid) {
   const data = await response.json();
   routeGroup.clear();
   const byEdge = new Map(appData.routeEdges.map((e) => [e.edgeId, e]));
-  const stairRoute = stairApproachRouteForDoor(guid);
-  const visible = stairRoute ? [stairRoute, ...data.routes] : data.routes;
+  const visible = data.routes;
   if (visible[0]) addRoutePath(visible[0], byEdge);
   document.querySelector("#routeList").innerHTML = visible
     .map((route) => {
@@ -408,34 +407,6 @@ function addRoutePath(route, byEdge) {
   const geometry = new THREE.BufferGeometry().setFromPoints(points.map((p) => new THREE.Vector3(p[0], p[1], p[2] + 0.25)));
   const material = new THREE.LineBasicMaterial({ color: failed ? 0xb3261e : 0x2d7d46, transparent: true, opacity: failed ? 0.72 : 0.44 });
   routeGroup.add(new THREE.Line(geometry, material));
-}
-
-function stairApproachRouteForDoor(guid) {
-  const door = appData.elements.find((element) => element.guid === guid && element.ifcType === "IfcDoor" && element.center);
-  if (!door) return null;
-  const stairs = appData.elements.filter((element) => isStairType(element.ifcType) && element.center && sameFloorElement(door, element));
-  if (!stairs.length) return null;
-  const stair = stairs
-    .map((element) => ({ element, distance: distance3d(door.center, element.center) }))
-    .sort((a, b) => a.distance - b.distance)[0];
-  const mid = [door.center[0], door.center[1], stair.element.center[2]];
-  return {
-    target_guid: stair.element.guid,
-    distance_m: stair.distance,
-    edge_ids: [],
-    status: "fail",
-    reason: "stair blocks route",
-    path: [door.center, mid, stair.element.center],
-  };
-}
-
-function sameFloorElement(a, b) {
-  if (a.storey && b.storey && a.storey === b.storey) return true;
-  return a.center && b.center && Math.abs(a.center[2] - b.center[2]) <= 2.2;
-}
-
-function distance3d(a, b) {
-  return Math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2);
 }
 
 function addRouteLine(edge) {
@@ -595,7 +566,7 @@ function buildFloorScenario() {
   const transform = createFloorTransform(floorElements);
   const startDoors = chooseFloorStartDoors(floor, routeStartDoors.length ? routeStartDoors : floorDoors, floorEdges);
   const floorStart = chooseFloorStartPoint(floor, startDoors, floorElements, floorEdges);
-  const routePaths = [...buildStairApproachRoutes(floorStart, floorElements, transform), ...buildSimulationRoutesFromStarts(startDoors, floorEdges, transform, floorStart)];
+  const routePaths = buildSimulationRoutesFromStarts(startDoors, floorEdges, transform, floorStart);
   const chosenRoute = routePaths[0];
   const path = routePaths[0]?.path || [new THREE.Vector3(-5, 0.08, 0), new THREE.Vector3(5, 0.08, 0)];
   const reasonCounts = countReasons(rawFloorEdges);
@@ -664,30 +635,6 @@ function stairLandingPoint(stair, floorEdges) {
   return [stair.center[0], stair.bboxMin[1] - 1.2, stair.center[2]];
 }
 
-function buildStairApproachRoutes(floorStart, floorElements, transform) {
-  const stairs = floorElements.filter((element) => isStairType(element.ifcType) && element.bboxMin && element.bboxMax);
-  if (!floorStart?.point || !stairs.length) return [];
-  const routes = [];
-  const startPoint = transform.point(floorStart.point);
-  const stair = stairs
-    .map((item) => {
-      const center = [(item.bboxMin[0] + item.bboxMax[0]) / 2, (item.bboxMin[1] + item.bboxMax[1]) / 2, (item.bboxMin[2] + item.bboxMax[2]) / 2];
-      return { item, center, distance: Math.hypot(center[0] - floorStart.point[0], center[1] - floorStart.point[1]) };
-    })
-    .sort((a, b) => a.distance - b.distance)[0];
-  const stairPoint = transform.point(stair.center);
-  const midPoint = new THREE.Vector3(startPoint.x, startPoint.y, stairPoint.z);
-  routes.push({
-    key: `stair:${stair.item.guid}`,
-    edgeId: "stair approach",
-    status: "fail",
-    reason: "stair blocks route",
-    blockAt: 0.88,
-    path: [startPoint, midPoint, stairPoint],
-  });
-  return routes;
-}
-
 function chooseFloorStartDoors(floor, floorDoors, floorEdges) {
   const edgeDegree = new Map();
   for (const edge of floorEdges) {
@@ -731,6 +678,18 @@ function buildSimulationRoutesFromStarts(startDoors, floorEdges, transform, floo
   const routes = [];
   const seen = new Set();
   for (const startDoor of startDoors) {
+    const failedRoutes = appData.routesByDoor?.[startDoor.guid] || [];
+    for (const route of failedRoutes) {
+      const routeEdges = (route.edge_ids || []).map((edgeId) => edgeById.get(edgeId)).filter(Boolean);
+      if (!routeEdges.length || !routeEdges.some((edge) => edge.status === "fail")) continue;
+      const reasons = [...new Set(routeEdges.flatMap((edge) => edge.reasons || []))];
+      const item = routePathFromEdgeIds(startDoor.guid, route.edge_ids || [], edgeById, transform, "fail", reasons.map(reasonText).join(", ") || "blocked", route.target_guid);
+      prependFloorStart(item, floorStart, transform);
+      if (item && !seen.has(item.key)) {
+        seen.add(item.key);
+        routes.push(item);
+      }
+    }
     const passRoutes = appData.accessibleRoutesByDoor?.[startDoor.guid] || [];
     for (const route of passRoutes) {
       const item = routePathFromEdgeIds(startDoor.guid, route.edge_ids || [], edgeById, transform, "pass", "clear", route.target_guid);
@@ -739,16 +698,6 @@ function buildSimulationRoutesFromStarts(startDoors, floorEdges, transform, floo
         seen.add(item.key);
         routes.push(item);
       }
-    }
-  }
-  for (const edge of floorEdges.filter((item) => item.status === "fail")) {
-    if (!startDoors.some((door) => door.guid === edge.startGuid || door.guid === edge.endGuid)) continue;
-    const startGuid = startDoors.some((door) => door.guid === edge.startGuid) ? edge.startGuid : edge.endGuid;
-    const item = routePathFromEdgeIds(startGuid, [edge.edgeId], edgeById, transform, "fail", edge.reasons?.[0] ? reasonText(edge.reasons[0]) : "blocked", null);
-    prependFloorStart(item, floorStart, transform);
-    if (item && !seen.has(item.key)) {
-      seen.add(item.key);
-      routes.push(item);
     }
   }
   return routes;

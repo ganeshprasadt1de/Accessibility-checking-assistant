@@ -29,7 +29,9 @@ def explain_question(question: str, context: dict, model: str = "qwen3:8b", host
     prompt = (
         "Explain this wheelchair route checker result in simple language for a 16 year old. "
         "Use only the facts provided. Do not invent measurements. Do not claim legal approval. "
-        "Keep it under 130 words.\n\n"
+        "First explain the SHACL accessibility result. Then give 2 to 4 short architect-focused improvement suggestions. "
+        "The suggestions must be practical design changes based only on the detected issues and route data. "
+        "Keep the whole answer around 80 to 120 words.\n\n"
         f"Question: {question}\n\n"
         "Facts:\n"
         + json.dumps(context, ensure_ascii=True)

@@ -9097,8 +9097,8 @@
   "issues": [
     {
       "issue_id": "I0001",
-      "element_guid": "1Kl5_Wzb98HOSGZ8eaBX2f",
-      "element_label": "IfcStair Treppe-EG",
+      "element_guid": "0o_5lbt6jCpRs3V3FoLyNr",
+      "element_label": "IfcStair Treppe-KG",
       "element_type": "IfcStair",
       "rule_id": "stair_block",
       "severity": "fail",
@@ -9111,20 +9111,6 @@
     },
     {
       "issue_id": "I0002",
-      "element_guid": "3Zb0LaH4z9HPmaVjAzVngL",
-      "element_label": "IfcStair Treppe-1-OG",
-      "element_type": "IfcStair",
-      "rule_id": "stair_block",
-      "severity": "fail",
-      "measured": 1.0,
-      "required": 0.0,
-      "unit": "bool",
-      "source": "SHACL validation report",
-      "short_text": "route intersects stair",
-      "details": "Route intersects a stair volume."
-    },
-    {
-      "issue_id": "I0003",
       "element_guid": "0xQhptVzf44Qzhs9jMEILa",
       "element_label": "IfcStair Treppe-2-OG",
       "element_type": "IfcStair",
@@ -9138,9 +9124,23 @@
       "details": "Route intersects a stair volume."
     },
     {
+      "issue_id": "I0003",
+      "element_guid": "1Kl5_Wzb98HOSGZ8eaBX2f",
+      "element_label": "IfcStair Treppe-EG",
+      "element_type": "IfcStair",
+      "rule_id": "stair_block",
+      "severity": "fail",
+      "measured": 1.0,
+      "required": 0.0,
+      "unit": "bool",
+      "source": "SHACL validation report",
+      "short_text": "route intersects stair",
+      "details": "Route intersects a stair volume."
+    },
+    {
       "issue_id": "I0004",
-      "element_guid": "0o_5lbt6jCpRs3V3FoLyNr",
-      "element_label": "IfcStair Treppe-KG",
+      "element_guid": "3Zb0LaH4z9HPmaVjAzVngL",
+      "element_label": "IfcStair Treppe-1-OG",
       "element_type": "IfcStair",
       "rule_id": "stair_block",
       "severity": "fail",

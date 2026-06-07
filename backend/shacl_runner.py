@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from rdflib import Graph, Literal, Namespace, RDF
+from rdflib import Graph, Literal, Namespace, RDF, URIRef
 from rdflib.namespace import SH
 
 from .config import NS, RULE_LIMITS
@@ -26,7 +26,9 @@ def run_shacl(data_graph: Path, shapes_graph: Path, report_ttl: Path) -> dict:
         inference="rdfs",
         serialize_report_graph=True,
     )
-    report_ttl.write_bytes(report_graph if isinstance(report_graph, bytes) else str(report_graph).encode("utf-8"))
+    report = Graph()
+    report.parse(data=report_graph if isinstance(report_graph, str) else report_graph.decode("utf-8"), format="turtle")
+    _write_report(report, bool(conforms), report_ttl)
     result_count = str(report_text).count("Constraint Violation")
     return {
         "available": True,
@@ -49,17 +51,11 @@ def issues_from_shacl_report(report_ttl: Path, data_graph: Path, elements: list[
     issues: list[Issue] = []
     failed_route_reasons: dict[str, set[str]] = {edge.edge_id: set() for edge in edges}
 
-    for result in report.subjects(RDF.type, SH.ValidationResult):
-        focus = report.value(result, SH.focusNode)
-        message_node = report.value(result, SH.resultMessage)
-        if focus is None or message_node is None:
-            continue
-        message = str(message_node)
+    for focus_text, message, _source_shape, _source_component in _validation_results(report):
         rule_id, readable = _split_message(message)
-        focus_text = str(focus)
         edge = edges_by_uri.get(focus_text)
         element = elements_by_uri.get(focus_text)
-        measured = _measured_value(data, focus, rule_id)
+        measured = _measured_value(data, URIRef(focus_text), rule_id)
         required, unit = _required(rule_id)
 
         if edge:
@@ -89,6 +85,51 @@ def issues_from_shacl_report(report_ttl: Path, data_graph: Path, elements: list[
         edge.reasons = reasons
         edge.status = "fail" if reasons else "pass"
     return issues
+
+
+def _validation_results(report: Graph) -> list[tuple[str, str, str | None, str | None]]:
+    rows: list[tuple[str, str, str | None, str | None]] = []
+    for result in report.subjects(RDF.type, SH.ValidationResult):
+        focus = report.value(result, SH.focusNode)
+        message = report.value(result, SH.resultMessage)
+        source_shape = report.value(result, SH.sourceShape)
+        source_component = report.value(result, SH.sourceConstraintComponent)
+        if focus is not None and message is not None:
+            rows.append(
+                (
+                    str(focus),
+                    str(message),
+                    source_shape.n3(report.namespace_manager) if source_shape is not None else None,
+                    source_component.n3(report.namespace_manager) if source_component is not None else None,
+                )
+            )
+    return sorted(rows, key=lambda item: (item[0], item[1]))
+
+
+def _write_report(report: Graph, conforms: bool, report_ttl: Path) -> None:
+    rows = _validation_results(report)
+    lines = [
+        "@prefix acc: <https://example.org/wheelchair-accessibility#> .",
+        "@prefix sh: <http://www.w3.org/ns/shacl#> .",
+        "",
+        "[] a sh:ValidationReport ;",
+        f"    sh:conforms {'true' if conforms else 'false'}" + (" ." if not rows else " ;"),
+    ]
+    for index, (focus, message, source_shape, source_component) in enumerate(rows):
+        suffix = " ." if index == len(rows) - 1 else " ;"
+        result_lines = [
+            "    sh:result [ a sh:ValidationResult ;",
+            f"            sh:focusNode <{focus}> ;",
+            f"            sh:resultMessage {Literal(message).n3()} ;",
+            "            sh:resultSeverity sh:Violation ;",
+        ]
+        if source_component:
+            result_lines.append(f"            sh:sourceConstraintComponent {source_component} ;")
+        if source_shape:
+            result_lines.append(f"            sh:sourceShape {source_shape} ;")
+        result_lines.append(f"            sh:value <{focus}> ]{suffix}")
+        lines.extend(result_lines)
+    report_ttl.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def _split_message(message: str) -> tuple[str, str]:

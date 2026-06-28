@@ -1,0 +1,129 @@
+{
+  "runtime": {
+    "real_pdf": "planungsgrundlagen_barrierefreies_bauen.pdf",
+    "real_ifc": "AC20-Institute-Var-2.ifc",
+    "routes": 317,
+    "issues": 0,
+    "missing_geometry": []
+  },
+  "providers": {
+    "text_provider": "ollama_qwen3.5:9b",
+    "ocr_provider": "paddleocr",
+    "ocr_runtime": "paddlepaddle==3.2.2",
+    "vision_provider": "ollama_qwen3-vl:8b",
+    "legacy_provider_fallbacks_in_runtime_config": false
+  },
+  "document_intelligence": {
+    "pages": 65,
+    "text_chunks": 1111,
+    "table_chunks": 53,
+    "image_chunks": 210,
+    "embedded_image_chunks": 120,
+    "rendered_page_chunks": 65,
+    "rendered_table_region_chunks": 25,
+    "images_ranked": 210,
+    "images_selected_for_vision": 30,
+    "images_with_ocr_text": 191,
+    "images_with_vision_text": 28
+  },
+  "rule_extraction": {
+    "llm_calls": 48,
+    "accepted_agent_outputs": 14,
+    "rejected_agent_outputs": 7,
+    "canonical_rule_count": 5,
+    "rule_ids": [
+      "corridor_width",
+      "door_width",
+      "ramp_slope",
+      "ramp_width",
+      "turning_space"
+    ],
+    "expected_rule_ids_present": [
+      "corridor_width",
+      "door_width",
+      "ramp_slope",
+      "ramp_width",
+      "turning_space"
+    ],
+    "expected_rule_ids_missing": [],
+    "canonical_rules": [
+      {
+        "rule_id": "corridor_width",
+        "value": 1.5,
+        "unit": "m",
+        "source_page": 11,
+        "evidence_chunk_id": "p011-page_render-001",
+        "candidate_id": "C0001",
+        "selection_score": 0.742282
+      },
+      {
+        "rule_id": "door_width",
+        "value": 0.9,
+        "unit": "m",
+        "source_page": 11,
+        "evidence_chunk_id": "p011-page_render-001",
+        "candidate_id": "C0002",
+        "selection_score": 0.73988
+      },
+      {
+        "rule_id": "ramp_slope",
+        "value": 6.0,
+        "unit": "%",
+        "source_page": 17,
+        "evidence_chunk_id": "p017-page_render-005",
+        "candidate_id": "C0005",
+        "selection_score": 0.760245
+      },
+      {
+        "rule_id": "ramp_width",
+        "value": 1.2,
+        "unit": "m",
+        "source_page": 17,
+        "evidence_chunk_id": "p017-page_render-005",
+        "candidate_id": "C0004",
+        "selection_score": 0.760883
+      },
+      {
+        "rule_id": "turning_space",
+        "value": 1.5,
+        "unit": "m",
+        "source_page": 24,
+        "evidence_chunk_id": "p024-text-008",
+        "candidate_id": "C0009",
+        "selection_score": 0.715237
+      }
+    ]
+  },
+  "governance": {
+    "duplicate_groups": 0,
+    "conflict_records": 0,
+    "published_rules": 2,
+    "publication_status": "published",
+    "publication_checks_failed": []
+  },
+  "validation": {
+    "shacl_report_parseable": true,
+    "real_run_completed": true
+  },
+  "correctness_verdict": {
+    "real_run_completed": true,
+    "expected_rules_extracted": true,
+    "shacl_validation_completed": true,
+    "runtime_blockers_removed": [
+      "PaddleOCR is the active OCR provider",
+      "rendered full-page evidence added for vector diagrams and page-drawn measurements",
+      "rendered table-region evidence added for table areas",
+      "PaddleOCR model is reused in-process to avoid repeated model-load memory growth",
+      "IFCtoLBD external tool output is streamed to a log file instead of being buffered in memory",
+      "generated document images are cleaned before each preprocess run",
+      "server app_data.json loading is cached by file timestamp and static file responses stream from disk",
+      "vision requests retry once when the local model returns an empty response"
+    ],
+    "remaining_limitations": [
+      "The supported rule families are still the wheelchair-route families declared in rules/canonical_rule_schema.json.",
+      "The ontology mapping and SHACL templates are still scoped to the current accessibility vocabulary.",
+      "The browser simulation remains a wheelchair-route checker, not an arbitrary code-compliance application.",
+      "IFCtoLBD still records Java ontology warnings in output/app_package/_work/ifctolbd.log."
+    ]
+  }
+}

@@ -30,6 +30,7 @@ def write_audit_report(ifc_path: Path, output_dir: Path, app_summary: dict) -> N
     for edge in route_edges:
         adjacency[edge["startGuid"]].add(edge["endGuid"])
         adjacency[edge["endGuid"]].add(edge["startGuid"])
+    route_door_nodes = set(adjacency).intersection(all_doors)
 
     components = _components(adjacency)
     data = {
@@ -63,8 +64,9 @@ def write_audit_report(ifc_path: Path, output_dir: Path, app_summary: dict) -> N
         "boundary_element_types": dict(boundary_types.most_common(20)),
         "route_graph": {
             "route_edges": len(route_edges),
-            "doors_with_route_edges": len(adjacency),
-            "doors_without_route_edges": len(all_doors) - len(adjacency),
+            "route_nodes": len(adjacency),
+            "doors_with_route_edges": len(route_door_nodes),
+            "doors_without_route_edges": len(set(all_doors) - route_door_nodes),
             "connected_component_sizes": sorted([len(comp) for comp in components], reverse=True),
             "status_counts": dict(Counter(edge["status"] for edge in route_edges)),
             "failure_reason_counts": dict(Counter(reason for edge in route_edges for reason in edge.get("reasons", []))),
@@ -118,6 +120,7 @@ def _markdown(data: dict) -> str:
         "## Route Graph",
         "",
         f"- Route edges: {rg['route_edges']}",
+        f"- Route graph nodes: {rg['route_nodes']}",
         f"- Doors with route edges: {rg['doors_with_route_edges']}",
         f"- Doors without route edges: {rg['doors_without_route_edges']}",
         f"- Connected component sizes: {rg['connected_component_sizes']}",

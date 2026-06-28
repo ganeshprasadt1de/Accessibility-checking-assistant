@@ -1,0 +1,641 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.1cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\setlist{nosep}
+\setlength{\emergencystretch}{3em}
+\sloppy
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+
+\title{Diffculty Report For The Current PDF-to-SHACL System}
+\author{Mid Term 1 Accessibility Checking Prototype}
+\date{12 June 2026}
+
+\begin{document}
+\maketitle
+
+\section{What This Report Is About}
+This report explains the current system in plain words. It also explains which parts were hard, what was tried, what works now, and what is still weak.
+
+\section{Agents In The Current System}
+The current system has \textbf{5 agent-like decision components}. Only two of them are literally named ``Agent'' in the Python code, but all five make decisions or produce decision-ready output.
+
+\begin{longtable}{|p{3.1cm}|p{3.5cm}|p{3.8cm}|p{4.7cm}|}
+\hline
+\textbf{Agent or decision component} & \textbf{Input} & \textbf{Output} & \textbf{Main parameters it uses} \\
+\hline
+Vision Observation Agent &
+Selected PDF image chunks. Each image has page number, image index, image path, OCR text, and image ranking metadata. &
+Vision text. This is a written description of visible measurements, symbols, tables, diagrams, labels, limits, ranges, and rule wording. &
+Image rank, image path, page number, model name \texttt{qwen3-vl:8b}, maximum selected images, prompt text, timeout, and whether the image was selected for vision. \\
+\hline
+Requirement Extraction Agent &
+Selected evidence chunks from text, tables, OCR, and vision. &
+Canonical rule candidates. These are neutral rules with rule ID, entity, property, operator, value, unit, source text, source page, confidence, and evidence chunk ID. &
+Evidence rank, chunk type, page number, evidence text, batch size, canonical rule schema, JSON output shape, model name \texttt{qwen3.5:9b}, temperature 0.0, and rejection rules for invalid output. \\
+\hline
+Candidate Governance Selector &
+All canonical rule candidates produced by the extraction agent. &
+Best selected canonical rule per rule type, duplicate groups, conflict records, rejected competitors, and selection explanation. &
+Semantic relevance, measurement specificity, source specificity, requirement completeness, ontology consistency, retrieval support, evidence density, contradiction penalty, confidence, source page, and evidence chunk ID. \\
+\hline
+Ontology Mapping Agent &
+Selected canonical rules and the enriched RDF graph from the IFC model. &
+Mappings from canonical rules to RDF classes and RDF properties. For example, a canonical width rule must point to the RDF property that stores that width. &
+Rule ID, entity, property, candidate ontology class, candidate ontology property, mapping score, graph availability, mapping review status, and mapping audit data. \\
+\hline
+Human Review And Approval Workflow &
+Selected rules, duplicate groups, conflict groups, and ontology mappings. &
+Approved, rejected, or escalated review records. Only approved rules with approved mappings can be published into SHACL. &
+Reviewer name, timestamp, rationale, candidate ID, rule ID, evidence chunk, source page, confidence, retrieval score, selection score, duplicate status, conflict status, and mapping decision. \\
+\hline
+\end{longtable}
+
+In short: the vision component reads selected images, the extraction agent turns evidence into rule candidates, the governance selector chooses the best-supported candidates, the ontology mapping agent connects those rules to RDF properties, and the human review workflow decides what is allowed to become SHACL.
+
+Some technical words are used because the project needs them:
+
+\begin{itemize}
+  \item \textbf{IFC}: a building model file. It stores building objects such as doors, rooms, floors, stairs, ramps, and walls.
+  \item \textbf{RDF}: a graph format for data. It stores facts as triples, for example: a door has a width.
+  \item \textbf{SHACL}: a rule language for RDF graphs. It says what data must satisfy, for example: door width must be at least 0.90 m.
+  \item \textbf{pySHACL}: the Python tool that runs SHACL rules on RDF data and produces a report.
+  \item \textbf{Canonical rule}: the neutral rule format used before SHACL. It is not tied to RDF, SHACL, or one ontology.
+  \item \textbf{Ontology mapping}: the step that connects a canonical rule such as \texttt{door\_width} to the RDF property that stores door width in the graph.
+  \item \textbf{OCR}: text recognition from images.
+  \item \textbf{Vision model}: a model that looks at an image and writes useful observations about it.
+\end{itemize}
+
+The report is based on the current files and latest run outputs:
+
+\begin{itemize}
+  \item \texttt{output/final\_system\_correctness\_audit.json}
+  \item \texttt{output/app\_package/rule\_extraction\_audit.json}
+  \item \texttt{output/app\_package/document\_chunks.json}
+  \item \texttt{output/app\_package/human\_review\_audit.json}
+  \item \texttt{output/app\_package/generated\_accessibility\_rules.shacl.ttl}
+  \item \texttt{output/app\_package/shacl\_report.ttl}
+\end{itemize}
+
+\section{Latest Real Run}
+The latest full run used:
+
+\begin{itemize}
+  \item PDF: \texttt{planungsgrundlagen\_barrierefreies\_bauen.pdf}
+  \item IFC: \texttt{AC20-Institute-Var-2.ifc}
+  \item Text model: \texttt{qwen3.5:9b}
+  \item Vision model: \texttt{qwen3-vl:8b}
+  \item OCR: \texttt{paddleocr} with \texttt{paddlepaddle==3.2.2}
+\end{itemize}
+
+The measured result was:
+
+\begin{itemize}
+  \item 65 PDF pages were read.
+  \item 1111 text chunks were created.
+  \item 53 table chunks were created.
+  \item 210 image evidence chunks were created.
+  \item 120 chunks came from embedded PDF images.
+  \item 65 chunks came from rendered full PDF pages.
+  \item 25 chunks came from rendered table regions.
+  \item 210 image chunks were ranked.
+  \item 30 images were sent to the vision model.
+  \item 191 images had OCR text.
+  \item 28 images had vision text.
+  \item 48 calls were made to the text model.
+  \item 14 model outputs were accepted as rule candidates.
+  \item 7 model outputs were rejected.
+  \item 4 final canonical rules were selected.
+  \item 317 route edges were created from the IFC file.
+  \item 0 SHACL issues were reported.
+  \item 0 missing geometry records were reported.
+\end{itemize}
+
+\section{How The System Works}
+The PDF side works like this:
+
+\begin{verbatim}
+PDF
+  -> split into pages, text, tables, and images
+  -> run OCR on image text
+  -> run vision model on selected images
+  -> rank useful evidence
+  -> send evidence to the rule extraction agent
+  -> create canonical rule candidates
+  -> select the best-supported candidate
+  -> review and approve rules
+  -> map rules to RDF properties
+  -> generate SHACL
+  -> run pySHACL validation
+\end{verbatim}
+
+The IFC side works like this:
+
+\begin{verbatim}
+IFC model
+  -> RDF graph from IFCtoLBD
+  -> add geometry and route measurements
+  -> run SHACL rules on the RDF graph
+  -> write app data for the browser
+\end{verbatim}
+
+\section{Parameters Used By Each Component}
+This table lists what each component actually looks at. These are not magic values. They are the data fields, scores, and checks used by the system.
+
+\begin{longtable}{|p{3.8cm}|p{11.3cm}|}
+\hline
+\textbf{Component} & \textbf{What it looks at} \\
+\hline
+PDF ingestion &
+PDF file path, page number, page width, page height, page rotation, text length, image count, table count, PDF metadata, and output folder. \\
+\hline
+Text chunks &
+Page number, text block content, cleaned whitespace, chunk ID, optional bounding box, text length, and page grouping. A chunk is a smaller piece of the page. \\
+\hline
+Table chunks &
+Page number, table text, row count, column count, extraction method, optional bounding box, measurement-heavy text, and surrounding page text. \\
+\hline
+Image extraction &
+Page number, image index, image width, image height, file type, image path, optional bounding box, OCR text, vision text, provider status, and processing errors. \\
+\hline
+Image ranking &
+Measurement density, numeric density, normative language, OCR text quality, page context density, table context, visual salience, uniqueness, final score, rank, selection reason, and exclusion reason. \\
+\hline
+OCR &
+Image path, page number, image index, OCR provider name, OCR result text, execution status, empty results, and errors. \\
+\hline
+Vision model &
+Image path, page number, image index, selected-for-vision flag, model name, maximum selected images, prompt text, returned observation text, timeout, and errors. \\
+\hline
+Evidence retrieval &
+Measurement density, constraint likelihood, normative language, definition likelihood, table importance, cross-reference score, citation score, requirement confidence, evidence uniqueness, semantic centrality, rank, selected/excluded status, and reason. \\
+\hline
+Prompt assembly &
+Selected chunk IDs, chunk type, page number, evidence text, batch index, batch size, canonical rule list, JSON output shape, and instruction that the model must not generate SHACL or RDF. \\
+\hline
+Text model provider &
+Model name \texttt{qwen3.5:9b}, Ollama host, JSON mode, thinking disabled, temperature 0.0, timeout, raw response, JSON parse result, and provider name. \\
+\hline
+Requirement extraction agent &
+Evidence chunk ID, evidence type, evidence text, source page, raw model output, rule ID, entity, property, operator, value, unit, source text, confidence, candidate ID, accepted/rejected status, and rejection reason. \\
+\hline
+Canonical rule normalization &
+Configured rule ID, description, entity, property, operator, expected value, expected unit, tolerance, unit conversion, and supported/unsupported decision. These come from \texttt{rules/canonical\_rule\_schema.json}. \\
+\hline
+Candidate governance &
+Candidate ID, rule ID, confidence, evidence chunk ID, source page, semantic relevance, measurement specificity, source specificity, requirement completeness, ontology consistency, retrieval support, evidence density, contradiction penalty, final selection score, and explanation. \\
+\hline
+Duplicate handling &
+Rule ID, candidate values, units, operators, duplicate group ID, group members, selected winner, rejected candidates, and merge reason. \\
+\hline
+Conflict handling &
+Rule ID, different values for the same rule, operators, supporting evidence, confidence comparison, conflict ID, conflict type, group members, and review status. \\
+\hline
+Human review &
+Review ID, review type, candidate ID, rule ID, mapping ID, evidence chunk, source page, confidence, retrieval score, selection score, reviewer, timestamp, rationale, decision, and evidence references. \\
+\hline
+Rule repository &
+Canonical rules, source PDF path, extraction metadata, chunk counts, document metadata, audit paths, source text, source page, confidence, candidate ID, and evidence references. \\
+\hline
+Ontology mapping &
+Rule ID, entity, property, target ontology class, target RDF property, mapping candidate ID, mapping score, mapping status, mapping review decision, and audit record. \\
+\hline
+SHACL generation &
+Approved rule, approved mapping, rule ID, candidate ID, evidence chunk ID, source page, review metadata, target class, target property, operator, numeric value, unit, datatype, NodeShape, PropertyShape, provenance triples, and Turtle output path. \\
+\hline
+Publication gate &
+Approved review exists, review queue exists, decision records exist, no unresolved conflicts, no unresolved duplicate groups, evidence exists, source chunk exists, confidence threshold, provenance complete, mapping approved, and generated SHACL valid. \\
+\hline
+pySHACL validation &
+Data graph path, SHACL shapes path, report path, graph parsing result, target nodes, constraint results, conforms flag, and issue conversion for the app. \\
+\hline
+IFC geometry &
+IFC path, element type, GlobalId, name, floor, bounding box, center point, dimensions, declared width, derived door width, clear space width, turning space, ramp length, ramp width, ramp slope, and missing geometry records. \\
+\hline
+IFCtoLBD RDF workflow &
+IFC path, IFCtoLBD zip path, temporary folder, raw RDF output, Java process result, RDF load result, ontology warnings, raw graph path, enriched graph path, and graph format. \\
+\hline
+Route graph &
+IfcRelSpaceBoundary links, door-to-space mapping, spaces per door, doors per space, floor grouping, route edge ID, start door, end door, path, width, door width, turning space, ramp intersection, stair intersection, route status, and failure reasons. \\
+\hline
+3D visualization package &
+Element geometry, floor grouping, route edges, issue list, route graph binary, GLB model, app data JSON, selected door routes, route colors, stair blockers, and browser package paths. \\
+\hline
+Tests and audits &
+Unit test count, real PDF run, real IFC run, generated output files, extraction audit, candidate audit, governance audit, final correctness audit, generated SHACL parse check, SHACL report parse check, provider-name scan, and stale output cleanup. \\
+\hline
+\end{longtable}
+
+\section{Component Difficulty Review}
+
+\subsection{PDF Ingestion}
+\textbf{Main files:} \texttt{backend/document\_intelligence/ingestion.py}, \texttt{backend/document\_intelligence/pdf\_parser.py}, \texttt{backend/document\_intelligence/models.py}
+
+\textbf{What was hard:}
+A PDF is not like a spreadsheet. It does not tell the computer: ``this sentence is a rule'' or ``this number belongs to this table row.'' The same rule can appear as normal text, a table cell, a list item, or an image label.
+
+\textbf{What I tried:}
+The PDF is split into separate objects: text chunks, table chunks, image chunks, and page metadata. This makes later steps easier because they know where evidence came from.
+
+\textbf{What works now:}
+The real PDF was read and produced 1111 text chunks, 53 table chunks, and 210 image evidence chunks.
+
+\textbf{What is still weak:}
+The parser does not fully understand legal section structure, exceptions, or references like ``see section 4.3.7.'' It extracts evidence, but it does not fully understand the document like a human expert.
+
+\subsection{Table Extraction}
+\textbf{Main file:} \texttt{backend/document\_intelligence/pdf\_parser.py}
+
+\textbf{What was hard:}
+Important values are often inside tables. Door width was one example. The value existed, but earlier runs missed it because table meaning was not strong enough in the model input.
+
+\textbf{What I tried:}
+Tables are stored as their own chunk type. Retrieval and candidate selection give table evidence its own weight.
+
+\textbf{What works now:}
+The final door-width rule came from \texttt{p012-table-001}, which is direct table evidence.
+
+\textbf{What is still weak:}
+Tables are still mostly stored as plain text. The system does not yet fully keep cell positions, headers, and row meaning.
+
+\subsection{Image Extraction And Ranking}
+\textbf{Main files:} \texttt{backend/document\_intelligence/image\_extraction.py}, \texttt{backend/document\_intelligence/image\_ranking.py}
+
+\textbf{What was hard:}
+At first only embedded PDF images were processed by vision. That was dangerous because a PDF can draw diagrams, table borders, arrows, and measurement labels directly on the page. Those items are visible to a human, but they are not stored as normal embedded images.
+
+\textbf{What I tried:}
+Now the system creates image evidence in three ways: embedded PDF images, rendered full-page images, and rendered table-region images. Rendering means the system makes a screenshot-like image of the PDF page or a table area. Ranking means the system gives each image a usefulness score before deciding which images go to the vision model.
+
+\textbf{Ranking parameters:}
+\begin{itemize}
+  \item \texttt{measurement\_density}: how many measurements appear nearby.
+  \item \texttt{numeric\_density}: how many numbers appear.
+  \item \texttt{normative\_language}: words like minimum, maximum, must, shall, or German equivalents.
+  \item \texttt{ocr\_text\_quality}: whether OCR found useful text.
+  \item \texttt{page\_context\_density}: whether the surrounding page has many measurements or rule words.
+  \item \texttt{table\_context}: whether the page has tables.
+  \item \texttt{visual\_salience}: whether the image is visually large enough to matter.
+  \item \texttt{uniqueness}: whether the image is not just a repeated logo or symbol.
+\end{itemize}
+
+\textbf{What works now:}
+All 210 image evidence chunks were ranked. The top 30 were sent to Qwen3-VL.
+
+\textbf{What is still weak:}
+Only 30 out of 210 image evidence chunks were sent to the vision model. That is controlled by the vision budget. It is efficient, but it is still not full image coverage.
+
+\subsection{OCR}
+\textbf{Main files:} \texttt{backend/document\_intelligence/providers.py}, \texttt{backend/document\_intelligence/image\_extraction.py}
+
+\textbf{What was hard:}
+OCR can misread small text, rotated labels, German characters, and diagram labels.
+
+\textbf{What I tried:}
+The active OCR provider is PaddleOCR. PaddleOCR is the component that reads text from extracted PDF images. The local runtime is pinned to \texttt{paddlepaddle==3.2.2} because \texttt{paddlepaddle==3.3.1} crashed during CPU inference on this laptop.
+
+\textbf{What works now:}
+PaddleOCR executed on a real extracted image from the current PDF output and returned observable text. That proves the OCR provider is not only an interface; it runs on real image input.
+
+The OCR model is now reused inside one Python process. Before that change, repeated ingestion loaded PaddleOCR again and again. A warm-up memory check showed repeated ingestion dropping from about 118 MB of extra traced Python memory to about 19 KB after reuse.
+
+\textbf{What is still weak:}
+PaddleOCR is stronger than the old lightweight OCR path, but it is still OCR, not full document reasoning. It reads visible text. It does not understand the legal meaning of a diagram by itself; that job still belongs to retrieval, vision, and the requirement extraction agent.
+
+\subsection{Vision Processing}
+\textbf{Main files:} \texttt{backend/document\_intelligence/providers.py}, \texttt{backend/document\_intelligence/image\_ranking.py}
+
+\textbf{What was hard:}
+Vision models are slow on local hardware. Sending every image can take a long time. Sending too few images can miss rules.
+
+\textbf{What I tried:}
+The system uses \texttt{qwen3-vl:8b}. The prompt asks for visible measurements, symbols, tables, diagrams, labels, limits, ranges, and rule wording. It no longer says wheelchair, door, ramp, width, or slope.
+
+\textbf{What works now:}
+The real run sent 30 image evidence chunks to the vision model and produced non-empty vision text for 28 chunks.
+
+\textbf{What is still weak:}
+The system proves that vision ran. It does not prove that every diagram was understood correctly. A benchmark with expected diagram rules is still needed.
+
+\subsection{Retrieval And Evidence Assembly}
+\textbf{Main files:} \texttt{backend/requirement\_extraction.py}, \texttt{backend/document\_intelligence/image\_ranking.py}
+
+\textbf{What was hard:}
+The missing-rule problem was not always caused by missing PDF text. The evidence was present, but the wrong evidence sometimes reached the model, or too much mixed evidence confused the model.
+
+\textbf{What I tried:}
+Each evidence chunk gets a score. The model receives the strongest chunks first. Every selected and rejected chunk is recorded.
+
+\textbf{Scoring parameters:}
+\begin{itemize}
+  \item \texttt{measurement\_density}
+  \item \texttt{constraint\_likelihood}
+  \item \texttt{normative\_language}
+  \item \texttt{definition\_likelihood}
+  \item \texttt{table\_importance}
+  \item \texttt{cross\_reference}
+  \item \texttt{citation}
+  \item \texttt{requirement\_confidence}
+  \item \texttt{evidence\_uniqueness}
+  \item \texttt{semantic\_centrality}
+\end{itemize}
+
+\textbf{What works now:}
+The final run selected enough evidence to extract 4 final canonical rules. This is an improvement in evidence coverage, but it is not proof that every expected legal requirement was captured.
+
+\textbf{What is still weak:}
+The scores are hand-made rules. They are explainable, but not proven by a large benchmark.
+
+\subsection{Requirement Extraction Agent}
+\textbf{Main file:} \texttt{backend/requirement\_extraction.py}
+
+\textbf{What was hard:}
+The agent is not allowed to invent missing rules. If it misses a rule, the system must fail instead of making one up.
+
+\textbf{What I tried:}
+The model receives evidence and must return JSON canonical rules. It may not return SHACL, RDF, or ontology mappings. Bad outputs are rejected.
+
+\textbf{Important fix:}
+With four evidence chunks per call, Qwen3.5 missed door width. Reducing the batch size to two evidence chunks fixed this for the latest run. This is not a DIN-specific trick. It simply gives the model less mixed context at once.
+
+\textbf{What works now:}
+The real run made 48 model calls, accepted 16 outputs, rejected 2 outputs, and selected 5 final rules.
+
+\textbf{What is still weak:}
+The model can still miss rules on a different PDF. The current success is not proof that every rule book will work.
+
+\subsection{Canonical Rule Model}
+\textbf{Main files:} \texttt{backend/canonical\_rules.py}, \texttt{rules/canonical\_rule\_schema.json}
+
+\textbf{What was hard:}
+The rule model must be neutral. It cannot already be SHACL. But it still needs enough data to generate SHACL later.
+
+\textbf{What I tried:}
+Rules store rule ID, entity, property, operator, value, unit, source text, source page, confidence, and metadata. The supported rule list is in \texttt{rules/canonical\_rule\_schema.json}.
+
+\textbf{Schema parameters:}
+Rule ID, description, entity, property, operator, value, unit, tolerance, and whether unit conversion should treat the value as a length.
+
+\textbf{What works now:}
+The final rules were \texttt{corridor\_width}, \texttt{door\_width}, \texttt{ramp\_slope}, \texttt{ramp\_width}, and \texttt{turning\_space}.
+
+\textbf{What is still weak:}
+The rule model does not yet handle exceptions, conditions, scope, legal notes, or complex references.
+
+\subsection{Candidate Governance}
+\textbf{Main files:} \texttt{backend/requirement\_extraction.py}, \texttt{backend/governance.py}
+
+\textbf{What was hard:}
+The model can give high confidence to a weak candidate. So confidence alone is not safe.
+
+\textbf{What I tried:}
+Candidates are ranked by evidence quality, not just model confidence.
+
+\textbf{Governance scores:}
+\begin{itemize}
+  \item semantic relevance
+  \item measurement specificity
+  \item source specificity
+  \item requirement completeness
+  \item ontology consistency
+  \item retrieval support
+  \item evidence density
+  \item contradiction penalty
+\end{itemize}
+
+\textbf{What works now:}
+The latest run had 16 candidates, 5 selected candidates, 5 duplicate groups, and no candidate-level conflict records.
+
+\textbf{What is still weak:}
+The weights are manually chosen. A proper dataset is needed to prove they are good.
+
+\subsection{Human Review}
+\textbf{Main file:} \texttt{backend/review\_workflow.py}
+
+\textbf{What was hard:}
+The system needs human approval, but there is no review UI yet.
+
+\textbf{What I tried:}
+The command line can create explicit review records. Each decision stores reviewer, timestamp, rationale, candidate ID, and evidence references.
+
+\textbf{What works now:}
+The latest run had 16 review queue records, 12 approved review records, 2 rejected review records, and 2 escalated review records.
+
+\textbf{What is still weak:}
+A real UI is still needed. CLI flags are enough for testing, but not comfortable for real review work.
+
+\subsection{Rule Repository}
+\textbf{Main file:} \texttt{backend/rule\_repository.py}
+
+\textbf{What was hard:}
+Rules must be saved with proof of where they came from.
+
+\textbf{What I tried:}
+Rules are saved as JSON with source document, chunk counts, metadata, and audit file references.
+
+\textbf{What works now:}
+\texttt{output/app\_package/canonical\_rules.json} stores the final rules and provenance.
+
+\textbf{What is still weak:}
+JSON is fine for a prototype. A real system would need a database, versioning, and access control.
+
+\subsection{Ontology Mapping}
+\textbf{Main file:} \texttt{backend/ontology\_mapping.py}
+
+\textbf{What was hard:}
+The system must connect a rule like \texttt{door\_width} to the RDF property where door width is stored. The LLM should not guess this.
+
+\textbf{What I tried:}
+The mapping layer is deterministic and reviewable.
+
+\textbf{Mapping parameters:}
+Canonical rule ID, entity, property, ontology class, ontology property, mapping candidate ID, mapping score, mapping status, and mapping review decision.
+
+\textbf{What works now:}
+The run created \texttt{ontology\_mappings.json} and \texttt{ifc\_mapping\_audit.json}. Published rules had approved mapping reviews.
+
+\textbf{What is still weak:}
+Mappings are still scoped to the current accessibility vocabulary. A different RDF graph would need new mappings.
+
+\subsection{SHACL Generation}
+\textbf{Main file:} \texttt{backend/generated\_shacl.py}
+
+\textbf{What was hard:}
+The LLM is not allowed to write SHACL. That means the Python generator must know exactly how to turn approved rules into shapes.
+
+\textbf{What I tried:}
+SHACL is generated by deterministic Python templates. The old manual SHACL file was removed.
+
+\textbf{Generation parameters:}
+Approved rule, approved mapping, target class, target property, operator, value, unit, datatype, NodeShape, PropertyShape, source page, evidence chunk ID, candidate ID, and review metadata.
+
+\textbf{What works now:}
+The generated SHACL had 99 RDF triples and parsed successfully.
+
+\textbf{What is still weak:}
+The generator supports only the current rule types. It does not support every kind of legal or engineering rule.
+
+\subsection{Publication Gate}
+\textbf{Main file:} \texttt{backend/approved\_rule\_library.py}
+
+\textbf{What was hard:}
+A rule should not become SHACL just because it exists. It must have evidence, review, mapping, and no unresolved conflicts.
+
+\textbf{What I tried:}
+Publication checks are run before the approved rule library is written.
+
+\textbf{Gate checks:}
+Approved review exists, review queue exists, decision records exist, no unresolved conflicts, no unresolved duplicate groups, evidence exists, source chunk exists, confidence threshold passed, provenance complete, review identity complete, rule review approved, mapping review approved, and generated SHACL valid.
+
+\textbf{What works now:}
+The latest publication status was \texttt{published}, with no failed publication checks.
+
+\textbf{What is still weak:}
+The current review path is still command-line based.
+
+\subsection{pySHACL Validation}
+\textbf{Main files:} \texttt{backend/shacl\_runner.py}, \texttt{backend/approved\_rule\_library.py}
+
+\textbf{What was hard:}
+The SHACL rules and the RDF data graph must match. If the graph does not contain the needed property, SHACL cannot check it properly.
+
+\textbf{What I tried:}
+Generated SHACL is parsed and then pySHACL runs it against the enriched RDF graph.
+
+\textbf{Validation parameters:}
+Data graph path, SHACL file path, report path, target nodes, constraint results, conforms flag, and extracted issue records.
+
+\textbf{What works now:}
+The final run reported 0 issues and the SHACL report parsed successfully.
+
+\textbf{What is still weak:}
+Zero issues does not mean the whole building is legally compliant. It only means no violation was found for the generated rules and available graph data.
+
+\subsection{IFC Parsing And Geometry}
+\textbf{Main files:} \texttt{backend/geometry.py}, \texttt{backend/ifc\_tools.py}
+
+\textbf{What was hard:}
+IFC files are standardized, but every exported model can still store details differently. Door widths, space boundaries, and ramp data are not always easy to calculate.
+
+\textbf{What I tried:}
+Python extracts building elements and adds derived measurements to the RDF graph.
+
+\textbf{Geometry parameters:}
+IFC element type, GlobalId, name, floor, bounding box, center point, dimensions, declared width, derived door width, clear space width, turning space, ramp length, ramp usable width, ramp slope, and missing geometry.
+
+\textbf{What works now:}
+The AC20 run extracted 312 elements, produced 317 route edges, and had 0 missing geometry records.
+
+\textbf{What is still weak:}
+Another IFC file may store data differently. The current result does not prove full cross-IFC reliability.
+
+\subsection{IFCtoLBD RDF Workflow}
+\textbf{Main file:} \texttt{backend/ifc\_tools.py}
+
+\textbf{What was hard:}
+The Java IFCtoLBD tool prints ontology warnings and null-pointer messages in the current environment.
+
+\textbf{What I tried:}
+The pipeline continues if the raw RDF graph is created, then Python enriches that graph with geometry and route data.
+
+\textbf{What works now:}
+The output package was written successfully.
+
+\textbf{What is still weak:}
+The Java warnings should be cleaned up for a serious deployment.
+
+\subsection{Route Graph And 3D View}
+\textbf{Main files:} \texttt{backend/routes.py}, \texttt{backend/package\_writer.py}, \texttt{backend/glb\_export.py}, \texttt{frontend/app.js}
+
+\textbf{What was hard:}
+The visual route view must match the data used by SHACL. Otherwise the browser may show one thing while validation checks another.
+
+\textbf{What I tried:}
+The browser uses the data package created by the preprocessing run. It does not calculate routes again.
+
+\textbf{Route parameters:}
+Door-to-space links, route edge ID, start door, end door, route path, route width, door width, turning space, ramp intersection, stair intersection, route status, and failure reasons.
+
+\textbf{What works now:}
+The latest run created 317 route edges and wrote the browser package.
+
+\textbf{What is still weak:}
+The browser is a viewer. It is not an independent validator.
+
+\subsection{Testing}
+\textbf{Main folder:} \texttt{tests/}
+
+\textbf{What was hard:}
+It was not enough to create interfaces. Tests had to show that the components actually run.
+
+\textbf{What I tried:}
+Tests cover text PDF, scanned PDF OCR, image vision, rule extraction, governance gates, SHACL generation, and pySHACL validation.
+
+\textbf{What works now:}
+The latest test command ran 19 tests and passed:
+
+\begin{verbatim}
+python -m unittest discover -s tests -p "test_*.py" -v
+\end{verbatim}
+
+A repeated-ingestion memory check also passed. After warming up PaddleOCR once, three repeated ingestion runs created the expected image chunks and OCR text with only about 19 KB traced Python memory growth.
+
+\textbf{What is still weak:}
+The tests are not a full benchmark. They do not prove performance on many different rule books and IFC files.
+
+\section{Hardest Problems}
+\subsection{Evidence Was Present But Not Used Well}
+The system had the needed text, but the model did not always use it. This showed that extraction is not only about reading the PDF. It is also about sending the right evidence to the model in the right amount.
+
+\subsection{Avoiding Fake Fixes}
+It would have been easy to hardcode known values like 90 cm or 150 cm. That would make the demo look better, but it would be wrong. The system now avoids creating missing rules by repair code.
+
+\subsection{Local Model Behavior}
+Qwen3.5 needed JSON mode with thinking disabled. Without that, the response could be empty even when the model internally produced JSON.
+
+\subsection{Image Budget}
+The old limit of 5 images was too small. Ranking all images and sending 30 to vision is better, but full vision coverage is still not done.
+
+\section{Current Classification}
+\begin{longtable}{|p{5cm}|p{4cm}|p{6cm}|}
+\hline
+\textbf{Component} & \textbf{Current state} & \textbf{Reason} \\
+\hline
+PDF ingestion & Research ready & It works on the real PDF, but does not fully understand legal document structure. \\
+\hline
+OCR & Research ready & It runs and produces text, but is not benchmarked against stronger OCR models. \\
+\hline
+Vision & Research ready & It runs on selected image evidence, but only 30 out of 210 chunks were sent to vision and 28 produced non-empty vision output. \\
+\hline
+Retrieval & Research ready, improving & It is scored and audited, but the scoring is hand-made. \\
+\hline
+Requirement extraction & Research ready & It extracted 4 final canonical rules in the latest real run, but model behavior is prompt-sensitive and still needs a benchmark. \\
+\hline
+Canonical rule model & Research ready & It is useful, but does not handle exceptions or legal scope yet. \\
+\hline
+Governance & Early pilot direction & It has provenance and review records, but no real review UI. \\
+\hline
+Ontology mapping & Research ready & It is deterministic, but tied to the current vocabulary. \\
+\hline
+SHACL generation & Pilot direction for current rules & It is deterministic, but only supports current templates. \\
+\hline
+pySHACL validation & Pilot ready for current graph & It runs correctly, but depends on complete RDF graph data. \\
+\hline
+IFC/RDF workflow & Research ready & It works for AC20. IFCtoLBD Java output is now captured in a log file, but the converter still reports internal ontology warnings there. \\
+\hline
+3D view & Demo ready & It shows prepared data, but it is not a validator. \\
+\hline
+\end{longtable}
+
+\section{Final Conclusion}
+The system is now much better than a manual SHACL-only prototype. It can read a real PDF, extract text, tables, and images, run OCR, run a vision model on ranked images, extract canonical rules with a local model, review them, map them to RDF properties, generate SHACL, run pySHACL, and prepare the browser output.
+
+The most difficult parts were not basic coding tasks. The hardest parts were choosing the right evidence, keeping the model from inventing rules, making every rule traceable, and making sure the system fails honestly when the evidence or model output is not good enough.
+
+The system works for the tested DIN wheelchair-route flow and the AC20 IFC file. It should not yet be described as a general production rule-book-to-SHACL generator. The biggest missing pieces are stronger document parsing, stronger OCR or document vision, full image coverage or a better image budget strategy, a real review UI, a larger test benchmark, broader ontology mappings, and cleaner IFCtoLBD setup.
+
+\end{document}

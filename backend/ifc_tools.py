@@ -54,18 +54,20 @@ def run_ifctolbd(ifc_path: Path, ifctolbd_zip: Path, output_ttl: Path, work_dir:
     project = tool_dir / "IFCtoLBD-master" / "IFCtoLBD"
     if not project.exists():
         raise FileNotFoundError(f"IFCtoLBD project folder was not found after extraction: {project}")
+    log_path = work_dir / "ifctolbd.log"
+    log_path.write_text("", encoding="utf-8")
     for module_name in ("IFCtoRDF", "IFCtoLBD_Geometry"):
         module = tool_dir / "IFCtoLBD-master" / module_name
         if not module.exists():
             raise FileNotFoundError(f"Required IFCtoLBD module was not found: {module}")
         try:
-            subprocess.run([mvn, "-q", "-DskipTests", "install"], cwd=module, check=True, timeout=300)
+            _run_logged([mvn, "-q", "-DskipTests", "install"], module, log_path, timeout=300)
         except (subprocess.SubprocessError, OSError) as exc:
-            raise RuntimeError(f"IFCtoLBD dependency module build failed for {module_name}: {exc}") from exc
+            raise RuntimeError(f"IFCtoLBD dependency module build failed for {module_name}: {exc}. Log: {log_path}") from exc
     try:
-        subprocess.run([mvn, "-q", "-DskipTests", "package"], cwd=project, check=True, timeout=300)
+        _run_logged([mvn, "-q", "-DskipTests", "package"], project, log_path, timeout=300)
     except (subprocess.SubprocessError, OSError) as exc:
-        raise RuntimeError(f"IFCtoLBD Maven build failed: {exc}") from exc
+        raise RuntimeError(f"IFCtoLBD Maven build failed: {exc}. Log: {log_path}") from exc
     jars = sorted((project / "target").glob("*jar-with-dependencies*.jar")) or sorted(
         (project / "target").glob("*.jar")
     )
@@ -88,13 +90,29 @@ def run_ifctolbd(ifc_path: Path, ifctolbd_zip: Path, output_ttl: Path, work_dir:
     errors: list[str] = []
     for command in commands:
         try:
-            subprocess.run(command, cwd=project, check=True, timeout=180)
+            result = _run_logged(command, project, log_path, timeout=180, check=False)
             if output_ttl.exists() and output_ttl.stat().st_size > 0:
-                return "raw graph created by IFCtoLBD"
+                note = "raw graph created by IFCtoLBD"
+                if result.returncode != 0:
+                    note += f" with converter warnings recorded in {log_path}"
+                return note
+            if result.returncode != 0:
+                errors.append(f"{' '.join(command)} -> exit code {result.returncode}")
         except (subprocess.SubprocessError, OSError) as exc:
             errors.append(f"{' '.join(command)} -> {exc}")
             continue
-    raise RuntimeError("IFCtoLBD converter did not produce a Turtle graph. " + " | ".join(errors))
+    raise RuntimeError(f"IFCtoLBD converter did not produce a Turtle graph. Log: {log_path}. " + " | ".join(errors))
+
+
+def _run_logged(command: list[str], cwd: Path, log_path: Path, timeout: int, check: bool = True) -> subprocess.CompletedProcess[str]:
+    with log_path.open("a", encoding="utf-8") as log:
+        log.write(f"\n$ {' '.join(command)}\n")
+        log.flush()
+        result = subprocess.run(command, cwd=cwd, text=True, stdout=log, stderr=subprocess.STDOUT, timeout=timeout)
+        log.write(f"\n[exit_code={result.returncode}]\n")
+    if check and result.returncode != 0:
+        raise subprocess.CalledProcessError(result.returncode, command)
+    return result
 
 
 def bind_graph(g: Graph) -> None:

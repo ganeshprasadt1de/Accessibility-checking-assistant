@@ -1,0 +1,88 @@
+@prefix acc: <https://example.org/wheelchair-accessibility#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+acc:CorridorWidthShape a sh:NodeShape ;
+    sh:sparql [ a sh:SPARQLConstraint ;
+            sh:message "corridor_width|clear_width violates >= 1.5 m. Source page 11." ;
+            sh:select """\r
+            PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\r
+            SELECT $this WHERE {\r
+                $this <https://example.org/wheelchair-accessibility#derivedClearSpaceWidthM> ?value .\r
+                FILTER(xsd:decimal(?value) < 1.5)\r
+            }\r
+        """ ],
+        [ a sh:SPARQLConstraint ;
+            sh:message "missing_corridor_width|clear_width is missing. Source page 11." ;
+            sh:select """\r
+            SELECT $this WHERE {\r
+                FILTER NOT EXISTS { $this <https://example.org/wheelchair-accessibility#derivedClearSpaceWidthM> ?value . }\r
+            }\r
+        """ ] ;
+    sh:targetClass acc:IfcSpace ;
+    acc:approvalTimestamp "2026-06-15T09:17:17.694931+00:00" ;
+    acc:candidateId "C0004" ;
+    acc:candidateRuleId "C0004" ;
+    acc:decisionId "DEC-00001" ;
+    acc:evidenceChunk "p011-page_render-001" ;
+    acc:generatedFromRule "corridor_width" ;
+    acc:mappingCandidateId "M001-027" ;
+    acc:mappingConfidence 0.805083 ;
+    acc:mappingDecisionId "DEC-00005" ;
+    acc:mappingReviewDecision "APPROVED" ;
+    acc:mappingReviewId "RV-MAP-0001" ;
+    acc:mappingReviewTimestamp "2026-06-15T09:17:17.695102+00:00" ;
+    acc:mappingReviewedBy "ganesh" ;
+    acc:retrievalScore 8.85e-01 ;
+    acc:reviewDecision "APPROVED" ;
+    acc:reviewId "RV-RULE-0001" ;
+    acc:reviewedBy "ganesh" ;
+    acc:ruleConfidence 1e+00 ;
+    acc:selectedIfcTarget acc:IfcSpace ;
+    acc:selectedOntologyProperty acc:derivedClearSpaceWidthM ;
+    acc:selectionScore 7.39359e-01 ;
+    acc:sourceChunkId "p011-page_render-001" ;
+    acc:sourcePage 11 .
+
+acc:TurningSpaceShape a sh:NodeShape ;
+    sh:sparql [ a sh:SPARQLConstraint ;
+            sh:message "turning_space|turning_width violates >= 1.5 m. Source page 42." ;
+            sh:select """\r
+            PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\r
+            SELECT $this WHERE {\r
+                $this <https://example.org/wheelchair-accessibility#movementAreaWidthM> ?value .\r
+                FILTER(xsd:decimal(?value) < 1.5)\r
+            }\r
+        """ ],
+        [ a sh:SPARQLConstraint ;
+            sh:message "missing_turning_space|turning_width is missing. Source page 42." ;
+            sh:select """\r
+            SELECT $this WHERE {\r
+                FILTER NOT EXISTS { $this <https://example.org/wheelchair-accessibility#movementAreaWidthM> ?value . }\r
+            }\r
+        """ ] ;
+    sh:targetClass acc:IfcSpace ;
+    acc:approvalTimestamp "2026-06-15T09:17:17.695072+00:00" ;
+    acc:candidateId "C0005" ;
+    acc:candidateRuleId "C0005" ;
+    acc:decisionId "DEC-00004" ;
+    acc:evidenceChunk "p042-page_render-001" ;
+    acc:generatedFromRule "turning_space" ;
+    acc:mappingCandidateId "M004-028" ;
+    acc:mappingConfidence 0.754833 ;
+    acc:mappingDecisionId "DEC-00006" ;
+    acc:mappingReviewDecision "APPROVED" ;
+    acc:mappingReviewId "RV-MAP-0004" ;
+    acc:mappingReviewTimestamp "2026-06-15T09:17:17.695127+00:00" ;
+    acc:mappingReviewedBy "ganesh" ;
+    acc:retrievalScore 8.8e-01 ;
+    acc:reviewDecision "APPROVED" ;
+    acc:reviewId "RV-RULE-0004" ;
+    acc:reviewedBy "ganesh" ;
+    acc:ruleConfidence 1e+00 ;
+    acc:selectedIfcTarget acc:IfcSpace ;
+    acc:selectedOntologyProperty acc:movementAreaWidthM ;
+    acc:selectionScore 7.51255e-01 ;
+    acc:sourceChunkId "p042-page_render-001" ;
+    acc:sourcePage 42 .
+

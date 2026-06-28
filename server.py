@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
+import threading
 import urllib.error
 import urllib.request
 from collections import Counter
@@ -15,6 +17,10 @@ ROOT = Path(__file__).resolve().parent
 FRONTEND = ROOT / "frontend"
 PACKAGE = ROOT / "output" / "app_package"
 OLLAMA_AVAILABLE = False
+OLLAMA_HOST = "http://127.0.0.1:11434"
+MAX_ASSISTANT_BODY_BYTES = 16_384
+_APP_DATA_CACHE: dict[str, object] = {"mtime_ns": None, "size": None, "data": None}
+_APP_DATA_LOCK = threading.Lock()
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -38,7 +44,7 @@ class Handler(SimpleHTTPRequestHandler):
             if not data_path.exists():
                 self._json({"error": "Run preprocess.py first."}, 404)
                 return
-            data = json.loads(data_path.read_text(encoding="utf-8"))
+            data = load_app_data(data_path)
             self._json({"startGuid": guid, "routes": data.get("routesByDoor", {}).get(guid, [])})
             return
         super().do_GET()
@@ -46,6 +52,9 @@ class Handler(SimpleHTTPRequestHandler):
     def do_POST(self) -> None:
         if self.path.startswith("/api/assistant"):
             length = int(self.headers.get("Content-Length", "0") or 0)
+            if length > MAX_ASSISTANT_BODY_BYTES:
+                self._json({"error": "Question is too large."}, 413)
+                return
             try:
                 payload = json.loads(self.rfile.read(length).decode("utf-8") or "{}")
             except json.JSONDecodeError:
@@ -58,7 +67,7 @@ class Handler(SimpleHTTPRequestHandler):
                 return
 
             question = str(payload.get("question", "")).strip() or "Explain the checker result."
-            data = json.loads(data_path.read_text(encoding="utf-8"))
+            data = load_app_data(data_path)
             if not OLLAMA_AVAILABLE:
                 self._json(shacl_report_response(data))
                 return
@@ -81,13 +90,14 @@ class Handler(SimpleHTTPRequestHandler):
         if not path.exists():
             self._json({"error": f"Missing file: {path.name}. Run preprocess.py first."}, 404)
             return
-        body = path.read_bytes()
+        size = path.stat().st_size
         self.send_response(200)
         self.send_header("Content-Type", content_type)
-        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Content-Length", str(size))
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
-        self.wfile.write(body)
+        with path.open("rb") as handle:
+            shutil.copyfileobj(handle, self.wfile)
 
     def end_headers(self) -> None:
         self._send_no_cache_headers()
@@ -97,6 +107,20 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store, max-age=0")
         self.send_header("Pragma", "no-cache")
         self.send_header("Expires", "0")
+
+
+def load_app_data(data_path: Path) -> dict:
+    stat = data_path.stat()
+    with _APP_DATA_LOCK:
+        if (
+            _APP_DATA_CACHE["data"] is None
+            or _APP_DATA_CACHE["mtime_ns"] != stat.st_mtime_ns
+            or _APP_DATA_CACHE["size"] != stat.st_size
+        ):
+            _APP_DATA_CACHE["data"] = json.loads(data_path.read_text(encoding="utf-8"))
+            _APP_DATA_CACHE["mtime_ns"] = stat.st_mtime_ns
+            _APP_DATA_CACHE["size"] = stat.st_size
+        return _APP_DATA_CACHE["data"]  # type: ignore[return-value]
 
 
 def assistant_context(data: dict) -> dict:
@@ -169,7 +193,7 @@ def shacl_report_response(data: dict) -> dict:
     }
 
 
-def ollama_available(host: str = "http://localhost:11434") -> bool:
+def ollama_available(host: str = OLLAMA_HOST) -> bool:
     try:
         with urllib.request.urlopen(f"{host}/api/tags", timeout=3) as response:
             return response.status == 200
@@ -184,7 +208,7 @@ def main() -> None:
     args = parser.parse_args()
     OLLAMA_AVAILABLE = ollama_available()
     if not OLLAMA_AVAILABLE:
-        print("Ollama is not running at http://localhost:11434.")
+        print(f"Ollama is not running at {OLLAMA_HOST}.")
         if not args.yes:
             print("Start Ollama, or rerun: python server.py --yes")
             raise SystemExit(2)

@@ -1,0 +1,1985 @@
+{
+  "candidate_history": [
+    {
+      "candidate_id": "C0004",
+      "rule_id": "corridor_width",
+      "value": 1.5,
+      "unit": "m",
+      "operator": ">=",
+      "source_page": 11,
+      "source_chunk": "p011-page_render-001",
+      "retrieval_rank": 23,
+      "confidence": 1.0,
+      "candidate_evaluation": {
+        "semantic_relevance_score": 0.054348,
+        "measurement_specificity_score": 1.0,
+        "source_specificity_score": 0.57975,
+        "requirement_completeness_score": 1.0,
+        "ontology_consistency_score": 0.034211,
+        "retrieval_support_score": 0.885,
+        "evidence_density_score": 0.89875,
+        "contradiction_penalty": 0.0
+      },
+      "governance_scores": {
+        "semantic_relevance_score": 0.054348,
+        "measurement_specificity_score": 1.0,
+        "source_specificity_score": 0.57975,
+        "requirement_completeness_score": 1.0,
+        "ontology_consistency_score": 0.034211,
+        "retrieval_support_score": 0.885,
+        "evidence_density_score": 0.89875,
+        "contradiction_penalty": 0.0
+      },
+      "selection_score": 0.739359,
+      "selected": true,
+      "selection_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,evidence_density_score=0.899,retrieval_support_score=0.885",
+      "supporting_evidence": "DIN 18040-1:2010-10 4.3.2 Flure und sonstige Verkehrsflächen Flure und sonstige Verkehrsflächen müssen ausreichend breit für die Nutzung mit dem Rollstuhl oder mit Gehhilfen, auch im Begegnungsfall, sein. Ausreichend ist eine nutzbare Breite von mindestens 150 cm; in Durchgängen von mindestens 90 cm; von mindestens 180 cm und mindestens 180 cm Länge nach höchstens 15 m Flurlänge zur Begegnung von Personen mit Rollstühlen oder Gehhilfen ; von mindestens 120 cm und höchstens 6 m Länge, wenn keine ",
+      "evidence_breakdown": {
+        "source_text": "Ausreichend ist eine nutzbare Breite von mindestens 150 cm",
+        "evidence_text": "DIN 18040-1:2010-10 4.3.2 Flure und sonstige Verkehrsflächen Flure und sonstige Verkehrsflächen müssen ausreichend breit für die Nutzung mit dem Rollstuhl oder mit Gehhilfen, auch im Begegnungsfall, sein. Ausreichend ist eine nutzbare Breite von mindestens 150 cm; in Durchgängen von mindestens 90 cm; von mindestens 180 cm und mindestens 180 cm Länge nach höchstens 15 m Flurlänge zur Begegnung von Personen mit Rollstühlen oder Gehhilfen ; von mindestens 120 cm und höchstens 6 m Länge, wenn keine Richtungsänderung erforderlich ist und davor und danach eine Wendemöglichkeit gegeben ist, siehe Bild 1 und Bild 2. Glaswände oder großflächig verglaste Wände an Verkehrsflächen müssen deutlich erkennbar sein, z. B. durch visuell stark kontrastierende Sicherheitsmarkierungen, es sei denn die Erkennbarkeit dieser Wände ist auf andere Weise sichergestellt (z. B. Schaufenster mit Auslage und entsprechender Beleuchtung). Zu Sicherheitsmarkierungen siehe 4.3.3.5. 4.3.3 Türen 4.3.3.1 Allgemeines Türen",
+        "raw_agent_rule": {
+          "rule_id": "corridor_width",
+          "entity": "Flure und sonstige Verkehrsflächen",
+          "property": "nutzbare Breite",
+          "operator": ">=",
+          "value": 150,
+          "unit": "cm",
+          "source_text": "Ausreichend ist eine nutzbare Breite von mindestens 150 cm",
+          "source_page": 11,
+          "confidence": 1.0,
+          "evidence_chunk_id": "[image p011-page_render-001]",
+          "evidence_chunk_type": "text"
+        }
+      }
+    },
+    {
+      "candidate_id": "C0003",
+      "rule_id": "corridor_width",
+      "value": 1.5,
+      "unit": "m",
+      "operator": ">=",
+      "source_page": 9,
+      "source_chunk": "p009-page_render-006",
+      "retrieval_rank": 20,
+      "confidence": 0.95,
+      "candidate_evaluation": {
+        "semantic_relevance_score": 0.02,
+        "measurement_specificity_score": 1.0,
+        "source_specificity_score": 0.573817,
+        "requirement_completeness_score": 1.0,
+        "ontology_consistency_score": 0.012621,
+        "retrieval_support_score": 0.9,
+        "evidence_density_score": 0.884856,
+        "contradiction_penalty": 0.0
+      },
+      "governance_scores": {
+        "semantic_relevance_score": 0.02,
+        "measurement_specificity_score": 1.0,
+        "source_specificity_score": 0.573817,
+        "requirement_completeness_score": 1.0,
+        "ontology_consistency_score": 0.012621,
+        "retrieval_support_score": 0.9,
+        "evidence_density_score": 0.884856,
+        "contradiction_penalty": 0.0
+      },
+      "selection_score": 0.733678,
+      "selected": false,
+      "selection_rationale": "lower_evidence_quality_than_selected_candidate",
+      "supporting_evidence": "DIN 18040-1:2010-10 2 Legende 1 abzusichernder Bereich 2 Gehbereich Bild 3 — Abzusichernder Bereich von Bauteilen am Beispiel Treppen Zur Verkehrssicherheit auch für großwüchsige Menschen darf die nutzbare Höhe über Verkehrsflächen 220 cm nicht unterschreiten, ausgenommen sind Türen (siehe Tabelle 1), Durchgänge und lichte Treppen- durchgangshöhen. 4.2 Äußere Erschließung auf dem Grundstück 4.2.1 Gehwege, Verkehrsflächen Gehwege müssen ausreichend breit für die Nutzung mit dem Rollstuhl oder mit",
+      "evidence_breakdown": {
+        "source_text": "Ausreichend ist eine Breite von mindestens 150 cm",
+        "evidence_text": "DIN 18040-1:2010-10 2 Legende 1 abzusichernder Bereich 2 Gehbereich Bild 3 — Abzusichernder Bereich von Bauteilen am Beispiel Treppen Zur Verkehrssicherheit auch für großwüchsige Menschen darf die nutzbare Höhe über Verkehrsflächen 220 cm nicht unterschreiten, ausgenommen sind Türen (siehe Tabelle 1), Durchgänge und lichte Treppen- durchgangshöhen. 4.2 Äußere Erschließung auf dem Grundstück 4.2.1 Gehwege, Verkehrsflächen Gehwege müssen ausreichend breit für die Nutzung mit dem Rollstuhl oder mit Gehhilfen, auch im Begegnungsfall, sein. Ausreichend ist eine Breite von mindestens 150 cm und nach höchstens 15 m Länge eine Fläche von mindestens 180 cm × 180 cm zur Begegnung von Personen mit Rollstühlen oder Gehhilfen, siehe Bild 2. Für Gehwege bis 6 m ohne Richtungsänderung ist auch die Wegbreite von 120 cm möglich, soweit am Anfang und am Ende eine Wendemöglichkeit gegeben ist. Zur gefahrlosen Nutzung müssen Gehwege und Verkehrsflächen eine feste und ebene Oberfläche aufweisen, die z. B. ",
+        "raw_agent_rule": {
+          "rule_id": "corridor_width",
+          "entity": "Gehwege",
+          "property": "Breite",
+          "operator": ">=",
+          "value": 150,
+          "unit": "cm",
+          "source_text": "Ausreichend ist eine Breite von mindestens 150 cm",
+          "source_page": 9,
+          "confidence": 0.95,
+          "evidence_chunk_id": "[image p009-page_render-006 page 9]",
+          "evidence_chunk_type": "OCR"
+        }
+      }
+    },
+    {
+      "candidate_id": "C0001",
+      "rule_id": "ramp_slope",
+      "value": 6.0,
+      "unit": "%",
+      "operator": "<=",
+      "source_page": 17,
+      "source_chunk": "p017-page_render-005",
+      "retrieval_rank": 7,
+      "confidence": 1.0,
+      "candidate_evaluation": {
+        "semantic_relevance_score": 0.022727,
+        "measurement_specificity_score": 1.0,
+        "source_specificity_score": 0.610327,
+        "requirement_completeness_score": 1.0,
+        "ontology_consistency_score": 0.014444,
+        "retrieval_support_score": 0.965,
+        "evidence_density_score": 0.956518,
+        "contradiction_penalty": 0.0
+      },
+      "governance_scores": {
+        "semantic_relevance_score": 0.022727,
+        "measurement_specificity_score": 1.0,
+        "source_specificity_score": 0.610327,
+        "requirement_completeness_score": 1.0,
+        "ontology_consistency_score": 0.014444,
+        "retrieval_support_score": 0.965,
+        "evidence_density_score": 0.956518,
+        "contradiction_penalty": 0.0
+      },
+      "selection_score": 0.760095,
+      "selected": true,
+      "selection_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,retrieval_support_score=0.965,evidence_density_score=0.957",
+      "supporting_evidence": "DIN 18040-1:2010-10 4.3.7 Fahrtreppen und geneigte Fahrsteige Mit den nachfolgenden Eigenschaften sind Fahrtreppen und geneigte Fahrsteige für Menschen mit begrenzten motorischen Einschränkungen sowie für blinde und sehbehinderte Menschen barrierefrei nutzbar: Geschwindigkeit bis zu 0,5 m/s; Vorlauf bei Fahrtreppen mindestens drei Stufen; Steigungswinkel der Fahrtreppen vorzugsweise nicht mehr als 30° (entspricht 57,7 %); Steigungswinkel der Fahrsteige nicht mehr als 7° (entspricht 12,3 %). ANME",
+      "evidence_breakdown": {
+        "source_text": "Die Neigung von Rampenläufen darf maximal 6 % betragen",
+        "evidence_text": "DIN 18040-1:2010-10 4.3.7 Fahrtreppen und geneigte Fahrsteige Mit den nachfolgenden Eigenschaften sind Fahrtreppen und geneigte Fahrsteige für Menschen mit begrenzten motorischen Einschränkungen sowie für blinde und sehbehinderte Menschen barrierefrei nutzbar: Geschwindigkeit bis zu 0,5 m/s; Vorlauf bei Fahrtreppen mindestens drei Stufen; Steigungswinkel der Fahrtreppen vorzugsweise nicht mehr als 30° (entspricht 57,7 %); Steigungswinkel der Fahrsteige nicht mehr als 7° (entspricht 12,3 %). ANMERKUNG Zusätzlich zu den Anforderungen in DIN EN 115-1 zu Stufenmarkierungen wird empfohlen, eine Sicherheitsmarkierung der Trittstufe nach 4.3.6.4 anzubringen und die Kämme an Zu- und Abgang mit einem 8 cm breiten Streifen zu kennzeichnen. 4.3.8 Rampen 4.3.8.1 Allgemeines Rampen müssen leicht zu nutzen und verkehrssicher sein. Das gilt bei Einhaltung der nachfolgenden Anforderungen an Rampenläufe, Podeste, Radabweiser und Handläufe als erreicht. Die maßlichen Anforderungen sind in den Bildern 6 ",
+        "raw_agent_rule": {
+          "rule_id": "ramp_slope",
+          "entity": "Rampenläufe",
+          "property": "Neigung",
+          "operator": "<=",
+          "value": 6.0,
+          "unit": "%",
+          "source_text": "Die Neigung von Rampenläufen darf maximal 6 % betragen",
+          "source_page": 29,
+          "confidence": 1.0,
+          "evidence_chunk_id": "[image p029-page_render-005 page 29]",
+          "evidence_chunk_type": "text"
+        }
+      }
+    },
+    {
+      "candidate_id": "C0008",
+      "rule_id": "ramp_slope",
+      "value": 6.0,
+      "unit": "%",
+      "operator": "<=",
+      "source_page": 17,
+      "source_chunk": "p017-text-015",
+      "retrieval_rank": 296,
+      "confidence": 1.0,
+      "candidate_evaluation": {
+        "semantic_relevance_score": 0.142857,
+        "measurement_specificity_score": 1.0,
+        "source_specificity_score": 0.32375,
+        "requirement_completeness_score": 1.0,
+        "ontology_consistency_score": 0.08125,
+        "retrieval_support_score": 0.0,
+        "evidence_density_score": 0.338333,
+        "contradiction_penalty": 0.0
+      },
+      "governance_scores": {
+        "semantic_relevance_score": 0.142857,
+        "measurement_specificity_score": 1.0,
+        "source_specificity_score": 0.32375,
+        "requirement_completeness_score": 1.0,
+        "ontology_consistency_score": 0.08125,
+        "retrieval_support_score": 0.0,
+        "evidence_density_score": 0.338333,
+        "contradiction_penalty": 0.0
+      },
+      "selection_score": 0.54086,
+      "selected": false,
+      "selection_rationale": "lower_evidence_quality_than_selected_candidate",
+      "supporting_evidence": "Die Neigung von Rampenläufen darf maximal 6 % betragen; eine Querneigung ist unzulässig. Die Ent- wässerung der Podeste von im Freien liegenden Rampen ist sicherzustellen.",
+      "evidence_breakdown": {
+        "source_text": "Die Neigung von Rampenläufen darf maximal 6 % betragen",
+        "evidence_text": "Die Neigung von Rampenläufen darf maximal 6 % betragen; eine Querneigung ist unzulässig. Die Ent- wässerung der Podeste von im Freien liegenden Rampen ist sicherzustellen.",
+        "raw_agent_rule": {
+          "rule_id": "ramp_slope",
+          "entity": "Rampenläufen",
+          "property": "Neigung",
+          "operator": "<=",
+          "value": 6.0,
+          "unit": "%",
+          "source_text": "Die Neigung von Rampenläufen darf maximal 6 % betragen",
+          "source_page": 17,
+          "confidence": 1.0,
+          "evidence_chunk_id": "[text p017-text-015]",
+          "evidence_chunk_type": "text"
+        }
+      }
+    },
+    {
+      "candidate_id": "C0002",
+      "rule_id": "ramp_width",
+      "value": 1.2,
+      "unit": "m",
+      "operator": ">=",
+      "source_page": 17,
+      "source_chunk": "p017-page_render-005",
+      "retrieval_rank": 7,
+      "confidence": 1.0,
+      "candidate_evaluation": {
+        "semantic_relevance_score": 0.034091,
+        "measurement_specificity_score": 1.0,
+        "source_specificity_score": 0.610327,
+        "requirement_completeness_score": 1.0,
+        "ontology_consistency_score": 0.021429,
+        "retrieval_support_score": 0.965,
+        "evidence_density_score": 0.956518,
+        "contradiction_penalty": 0.0
+      },
+      "governance_scores": {
+        "semantic_relevance_score": 0.034091,
+        "measurement_specificity_score": 1.0,
+        "source_specificity_score": 0.610327,
+        "requirement_completeness_score": 1.0,
+        "ontology_consistency_score": 0.021429,
+        "retrieval_support_score": 0.965,
+        "evidence_density_score": 0.956518,
+        "contradiction_penalty": 0.0
+      },
+      "selection_score": 0.760733,
+      "selected": true,
+      "selection_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,retrieval_support_score=0.965,evidence_density_score=0.957",
+      "supporting_evidence": "DIN 18040-1:2010-10 4.3.7 Fahrtreppen und geneigte Fahrsteige Mit den nachfolgenden Eigenschaften sind Fahrtreppen und geneigte Fahrsteige für Menschen mit begrenzten motorischen Einschränkungen sowie für blinde und sehbehinderte Menschen barrierefrei nutzbar: Geschwindigkeit bis zu 0,5 m/s; Vorlauf bei Fahrtreppen mindestens drei Stufen; Steigungswinkel der Fahrtreppen vorzugsweise nicht mehr als 30° (entspricht 57,7 %); Steigungswinkel der Fahrsteige nicht mehr als 7° (entspricht 12,3 %). ANME",
+      "evidence_breakdown": {
+        "source_text": "Die nutzbare Laufbreite der Rampe muss mindestens 120 cm betragen",
+        "evidence_text": "DIN 18040-1:2010-10 4.3.7 Fahrtreppen und geneigte Fahrsteige Mit den nachfolgenden Eigenschaften sind Fahrtreppen und geneigte Fahrsteige für Menschen mit begrenzten motorischen Einschränkungen sowie für blinde und sehbehinderte Menschen barrierefrei nutzbar: Geschwindigkeit bis zu 0,5 m/s; Vorlauf bei Fahrtreppen mindestens drei Stufen; Steigungswinkel der Fahrtreppen vorzugsweise nicht mehr als 30° (entspricht 57,7 %); Steigungswinkel der Fahrsteige nicht mehr als 7° (entspricht 12,3 %). ANMERKUNG Zusätzlich zu den Anforderungen in DIN EN 115-1 zu Stufenmarkierungen wird empfohlen, eine Sicherheitsmarkierung der Trittstufe nach 4.3.6.4 anzubringen und die Kämme an Zu- und Abgang mit einem 8 cm breiten Streifen zu kennzeichnen. 4.3.8 Rampen 4.3.8.1 Allgemeines Rampen müssen leicht zu nutzen und verkehrssicher sein. Das gilt bei Einhaltung der nachfolgenden Anforderungen an Rampenläufe, Podeste, Radabweiser und Handläufe als erreicht. Die maßlichen Anforderungen sind in den Bildern 6 ",
+        "raw_agent_rule": {
+          "rule_id": "ramp_width",
+          "entity": "Rampe",
+          "property": "nutzbare Laufbreite",
+          "operator": ">=",
+          "value": 1.2,
+          "unit": "m",
+          "source_text": "Die nutzbare Laufbreite der Rampe muss mindestens 120 cm betragen",
+          "source_page": 29,
+          "confidence": 1.0,
+          "evidence_chunk_id": "[image p029-page_render-005 page 29]",
+          "evidence_chunk_type": "text"
+        }
+      }
+    },
+    {
+      "candidate_id": "C0007",
+      "rule_id": "ramp_width",
+      "value": 1.2,
+      "unit": "m",
+      "operator": ">=",
+      "source_page": 17,
+      "source_chunk": "p017-text-017",
+      "retrieval_rank": 281,
+      "confidence": 1.0,
+      "candidate_evaluation": {
+        "semantic_relevance_score": 0.5,
+        "measurement_specificity_score": 1.0,
+        "source_specificity_score": 0.385,
+        "requirement_completeness_score": 1.0,
+        "ontology_consistency_score": 0.216667,
+        "retrieval_support_score": 0.0,
+        "evidence_density_score": 0.479167,
+        "contradiction_penalty": 0.0
+      },
+      "governance_scores": {
+        "semantic_relevance_score": 0.5,
+        "measurement_specificity_score": 1.0,
+        "source_specificity_score": 0.385,
+        "requirement_completeness_score": 1.0,
+        "ontology_consistency_score": 0.216667,
+        "retrieval_support_score": 0.0,
+        "evidence_density_score": 0.479167,
+        "contradiction_penalty": 0.0
+      },
+      "selection_score": 0.603125,
+      "selected": false,
+      "selection_rationale": "lower_evidence_quality_than_selected_candidate",
+      "supporting_evidence": "Die nutzbare Laufbreite der Rampe muss mindestens 120 cm betragen.",
+      "evidence_breakdown": {
+        "source_text": "Die nutzbare Laufbreite der Rampe muss mindestens 120 cm betragen.",
+        "evidence_text": "Die nutzbare Laufbreite der Rampe muss mindestens 120 cm betragen.",
+        "raw_agent_rule": {
+          "rule_id": "ramp_width",
+          "entity": "nutzbare Laufbreite der Rampe",
+          "property": "Laufbreite",
+          "operator": ">=",
+          "value": 1.2,
+          "unit": "m",
+          "source_text": "Die nutzbare Laufbreite der Rampe muss mindestens 120 cm betragen.",
+          "source_page": 17,
+          "confidence": 1.0,
+          "evidence_chunk_id": "[text p017-text-017]",
+          "evidence_chunk_type": "text"
+        }
+      }
+    },
+    {
+      "candidate_id": "C0005",
+      "rule_id": "turning_space",
+      "value": 1.5,
+      "unit": "m",
+      "operator": ">=",
+      "source_page": 42,
+      "source_chunk": "p042-page_render-001",
+      "retrieval_rank": 24,
+      "confidence": 1.0,
+      "candidate_evaluation": {
+        "semantic_relevance_score": 0.025641,
+        "measurement_specificity_score": 1.0,
+        "source_specificity_score": 0.59985,
+        "requirement_completeness_score": 1.0,
+        "ontology_consistency_score": 0.024074,
+        "retrieval_support_score": 0.88,
+        "evidence_density_score": 0.94,
+        "contradiction_penalty": 0.0
+      },
+      "governance_scores": {
+        "semantic_relevance_score": 0.025641,
+        "measurement_specificity_score": 1.0,
+        "source_specificity_score": 0.59985,
+        "requirement_completeness_score": 1.0,
+        "ontology_consistency_score": 0.024074,
+        "retrieval_support_score": 0.88,
+        "evidence_density_score": 0.94,
+        "contradiction_penalty": 0.0
+      },
+      "selection_score": 0.751255,
+      "selected": true,
+      "selection_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,evidence_density_score=0.940,retrieval_support_score=0.880",
+      "supporting_evidence": "DIN 18040-2:2011-09 4.3.2 Flure und sonstige Verkehrsflächen Flure und sonstige Verkehrsflächen müssen ausreichend breit für die Nutzung mit dem Rollstuhl oder mit Gehhilfen sein. Ausreichend ist eine nutzbare Breite von mindestens 150 cm; in Durchgängen von mindestens 90 cm. Es genügt eine Flurbreite von mindestens 120 cm, wenn mindestens einmal eine Bewegungsfläche von mindestens 150 cm × 150 cm zum Wenden vorhanden ist; bei langen Fluren muss diese Bewegungsfläche mindestens alle 15 m angeord",
+      "evidence_breakdown": {
+        "source_text": "mindestens einmal eine Bewegungsfläche von mindestens 150 cm × 150 cm zum Wenden",
+        "evidence_text": "DIN 18040-2:2011-09 4.3.2 Flure und sonstige Verkehrsflächen Flure und sonstige Verkehrsflächen müssen ausreichend breit für die Nutzung mit dem Rollstuhl oder mit Gehhilfen sein. Ausreichend ist eine nutzbare Breite von mindestens 150 cm; in Durchgängen von mindestens 90 cm. Es genügt eine Flurbreite von mindestens 120 cm, wenn mindestens einmal eine Bewegungsfläche von mindestens 150 cm × 150 cm zum Wenden vorhanden ist; bei langen Fluren muss diese Bewegungsfläche mindestens alle 15 m angeordnet werden. 4.3.3 Türen 4.3.3.1 Allgemeines Türen müssen deutlich wahrnehmbar, leicht zu öffnen und schließen und sicher zu passieren sein. Untere Türanschläge und Schwellen sind nicht zulässig. Sind sie technisch unabdingbar, dürfen sie nicht höher als 2 cm sein. ANMERKUNG Zu Wohnungseingangstüren und Wohnungstüren siehe 5.3.1. 4.3.3.2 Maßliche Anforderungen Die geometrischen Anforderungen an Türen sind in Tabelle 1 dargestellt. 11 { \"document_identifier\": \"DIN 18040-2:2011-09\", \"sections\": [ {",
+        "raw_agent_rule": {
+          "rule_id": "turning_space",
+          "entity": "Bewegungsfläche",
+          "property": "Breite",
+          "operator": ">=",
+          "value": 150,
+          "unit": "cm",
+          "source_text": "mindestens einmal eine Bewegungsfläche von mindestens 150 cm × 150 cm zum Wenden",
+          "source_page": 42,
+          "confidence": 1.0,
+          "evidence_chunk_id": "[image p042-page_render-001]",
+          "evidence_chunk_type": "text"
+        }
+      }
+    },
+    {
+      "candidate_id": "C0006",
+      "rule_id": "turning_space",
+      "value": 1.5,
+      "unit": "m",
+      "operator": ">=",
+      "source_page": 57,
+      "source_chunk": "p057-text-010",
+      "retrieval_rank": 278,
+      "confidence": 0.9,
+      "candidate_evaluation": {
+        "semantic_relevance_score": 0.058824,
+        "measurement_specificity_score": 0.4,
+        "source_specificity_score": 0.3425,
+        "requirement_completeness_score": 0.8,
+        "ontology_consistency_score": 0.030952,
+        "retrieval_support_score": 0.0,
+        "evidence_density_score": 0.373333,
+        "contradiction_penalty": 0.0
+      },
+      "governance_scores": {
+        "semantic_relevance_score": 0.058824,
+        "measurement_specificity_score": 0.4,
+        "source_specificity_score": 0.3425,
+        "requirement_completeness_score": 0.8,
+        "ontology_consistency_score": 0.030952,
+        "retrieval_support_score": 0.0,
+        "evidence_density_score": 0.373333,
+        "contradiction_penalty": 0.0
+      },
+      "selection_score": 0.398442,
+      "selected": false,
+      "selection_rationale": "lower_evidence_quality_than_selected_candidate",
+      "supporting_evidence": "Bewegungsflächen dürfen sich überlagern. In jedem Raum muss zum Drehen und Wenden mit Gehhilfen bzw. Rollstühlen wenigstens eine Bewegungs- fläche von mindestens",
+      "evidence_breakdown": {
+        "source_text": "In jedem Raum muss zum Drehen und Wenden mit Gehhilfen bzw. Rollstühlen wenigstens eine Bewegungs- fläche von mindestens",
+        "evidence_text": "Bewegungsflächen dürfen sich überlagern. In jedem Raum muss zum Drehen und Wenden mit Gehhilfen bzw. Rollstühlen wenigstens eine Bewegungs- fläche von mindestens",
+        "raw_agent_rule": {
+          "rule_id": "turning_space",
+          "entity": "Bewegungsfläche",
+          "property": "mindestens eine Bewegungsfläche",
+          "operator": ">=",
+          "value": 1.5,
+          "unit": "m",
+          "source_text": "In jedem Raum muss zum Drehen und Wenden mit Gehhilfen bzw. Rollstühlen wenigstens eine Bewegungs- fläche von mindestens",
+          "source_page": 57,
+          "confidence": 0.9,
+          "evidence_chunk_id": "[text p057-text-010]",
+          "evidence_chunk_type": "text"
+        }
+      }
+    }
+  ],
+  "duplicate_inventory": [
+    {
+      "duplicate_group_id": "dup-corridor_width",
+      "rule_id": "corridor_width",
+      "group_members": [
+        "C0004",
+        "C0003"
+      ],
+      "selected_candidate": "C0004",
+      "rejected_candidates": [
+        "C0003"
+      ],
+      "merge_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,evidence_density_score=0.899,retrieval_support_score=0.885",
+      "normalized_requirement_keys": {
+        "C0004": ">=:1.5:m",
+        "C0003": ">=:1.5:m"
+      }
+    },
+    {
+      "duplicate_group_id": "dup-ramp_slope",
+      "rule_id": "ramp_slope",
+      "group_members": [
+        "C0001",
+        "C0008"
+      ],
+      "selected_candidate": "C0001",
+      "rejected_candidates": [
+        "C0008"
+      ],
+      "merge_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,retrieval_support_score=0.965,evidence_density_score=0.957",
+      "normalized_requirement_keys": {
+        "C0001": "<=:6:%",
+        "C0008": "<=:6:%"
+      }
+    },
+    {
+      "duplicate_group_id": "dup-ramp_width",
+      "rule_id": "ramp_width",
+      "group_members": [
+        "C0002",
+        "C0007"
+      ],
+      "selected_candidate": "C0002",
+      "rejected_candidates": [
+        "C0007"
+      ],
+      "merge_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,retrieval_support_score=0.965,evidence_density_score=0.957",
+      "normalized_requirement_keys": {
+        "C0002": ">=:1.2:m",
+        "C0007": ">=:1.2:m"
+      }
+    },
+    {
+      "duplicate_group_id": "dup-turning_space",
+      "rule_id": "turning_space",
+      "group_members": [
+        "C0005",
+        "C0006"
+      ],
+      "selected_candidate": "C0005",
+      "rejected_candidates": [
+        "C0006"
+      ],
+      "merge_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,evidence_density_score=0.940,retrieval_support_score=0.880",
+      "normalized_requirement_keys": {
+        "C0005": ">=:1.5:m",
+        "C0006": ">=:1.5:m"
+      }
+    }
+  ],
+  "conflict_inventory": [],
+  "review_inventory": {
+    "pending_reviews": [],
+    "approved_reviews": [
+      {
+        "review_id": "RV-RULE-0001",
+        "review_type": "RULE",
+        "candidate_id": "C0004",
+        "rule_id": "corridor_width",
+        "mapping_id": "M001-027",
+        "evidence_chunk": "p011-page_render-001",
+        "source_page": 11,
+        "confidence": 1.0,
+        "retrieval_score": 0.885,
+        "selection_score": 0.739359,
+        "review_state": "APPROVED",
+        "group_id": "",
+        "group_members": null,
+        "comparison_rationale": ""
+      },
+      {
+        "review_id": "RV-MAP-0001",
+        "review_type": "MAPPING",
+        "candidate_id": "C0004",
+        "rule_id": "corridor_width",
+        "mapping_id": "M001-027",
+        "evidence_chunk": "p011-page_render-001",
+        "source_page": 11,
+        "confidence": 0.805083,
+        "retrieval_score": 0.885,
+        "selection_score": 0.739359,
+        "review_state": "APPROVED",
+        "group_id": "",
+        "group_members": null,
+        "comparison_rationale": "Rule corridor_width was mapped to IfcSpace / derivedClearSpaceWidthM from runtime RDF evidence. Strongest signals: ontology_consistency=1.000, graph_support=1.000, retrieval_support=0.885."
+      },
+      {
+        "review_id": "RV-RULE-0004",
+        "review_type": "RULE",
+        "candidate_id": "C0005",
+        "rule_id": "turning_space",
+        "mapping_id": "M004-028",
+        "evidence_chunk": "p042-page_render-001",
+        "source_page": 42,
+        "confidence": 1.0,
+        "retrieval_score": 0.88,
+        "selection_score": 0.751255,
+        "review_state": "APPROVED",
+        "group_id": "",
+        "group_members": null,
+        "comparison_rationale": ""
+      },
+      {
+        "review_id": "RV-MAP-0004",
+        "review_type": "MAPPING",
+        "candidate_id": "C0005",
+        "rule_id": "turning_space",
+        "mapping_id": "M004-028",
+        "evidence_chunk": "p042-page_render-001",
+        "source_page": 42,
+        "confidence": 0.754833,
+        "retrieval_score": 0.88,
+        "selection_score": 0.751255,
+        "review_state": "APPROVED",
+        "group_id": "",
+        "group_members": null,
+        "comparison_rationale": "Rule turning_space was mapped to IfcSpace / movementAreaWidthM from runtime RDF evidence. Strongest signals: ontology_consistency=1.000, graph_support=1.000, retrieval_support=0.880."
+      },
+      {
+        "review_id": "RV-DUP-0001",
+        "review_type": "DUPLICATE_GROUP",
+        "candidate_id": "C0004",
+        "rule_id": "corridor_width",
+        "mapping_id": "",
+        "evidence_chunk": "",
+        "source_page": null,
+        "confidence": null,
+        "retrieval_score": null,
+        "selection_score": null,
+        "review_state": "APPROVED",
+        "group_id": "dup-corridor_width",
+        "group_members": [
+          "C0004",
+          "C0003"
+        ],
+        "comparison_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,evidence_density_score=0.899,retrieval_support_score=0.885"
+      },
+      {
+        "review_id": "RV-DUP-0002",
+        "review_type": "DUPLICATE_GROUP",
+        "candidate_id": "C0001",
+        "rule_id": "ramp_slope",
+        "mapping_id": "",
+        "evidence_chunk": "",
+        "source_page": null,
+        "confidence": null,
+        "retrieval_score": null,
+        "selection_score": null,
+        "review_state": "APPROVED",
+        "group_id": "dup-ramp_slope",
+        "group_members": [
+          "C0001",
+          "C0008"
+        ],
+        "comparison_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,retrieval_support_score=0.965,evidence_density_score=0.957"
+      },
+      {
+        "review_id": "RV-DUP-0003",
+        "review_type": "DUPLICATE_GROUP",
+        "candidate_id": "C0002",
+        "rule_id": "ramp_width",
+        "mapping_id": "",
+        "evidence_chunk": "",
+        "source_page": null,
+        "confidence": null,
+        "retrieval_score": null,
+        "selection_score": null,
+        "review_state": "APPROVED",
+        "group_id": "dup-ramp_width",
+        "group_members": [
+          "C0002",
+          "C0007"
+        ],
+        "comparison_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,retrieval_support_score=0.965,evidence_density_score=0.957"
+      },
+      {
+        "review_id": "RV-DUP-0004",
+        "review_type": "DUPLICATE_GROUP",
+        "candidate_id": "C0005",
+        "rule_id": "turning_space",
+        "mapping_id": "",
+        "evidence_chunk": "",
+        "source_page": null,
+        "confidence": null,
+        "retrieval_score": null,
+        "selection_score": null,
+        "review_state": "APPROVED",
+        "group_id": "dup-turning_space",
+        "group_members": [
+          "C0005",
+          "C0006"
+        ],
+        "comparison_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,evidence_density_score=0.940,retrieval_support_score=0.880"
+      },
+      {
+        "review_id": "RV-CONF-0001",
+        "review_type": "CONFLICT_GROUP",
+        "candidate_id": "M001-027",
+        "rule_id": "corridor_width",
+        "mapping_id": "",
+        "evidence_chunk": "",
+        "source_page": null,
+        "confidence": null,
+        "retrieval_score": null,
+        "selection_score": null,
+        "review_state": "APPROVED",
+        "group_id": "mapping-conflict-corridor_width",
+        "group_members": [
+          "M001-027",
+          "M001-061",
+          "M001-045"
+        ],
+        "comparison_rationale": "Competing mappings require explicit review before M001-027 can be published."
+      },
+      {
+        "review_id": "RV-CONF-0002",
+        "review_type": "CONFLICT_GROUP",
+        "candidate_id": "M004-028",
+        "rule_id": "turning_space",
+        "mapping_id": "",
+        "evidence_chunk": "",
+        "source_page": null,
+        "confidence": null,
+        "retrieval_score": null,
+        "selection_score": null,
+        "review_state": "APPROVED",
+        "group_id": "mapping-conflict-turning_space",
+        "group_members": [
+          "M004-028",
+          "M004-062",
+          "M004-027",
+          "M004-030",
+          "M004-061",
+          "M004-064",
+          "M004-046",
+          "M004-021",
+          "M004-044",
+          "M004-055",
+          "M004-045"
+        ],
+        "comparison_rationale": "Competing mappings require explicit review before M004-028 can be published."
+      }
+    ],
+    "rejected_reviews": [],
+    "escalated_reviews": [
+      {
+        "review_id": "RV-RULE-0002",
+        "review_type": "RULE",
+        "candidate_id": "C0001",
+        "rule_id": "ramp_slope",
+        "mapping_id": "",
+        "evidence_chunk": "p017-page_render-005",
+        "source_page": 17,
+        "confidence": 1.0,
+        "retrieval_score": 0.965,
+        "selection_score": 0.760095,
+        "review_state": "ESCALATED",
+        "group_id": "",
+        "group_members": null,
+        "comparison_rationale": ""
+      },
+      {
+        "review_id": "RV-RULE-0003",
+        "review_type": "RULE",
+        "candidate_id": "C0002",
+        "rule_id": "ramp_width",
+        "mapping_id": "",
+        "evidence_chunk": "p017-page_render-005",
+        "source_page": 17,
+        "confidence": 1.0,
+        "retrieval_score": 0.965,
+        "selection_score": 0.760733,
+        "review_state": "ESCALATED",
+        "group_id": "",
+        "group_members": null,
+        "comparison_rationale": ""
+      }
+    ],
+    "superseded_reviews": [],
+    "archived_reviews": [],
+    "review_queue": [
+      {
+        "review_id": "RV-RULE-0001",
+        "review_type": "RULE",
+        "candidate_id": "C0004",
+        "rule_id": "corridor_width",
+        "mapping_id": "M001-027",
+        "evidence_chunk": "p011-page_render-001",
+        "source_page": 11,
+        "confidence": 1.0,
+        "retrieval_score": 0.885,
+        "selection_score": 0.739359,
+        "review_state": "APPROVED",
+        "group_id": "",
+        "group_members": null,
+        "comparison_rationale": ""
+      },
+      {
+        "review_id": "RV-MAP-0001",
+        "review_type": "MAPPING",
+        "candidate_id": "C0004",
+        "rule_id": "corridor_width",
+        "mapping_id": "M001-027",
+        "evidence_chunk": "p011-page_render-001",
+        "source_page": 11,
+        "confidence": 0.805083,
+        "retrieval_score": 0.885,
+        "selection_score": 0.739359,
+        "review_state": "APPROVED",
+        "group_id": "",
+        "group_members": null,
+        "comparison_rationale": "Rule corridor_width was mapped to IfcSpace / derivedClearSpaceWidthM from runtime RDF evidence. Strongest signals: ontology_consistency=1.000, graph_support=1.000, retrieval_support=0.885."
+      },
+      {
+        "review_id": "RV-RULE-0002",
+        "review_type": "RULE",
+        "candidate_id": "C0001",
+        "rule_id": "ramp_slope",
+        "mapping_id": "",
+        "evidence_chunk": "p017-page_render-005",
+        "source_page": 17,
+        "confidence": 1.0,
+        "retrieval_score": 0.965,
+        "selection_score": 0.760095,
+        "review_state": "ESCALATED",
+        "group_id": "",
+        "group_members": null,
+        "comparison_rationale": ""
+      },
+      {
+        "review_id": "RV-RULE-0003",
+        "review_type": "RULE",
+        "candidate_id": "C0002",
+        "rule_id": "ramp_width",
+        "mapping_id": "",
+        "evidence_chunk": "p017-page_render-005",
+        "source_page": 17,
+        "confidence": 1.0,
+        "retrieval_score": 0.965,
+        "selection_score": 0.760733,
+        "review_state": "ESCALATED",
+        "group_id": "",
+        "group_members": null,
+        "comparison_rationale": ""
+      },
+      {
+        "review_id": "RV-RULE-0004",
+        "review_type": "RULE",
+        "candidate_id": "C0005",
+        "rule_id": "turning_space",
+        "mapping_id": "M004-028",
+        "evidence_chunk": "p042-page_render-001",
+        "source_page": 42,
+        "confidence": 1.0,
+        "retrieval_score": 0.88,
+        "selection_score": 0.751255,
+        "review_state": "APPROVED",
+        "group_id": "",
+        "group_members": null,
+        "comparison_rationale": ""
+      },
+      {
+        "review_id": "RV-MAP-0004",
+        "review_type": "MAPPING",
+        "candidate_id": "C0005",
+        "rule_id": "turning_space",
+        "mapping_id": "M004-028",
+        "evidence_chunk": "p042-page_render-001",
+        "source_page": 42,
+        "confidence": 0.754833,
+        "retrieval_score": 0.88,
+        "selection_score": 0.751255,
+        "review_state": "APPROVED",
+        "group_id": "",
+        "group_members": null,
+        "comparison_rationale": "Rule turning_space was mapped to IfcSpace / movementAreaWidthM from runtime RDF evidence. Strongest signals: ontology_consistency=1.000, graph_support=1.000, retrieval_support=0.880."
+      },
+      {
+        "review_id": "RV-DUP-0001",
+        "review_type": "DUPLICATE_GROUP",
+        "candidate_id": "C0004",
+        "rule_id": "corridor_width",
+        "mapping_id": "",
+        "evidence_chunk": "",
+        "source_page": null,
+        "confidence": null,
+        "retrieval_score": null,
+        "selection_score": null,
+        "review_state": "APPROVED",
+        "group_id": "dup-corridor_width",
+        "group_members": [
+          "C0004",
+          "C0003"
+        ],
+        "comparison_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,evidence_density_score=0.899,retrieval_support_score=0.885"
+      },
+      {
+        "review_id": "RV-DUP-0002",
+        "review_type": "DUPLICATE_GROUP",
+        "candidate_id": "C0001",
+        "rule_id": "ramp_slope",
+        "mapping_id": "",
+        "evidence_chunk": "",
+        "source_page": null,
+        "confidence": null,
+        "retrieval_score": null,
+        "selection_score": null,
+        "review_state": "APPROVED",
+        "group_id": "dup-ramp_slope",
+        "group_members": [
+          "C0001",
+          "C0008"
+        ],
+        "comparison_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,retrieval_support_score=0.965,evidence_density_score=0.957"
+      },
+      {
+        "review_id": "RV-DUP-0003",
+        "review_type": "DUPLICATE_GROUP",
+        "candidate_id": "C0002",
+        "rule_id": "ramp_width",
+        "mapping_id": "",
+        "evidence_chunk": "",
+        "source_page": null,
+        "confidence": null,
+        "retrieval_score": null,
+        "selection_score": null,
+        "review_state": "APPROVED",
+        "group_id": "dup-ramp_width",
+        "group_members": [
+          "C0002",
+          "C0007"
+        ],
+        "comparison_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,retrieval_support_score=0.965,evidence_density_score=0.957"
+      },
+      {
+        "review_id": "RV-DUP-0004",
+        "review_type": "DUPLICATE_GROUP",
+        "candidate_id": "C0005",
+        "rule_id": "turning_space",
+        "mapping_id": "",
+        "evidence_chunk": "",
+        "source_page": null,
+        "confidence": null,
+        "retrieval_score": null,
+        "selection_score": null,
+        "review_state": "APPROVED",
+        "group_id": "dup-turning_space",
+        "group_members": [
+          "C0005",
+          "C0006"
+        ],
+        "comparison_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,evidence_density_score=0.940,retrieval_support_score=0.880"
+      },
+      {
+        "review_id": "RV-CONF-0001",
+        "review_type": "CONFLICT_GROUP",
+        "candidate_id": "M001-027",
+        "rule_id": "corridor_width",
+        "mapping_id": "",
+        "evidence_chunk": "",
+        "source_page": null,
+        "confidence": null,
+        "retrieval_score": null,
+        "selection_score": null,
+        "review_state": "APPROVED",
+        "group_id": "mapping-conflict-corridor_width",
+        "group_members": [
+          "M001-027",
+          "M001-061",
+          "M001-045"
+        ],
+        "comparison_rationale": "Competing mappings require explicit review before M001-027 can be published."
+      },
+      {
+        "review_id": "RV-CONF-0002",
+        "review_type": "CONFLICT_GROUP",
+        "candidate_id": "M004-028",
+        "rule_id": "turning_space",
+        "mapping_id": "",
+        "evidence_chunk": "",
+        "source_page": null,
+        "confidence": null,
+        "retrieval_score": null,
+        "selection_score": null,
+        "review_state": "APPROVED",
+        "group_id": "mapping-conflict-turning_space",
+        "group_members": [
+          "M004-028",
+          "M004-062",
+          "M004-027",
+          "M004-030",
+          "M004-061",
+          "M004-064",
+          "M004-046",
+          "M004-021",
+          "M004-044",
+          "M004-055",
+          "M004-045"
+        ],
+        "comparison_rationale": "Competing mappings require explicit review before M004-028 can be published."
+      }
+    ],
+    "decision_records": [
+      {
+        "decision_id": "DEC-00001",
+        "review_id": "RV-RULE-0001",
+        "rule_id": "corridor_width",
+        "status": "APPROVED",
+        "reviewer": "ganesh",
+        "rationale": "Reviewed extracted rules for this run",
+        "review_timestamp": "2026-06-15T09:17:17.694931+00:00",
+        "candidate_id": "C0004",
+        "mapping_id": "M001-027",
+        "evidence_references": [
+          "p011-page_render-001",
+          "page:11",
+          "M001-027"
+        ],
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "decision_id": "DEC-00002",
+        "review_id": "RV-RULE-0002",
+        "rule_id": "ramp_slope",
+        "status": "ESCALATED",
+        "reviewer": "ganesh",
+        "rationale": "Reviewed extracted rules for this run",
+        "review_timestamp": "2026-06-15T09:17:17.695005+00:00",
+        "candidate_id": "C0001",
+        "mapping_id": "",
+        "evidence_references": [
+          "p017-page_render-005",
+          "page:17"
+        ],
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "decision_id": "DEC-00003",
+        "review_id": "RV-RULE-0003",
+        "rule_id": "ramp_width",
+        "status": "ESCALATED",
+        "reviewer": "ganesh",
+        "rationale": "Reviewed extracted rules for this run",
+        "review_timestamp": "2026-06-15T09:17:17.695042+00:00",
+        "candidate_id": "C0002",
+        "mapping_id": "",
+        "evidence_references": [
+          "p017-page_render-005",
+          "page:17"
+        ],
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "decision_id": "DEC-00004",
+        "review_id": "RV-RULE-0004",
+        "rule_id": "turning_space",
+        "status": "APPROVED",
+        "reviewer": "ganesh",
+        "rationale": "Reviewed extracted rules for this run",
+        "review_timestamp": "2026-06-15T09:17:17.695072+00:00",
+        "candidate_id": "C0005",
+        "mapping_id": "M004-028",
+        "evidence_references": [
+          "p042-page_render-001",
+          "page:42",
+          "M004-028"
+        ],
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "decision_id": "DEC-00005",
+        "review_id": "RV-MAP-0001",
+        "rule_id": "corridor_width",
+        "status": "APPROVED",
+        "reviewer": "ganesh",
+        "rationale": "Reviewed extracted rules for this run",
+        "review_timestamp": "2026-06-15T09:17:17.695102+00:00",
+        "candidate_id": "C0004",
+        "mapping_id": "M001-027",
+        "evidence_references": [
+          "p011-page_render-001",
+          "page:11",
+          "M001-027"
+        ],
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "decision_id": "DEC-00006",
+        "review_id": "RV-MAP-0004",
+        "rule_id": "turning_space",
+        "status": "APPROVED",
+        "reviewer": "ganesh",
+        "rationale": "Reviewed extracted rules for this run",
+        "review_timestamp": "2026-06-15T09:17:17.695127+00:00",
+        "candidate_id": "C0005",
+        "mapping_id": "M004-028",
+        "evidence_references": [
+          "p042-page_render-001",
+          "page:42",
+          "M004-028"
+        ],
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "decision_id": "DEC-00007",
+        "review_id": "RV-DUP-0001",
+        "rule_id": "corridor_width",
+        "status": "APPROVED",
+        "reviewer": "ganesh",
+        "rationale": "Reviewed extracted rules for this run",
+        "review_timestamp": "2026-06-15T09:17:17.695153+00:00",
+        "candidate_id": "C0004",
+        "mapping_id": "",
+        "evidence_references": [
+          "dup-corridor_width"
+        ],
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "decision_id": "DEC-00008",
+        "review_id": "RV-DUP-0002",
+        "rule_id": "ramp_slope",
+        "status": "APPROVED",
+        "reviewer": "ganesh",
+        "rationale": "Reviewed extracted rules for this run",
+        "review_timestamp": "2026-06-15T09:17:17.695178+00:00",
+        "candidate_id": "C0001",
+        "mapping_id": "",
+        "evidence_references": [
+          "dup-ramp_slope"
+        ],
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "decision_id": "DEC-00009",
+        "review_id": "RV-DUP-0003",
+        "rule_id": "ramp_width",
+        "status": "APPROVED",
+        "reviewer": "ganesh",
+        "rationale": "Reviewed extracted rules for this run",
+        "review_timestamp": "2026-06-15T09:17:17.695201+00:00",
+        "candidate_id": "C0002",
+        "mapping_id": "",
+        "evidence_references": [
+          "dup-ramp_width"
+        ],
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "decision_id": "DEC-00010",
+        "review_id": "RV-DUP-0004",
+        "rule_id": "turning_space",
+        "status": "APPROVED",
+        "reviewer": "ganesh",
+        "rationale": "Reviewed extracted rules for this run",
+        "review_timestamp": "2026-06-15T09:17:17.695223+00:00",
+        "candidate_id": "C0005",
+        "mapping_id": "",
+        "evidence_references": [
+          "dup-turning_space"
+        ],
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "decision_id": "DEC-00011",
+        "review_id": "RV-CONF-0001",
+        "rule_id": "corridor_width",
+        "status": "APPROVED",
+        "reviewer": "ganesh",
+        "rationale": "Reviewed extracted rules for this run",
+        "review_timestamp": "2026-06-15T09:17:17.695245+00:00",
+        "candidate_id": "M001-027",
+        "mapping_id": "",
+        "evidence_references": [
+          "mapping-conflict-corridor_width"
+        ],
+        "attachments": [],
+        "notes": ""
+      },
+      {
+        "decision_id": "DEC-00012",
+        "review_id": "RV-CONF-0002",
+        "rule_id": "turning_space",
+        "status": "APPROVED",
+        "reviewer": "ganesh",
+        "rationale": "Reviewed extracted rules for this run",
+        "review_timestamp": "2026-06-15T09:17:17.695270+00:00",
+        "candidate_id": "M004-028",
+        "mapping_id": "",
+        "evidence_references": [
+          "mapping-conflict-turning_space"
+        ],
+        "attachments": [],
+        "notes": ""
+      }
+    ],
+    "approved": [
+      {
+        "rule": {
+          "rule_id": "corridor_width",
+          "entity": "corridor",
+          "property": "clear_width",
+          "operator": ">=",
+          "value": 1.5,
+          "unit": "m",
+          "source_text": "Ausreichend ist eine nutzbare Breite von mindestens 150 cm",
+          "source_page": 11,
+          "confidence": 1.0,
+          "extraction_metadata": {
+            "extractor": "qwen_requirement_extraction_agent",
+            "llm_used": true,
+            "agent_generated": true,
+            "rule_source": "agent_decision",
+            "llm_provider": "ollama_qwen3.5:9b",
+            "candidate_id": "C0004",
+            "evidence_chunk_id": "p011-page_render-001",
+            "evidence_chunk_type": "image",
+            "evidence_text": "DIN 18040-1:2010-10 4.3.2 Flure und sonstige Verkehrsflächen Flure und sonstige Verkehrsflächen müssen ausreichend breit für die Nutzung mit dem Rollstuhl oder mit Gehhilfen, auch im Begegnungsfall, sein. Ausreichend ist eine nutzbare Breite von mindestens 150 cm; in Durchgängen von mindestens 90 cm; von mindestens 180 cm und mindestens 180 cm Länge nach höchstens 15 m Flurlänge zur Begegnung von Personen mit Rollstühlen oder Gehhilfen ; von mindestens 120 cm und höchstens 6 m Länge, wenn keine Richtungsänderung erforderlich ist und davor und danach eine Wendemöglichkeit gegeben ist, siehe Bild 1 und Bild 2. Glaswände oder großflächig verglaste Wände an Verkehrsflächen müssen deutlich erkennbar sein, z. B. durch visuell stark kontrastierende Sicherheitsmarkierungen, es sei denn die Erkennbarkeit dieser Wände ist auf andere Weise sichergestellt (z. B. Schaufenster mit Auslage und entsprechender Beleuchtung). Zu Sicherheitsmarkierungen siehe 4.3.3.5. 4.3.3 Türen 4.3.3.1 Allgemeines Türen müssen deutlich wahrnehmbar, leicht zu öffnen und schließen und sicher zu passieren sein. Karusselltüren und Pendeltüren sind kein barrierefreier Zugang und daher als einziger Zugang ungeeignet. Untere Türanschläge und -schwellen sind nicht zulässig. Sind sie technisch unabdingbar, dürfen sie nicht höher als 2 cm sein. 4.3.3.2 Maßliche Anforderungen Die geometrischen Anforderungen an Türen sind in Tabelle 1 dargestellt. 10 { \"sections\": [ \"4.3.2 Flure und sonstige Verkehrsflächen\", \"4.3.3 Türen",
+            "agent_batch_index": 12,
+            "raw_agent_rule": {
+              "rule_id": "corridor_width",
+              "entity": "Flure und sonstige Verkehrsflächen",
+              "property": "nutzbare Breite",
+              "operator": ">=",
+              "value": 150,
+              "unit": "cm",
+              "source_text": "Ausreichend ist eine nutzbare Breite von mindestens 150 cm",
+              "source_page": 11,
+              "confidence": 1.0,
+              "evidence_chunk_id": "[image p011-page_render-001]",
+              "evidence_chunk_type": "text"
+            },
+            "retrieval_rank": 23,
+            "selection_score": 0.739359,
+            "selection_scores": {
+              "semantic_relevance_score": 0.054348,
+              "measurement_specificity_score": 1.0,
+              "source_specificity_score": 0.57975,
+              "requirement_completeness_score": 1.0,
+              "ontology_consistency_score": 0.034211,
+              "retrieval_support_score": 0.885,
+              "evidence_density_score": 0.89875,
+              "contradiction_penalty": 0.0
+            },
+            "selection_explanation": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,evidence_density_score=0.899,retrieval_support_score=0.885",
+            "governance_strategy": "candidate_evaluation_framework",
+            "rejected_competing_candidates": [
+              "C0003"
+            ],
+            "duplicate_group_id": "dup-corridor_width"
+          }
+        },
+        "decision": {
+          "decision_id": "DEC-00001",
+          "review_id": "RV-RULE-0001",
+          "rule_id": "corridor_width",
+          "status": "APPROVED",
+          "reviewer": "ganesh",
+          "rationale": "Reviewed extracted rules for this run",
+          "review_timestamp": "2026-06-15T09:17:17.694931+00:00",
+          "candidate_id": "C0004",
+          "mapping_id": "M001-027",
+          "evidence_references": [
+            "p011-page_render-001",
+            "page:11",
+            "M001-027"
+          ],
+          "attachments": [],
+          "notes": ""
+        }
+      },
+      {
+        "rule": {
+          "rule_id": "turning_space",
+          "entity": "movement_area",
+          "property": "turning_width",
+          "operator": ">=",
+          "value": 1.5,
+          "unit": "m",
+          "source_text": "mindestens einmal eine Bewegungsfläche von mindestens 150 cm × 150 cm zum Wenden",
+          "source_page": 42,
+          "confidence": 1.0,
+          "extraction_metadata": {
+            "extractor": "qwen_requirement_extraction_agent",
+            "llm_used": true,
+            "agent_generated": true,
+            "rule_source": "agent_decision",
+            "llm_provider": "ollama_qwen3.5:9b",
+            "candidate_id": "C0005",
+            "evidence_chunk_id": "p042-page_render-001",
+            "evidence_chunk_type": "image",
+            "evidence_text": "DIN 18040-2:2011-09 4.3.2 Flure und sonstige Verkehrsflächen Flure und sonstige Verkehrsflächen müssen ausreichend breit für die Nutzung mit dem Rollstuhl oder mit Gehhilfen sein. Ausreichend ist eine nutzbare Breite von mindestens 150 cm; in Durchgängen von mindestens 90 cm. Es genügt eine Flurbreite von mindestens 120 cm, wenn mindestens einmal eine Bewegungsfläche von mindestens 150 cm × 150 cm zum Wenden vorhanden ist; bei langen Fluren muss diese Bewegungsfläche mindestens alle 15 m angeordnet werden. 4.3.3 Türen 4.3.3.1 Allgemeines Türen müssen deutlich wahrnehmbar, leicht zu öffnen und schließen und sicher zu passieren sein. Untere Türanschläge und Schwellen sind nicht zulässig. Sind sie technisch unabdingbar, dürfen sie nicht höher als 2 cm sein. ANMERKUNG Zu Wohnungseingangstüren und Wohnungstüren siehe 5.3.1. 4.3.3.2 Maßliche Anforderungen Die geometrischen Anforderungen an Türen sind in Tabelle 1 dargestellt. 11 { \"document_identifier\": \"DIN 18040-2:2011-09\", \"sections\": [ { \"section_number\": \"4.3.2\", \"section_title\": \"Flure und sonstige Verkehrsflächen\", \"requirements\": [ { \"requirement\": \"Flure und sonstige Verkehrsflächen müssen ausreichend breit für die Nutzung mit dem Rollstuhl oder mit Gehhilfen sein.\", \"measurements\": [ { \"min_width\": \"150 cm\", \"scope\": \"nutzbare Breite\" }, { \"min_width\": \"90 cm\", \"scope\": \"Durchgänge\" } ], \"exceptions\": [ { \"condition\": \"Flurbreite von mindestens 120 cm\", \"additional_requirement\": \"mindestens einmal Bewegungsfläche von mind",
+            "agent_batch_index": 12,
+            "raw_agent_rule": {
+              "rule_id": "turning_space",
+              "entity": "Bewegungsfläche",
+              "property": "Breite",
+              "operator": ">=",
+              "value": 150,
+              "unit": "cm",
+              "source_text": "mindestens einmal eine Bewegungsfläche von mindestens 150 cm × 150 cm zum Wenden",
+              "source_page": 42,
+              "confidence": 1.0,
+              "evidence_chunk_id": "[image p042-page_render-001]",
+              "evidence_chunk_type": "text"
+            },
+            "retrieval_rank": 24,
+            "selection_score": 0.751255,
+            "selection_scores": {
+              "semantic_relevance_score": 0.025641,
+              "measurement_specificity_score": 1.0,
+              "source_specificity_score": 0.59985,
+              "requirement_completeness_score": 1.0,
+              "ontology_consistency_score": 0.024074,
+              "retrieval_support_score": 0.88,
+              "evidence_density_score": 0.94,
+              "contradiction_penalty": 0.0
+            },
+            "selection_explanation": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,evidence_density_score=0.940,retrieval_support_score=0.880",
+            "governance_strategy": "candidate_evaluation_framework",
+            "rejected_competing_candidates": [
+              "C0006"
+            ],
+            "duplicate_group_id": "dup-turning_space"
+          }
+        },
+        "decision": {
+          "decision_id": "DEC-00004",
+          "review_id": "RV-RULE-0004",
+          "rule_id": "turning_space",
+          "status": "APPROVED",
+          "reviewer": "ganesh",
+          "rationale": "Reviewed extracted rules for this run",
+          "review_timestamp": "2026-06-15T09:17:17.695072+00:00",
+          "candidate_id": "C0005",
+          "mapping_id": "M004-028",
+          "evidence_references": [
+            "p042-page_render-001",
+            "page:42",
+            "M004-028"
+          ],
+          "attachments": [],
+          "notes": ""
+        }
+      }
+    ],
+    "rejected": [],
+    "escalated": [
+      {
+        "rule": {
+          "rule_id": "ramp_slope",
+          "entity": "ramp",
+          "property": "slope",
+          "operator": "<=",
+          "value": 6.0,
+          "unit": "%",
+          "source_text": "Die Neigung von Rampenläufen darf maximal 6 % betragen",
+          "source_page": 17,
+          "confidence": 1.0,
+          "extraction_metadata": {
+            "extractor": "qwen_requirement_extraction_agent",
+            "llm_used": true,
+            "agent_generated": true,
+            "rule_source": "agent_decision",
+            "llm_provider": "ollama_qwen3.5:9b",
+            "candidate_id": "C0001",
+            "evidence_chunk_id": "p017-page_render-005",
+            "evidence_chunk_type": "image",
+            "evidence_text": "DIN 18040-1:2010-10 4.3.7 Fahrtreppen und geneigte Fahrsteige Mit den nachfolgenden Eigenschaften sind Fahrtreppen und geneigte Fahrsteige für Menschen mit begrenzten motorischen Einschränkungen sowie für blinde und sehbehinderte Menschen barrierefrei nutzbar: Geschwindigkeit bis zu 0,5 m/s; Vorlauf bei Fahrtreppen mindestens drei Stufen; Steigungswinkel der Fahrtreppen vorzugsweise nicht mehr als 30° (entspricht 57,7 %); Steigungswinkel der Fahrsteige nicht mehr als 7° (entspricht 12,3 %). ANMERKUNG Zusätzlich zu den Anforderungen in DIN EN 115-1 zu Stufenmarkierungen wird empfohlen, eine Sicherheitsmarkierung der Trittstufe nach 4.3.6.4 anzubringen und die Kämme an Zu- und Abgang mit einem 8 cm breiten Streifen zu kennzeichnen. 4.3.8 Rampen 4.3.8.1 Allgemeines Rampen müssen leicht zu nutzen und verkehrssicher sein. Das gilt bei Einhaltung der nachfolgenden Anforderungen an Rampenläufe, Podeste, Radabweiser und Handläufe als erreicht. Die maßlichen Anforderungen sind in den Bildern 6 bis 8 dargestellt. Zur Erforderlichkeit von Rampen siehe 4.2.3 und 4.3.1. 4.3.8.2 Rampenläufe und Podeste Die Neigung von Rampenläufen darf maximal 6 % betragen; eine Querneigung ist unzulässig. Die Ent- wässerung der Podeste von im Freien liegenden Rampen ist sicherzustellen. Am Anfang und am Ende der Rampe ist eine Bewegungsfläche von mindestens 150 cm × 150 cm anzu- ordnen. Die nutzbare Laufbreite der Rampe muss mindestens 120 cm betragen. Die Länge der einzelnen Rampenläufe darf höchstens 60",
+            "agent_batch_index": 4,
+            "raw_agent_rule": {
+              "rule_id": "ramp_slope",
+              "entity": "Rampenläufe",
+              "property": "Neigung",
+              "operator": "<=",
+              "value": 6.0,
+              "unit": "%",
+              "source_text": "Die Neigung von Rampenläufen darf maximal 6 % betragen",
+              "source_page": 29,
+              "confidence": 1.0,
+              "evidence_chunk_id": "[image p029-page_render-005 page 29]",
+              "evidence_chunk_type": "text"
+            },
+            "retrieval_rank": 7,
+            "selection_score": 0.760095,
+            "selection_scores": {
+              "semantic_relevance_score": 0.022727,
+              "measurement_specificity_score": 1.0,
+              "source_specificity_score": 0.610327,
+              "requirement_completeness_score": 1.0,
+              "ontology_consistency_score": 0.014444,
+              "retrieval_support_score": 0.965,
+              "evidence_density_score": 0.956518,
+              "contradiction_penalty": 0.0
+            },
+            "selection_explanation": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,retrieval_support_score=0.965,evidence_density_score=0.957",
+            "governance_strategy": "candidate_evaluation_framework",
+            "rejected_competing_candidates": [
+              "C0008"
+            ],
+            "duplicate_group_id": "dup-ramp_slope"
+          }
+        },
+        "decision": {
+          "decision_id": "DEC-00002",
+          "review_id": "RV-RULE-0002",
+          "rule_id": "ramp_slope",
+          "status": "ESCALATED",
+          "reviewer": "ganesh",
+          "rationale": "Reviewed extracted rules for this run",
+          "review_timestamp": "2026-06-15T09:17:17.695005+00:00",
+          "candidate_id": "C0001",
+          "mapping_id": "",
+          "evidence_references": [
+            "p017-page_render-005",
+            "page:17"
+          ],
+          "attachments": [],
+          "notes": ""
+        }
+      },
+      {
+        "rule": {
+          "rule_id": "ramp_width",
+          "entity": "ramp",
+          "property": "usable_width",
+          "operator": ">=",
+          "value": 1.2,
+          "unit": "m",
+          "source_text": "Die nutzbare Laufbreite der Rampe muss mindestens 120 cm betragen",
+          "source_page": 17,
+          "confidence": 1.0,
+          "extraction_metadata": {
+            "extractor": "qwen_requirement_extraction_agent",
+            "llm_used": true,
+            "agent_generated": true,
+            "rule_source": "agent_decision",
+            "llm_provider": "ollama_qwen3.5:9b",
+            "candidate_id": "C0002",
+            "evidence_chunk_id": "p017-page_render-005",
+            "evidence_chunk_type": "image",
+            "evidence_text": "DIN 18040-1:2010-10 4.3.7 Fahrtreppen und geneigte Fahrsteige Mit den nachfolgenden Eigenschaften sind Fahrtreppen und geneigte Fahrsteige für Menschen mit begrenzten motorischen Einschränkungen sowie für blinde und sehbehinderte Menschen barrierefrei nutzbar: Geschwindigkeit bis zu 0,5 m/s; Vorlauf bei Fahrtreppen mindestens drei Stufen; Steigungswinkel der Fahrtreppen vorzugsweise nicht mehr als 30° (entspricht 57,7 %); Steigungswinkel der Fahrsteige nicht mehr als 7° (entspricht 12,3 %). ANMERKUNG Zusätzlich zu den Anforderungen in DIN EN 115-1 zu Stufenmarkierungen wird empfohlen, eine Sicherheitsmarkierung der Trittstufe nach 4.3.6.4 anzubringen und die Kämme an Zu- und Abgang mit einem 8 cm breiten Streifen zu kennzeichnen. 4.3.8 Rampen 4.3.8.1 Allgemeines Rampen müssen leicht zu nutzen und verkehrssicher sein. Das gilt bei Einhaltung der nachfolgenden Anforderungen an Rampenläufe, Podeste, Radabweiser und Handläufe als erreicht. Die maßlichen Anforderungen sind in den Bildern 6 bis 8 dargestellt. Zur Erforderlichkeit von Rampen siehe 4.2.3 und 4.3.1. 4.3.8.2 Rampenläufe und Podeste Die Neigung von Rampenläufen darf maximal 6 % betragen; eine Querneigung ist unzulässig. Die Ent- wässerung der Podeste von im Freien liegenden Rampen ist sicherzustellen. Am Anfang und am Ende der Rampe ist eine Bewegungsfläche von mindestens 150 cm × 150 cm anzu- ordnen. Die nutzbare Laufbreite der Rampe muss mindestens 120 cm betragen. Die Länge der einzelnen Rampenläufe darf höchstens 60",
+            "agent_batch_index": 4,
+            "raw_agent_rule": {
+              "rule_id": "ramp_width",
+              "entity": "Rampe",
+              "property": "nutzbare Laufbreite",
+              "operator": ">=",
+              "value": 1.2,
+              "unit": "m",
+              "source_text": "Die nutzbare Laufbreite der Rampe muss mindestens 120 cm betragen",
+              "source_page": 29,
+              "confidence": 1.0,
+              "evidence_chunk_id": "[image p029-page_render-005 page 29]",
+              "evidence_chunk_type": "text"
+            },
+            "retrieval_rank": 7,
+            "selection_score": 0.760733,
+            "selection_scores": {
+              "semantic_relevance_score": 0.034091,
+              "measurement_specificity_score": 1.0,
+              "source_specificity_score": 0.610327,
+              "requirement_completeness_score": 1.0,
+              "ontology_consistency_score": 0.021429,
+              "retrieval_support_score": 0.965,
+              "evidence_density_score": 0.956518,
+              "contradiction_penalty": 0.0
+            },
+            "selection_explanation": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,retrieval_support_score=0.965,evidence_density_score=0.957",
+            "governance_strategy": "candidate_evaluation_framework",
+            "rejected_competing_candidates": [
+              "C0007"
+            ],
+            "duplicate_group_id": "dup-ramp_width"
+          }
+        },
+        "decision": {
+          "decision_id": "DEC-00003",
+          "review_id": "RV-RULE-0003",
+          "rule_id": "ramp_width",
+          "status": "ESCALATED",
+          "reviewer": "ganesh",
+          "rationale": "Reviewed extracted rules for this run",
+          "review_timestamp": "2026-06-15T09:17:17.695042+00:00",
+          "candidate_id": "C0002",
+          "mapping_id": "",
+          "evidence_references": [
+            "p017-page_render-005",
+            "page:17"
+          ],
+          "attachments": [],
+          "notes": ""
+        }
+      }
+    ],
+    "duplicate_groups": [
+      {
+        "review_id": "RV-DUP-0001",
+        "review_type": "DUPLICATE_GROUP",
+        "candidate_id": "C0004",
+        "rule_id": "corridor_width",
+        "mapping_id": "",
+        "evidence_chunk": "",
+        "source_page": null,
+        "confidence": null,
+        "retrieval_score": null,
+        "selection_score": null,
+        "review_state": "APPROVED",
+        "group_id": "dup-corridor_width",
+        "group_members": [
+          "C0004",
+          "C0003"
+        ],
+        "comparison_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,evidence_density_score=0.899,retrieval_support_score=0.885"
+      },
+      {
+        "review_id": "RV-DUP-0002",
+        "review_type": "DUPLICATE_GROUP",
+        "candidate_id": "C0001",
+        "rule_id": "ramp_slope",
+        "mapping_id": "",
+        "evidence_chunk": "",
+        "source_page": null,
+        "confidence": null,
+        "retrieval_score": null,
+        "selection_score": null,
+        "review_state": "APPROVED",
+        "group_id": "dup-ramp_slope",
+        "group_members": [
+          "C0001",
+          "C0008"
+        ],
+        "comparison_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,retrieval_support_score=0.965,evidence_density_score=0.957"
+      },
+      {
+        "review_id": "RV-DUP-0003",
+        "review_type": "DUPLICATE_GROUP",
+        "candidate_id": "C0002",
+        "rule_id": "ramp_width",
+        "mapping_id": "",
+        "evidence_chunk": "",
+        "source_page": null,
+        "confidence": null,
+        "retrieval_score": null,
+        "selection_score": null,
+        "review_state": "APPROVED",
+        "group_id": "dup-ramp_width",
+        "group_members": [
+          "C0002",
+          "C0007"
+        ],
+        "comparison_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,retrieval_support_score=0.965,evidence_density_score=0.957"
+      },
+      {
+        "review_id": "RV-DUP-0004",
+        "review_type": "DUPLICATE_GROUP",
+        "candidate_id": "C0005",
+        "rule_id": "turning_space",
+        "mapping_id": "",
+        "evidence_chunk": "",
+        "source_page": null,
+        "confidence": null,
+        "retrieval_score": null,
+        "selection_score": null,
+        "review_state": "APPROVED",
+        "group_id": "dup-turning_space",
+        "group_members": [
+          "C0005",
+          "C0006"
+        ],
+        "comparison_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,evidence_density_score=0.940,retrieval_support_score=0.880"
+      }
+    ],
+    "conflict_groups": [
+      {
+        "review_id": "RV-CONF-0001",
+        "review_type": "CONFLICT_GROUP",
+        "candidate_id": "M001-027",
+        "rule_id": "corridor_width",
+        "mapping_id": "",
+        "evidence_chunk": "",
+        "source_page": null,
+        "confidence": null,
+        "retrieval_score": null,
+        "selection_score": null,
+        "review_state": "APPROVED",
+        "group_id": "mapping-conflict-corridor_width",
+        "group_members": [
+          "M001-027",
+          "M001-061",
+          "M001-045"
+        ],
+        "comparison_rationale": "Competing mappings require explicit review before M001-027 can be published."
+      },
+      {
+        "review_id": "RV-CONF-0002",
+        "review_type": "CONFLICT_GROUP",
+        "candidate_id": "M004-028",
+        "rule_id": "turning_space",
+        "mapping_id": "",
+        "evidence_chunk": "",
+        "source_page": null,
+        "confidence": null,
+        "retrieval_score": null,
+        "selection_score": null,
+        "review_state": "APPROVED",
+        "group_id": "mapping-conflict-turning_space",
+        "group_members": [
+          "M004-028",
+          "M004-062",
+          "M004-027",
+          "M004-030",
+          "M004-061",
+          "M004-064",
+          "M004-046",
+          "M004-021",
+          "M004-044",
+          "M004-055",
+          "M004-045"
+        ],
+        "comparison_rationale": "Competing mappings require explicit review before M004-028 can be published."
+      }
+    ],
+    "publication_decisions": [
+      {
+        "status": "published",
+        "checks": [
+          {
+            "name": "approved_review_exists",
+            "passed": true,
+            "detail": "approved review records are required"
+          },
+          {
+            "name": "review_queue_exists",
+            "passed": true,
+            "detail": "human review queue records are required"
+          },
+          {
+            "name": "decision_records_exist",
+            "passed": true,
+            "detail": "human review decision records are required"
+          },
+          {
+            "name": "no_unresolved_conflicts",
+            "passed": true,
+            "detail": "unresolved conflicts: 0"
+          },
+          {
+            "name": "no_unresolved_duplicate_groups",
+            "passed": true,
+            "detail": "unresolved duplicate groups: 0"
+          },
+          {
+            "name": "corridor_width:approved_review_record",
+            "passed": true,
+            "detail": "corridor_width must have explicit approval tied to candidate"
+          },
+          {
+            "name": "corridor_width:evidence_exists",
+            "passed": true,
+            "detail": "corridor_width must retain source text and evidence text"
+          },
+          {
+            "name": "corridor_width:source_chunk_exists",
+            "passed": true,
+            "detail": "corridor_width must reference a reviewed source chunk"
+          },
+          {
+            "name": "corridor_width:confidence_threshold",
+            "passed": true,
+            "detail": "corridor_width confidence 1.000 must be >= 0.500"
+          },
+          {
+            "name": "corridor_width:provenance_complete",
+            "passed": true,
+            "detail": "corridor_width must include complete candidate governance provenance"
+          },
+          {
+            "name": "corridor_width:review_identity_complete",
+            "passed": true,
+            "detail": "corridor_width must include review_id and decision_id"
+          },
+          {
+            "name": "corridor_width:rule_review_approved",
+            "passed": true,
+            "detail": "corridor_width must have an approved rule review queue item"
+          },
+          {
+            "name": "corridor_width:mapping_review_approved",
+            "passed": true,
+            "detail": "corridor_width must have an approved mapping review"
+          },
+          {
+            "name": "corridor_width:duplicate_review_resolved",
+            "passed": true,
+            "detail": "corridor_width duplicate groups must be reviewed"
+          },
+          {
+            "name": "corridor_width:conflict_review_resolved",
+            "passed": true,
+            "detail": "corridor_width conflict groups must be reviewed"
+          },
+          {
+            "name": "turning_space:approved_review_record",
+            "passed": true,
+            "detail": "turning_space must have explicit approval tied to candidate"
+          },
+          {
+            "name": "turning_space:evidence_exists",
+            "passed": true,
+            "detail": "turning_space must retain source text and evidence text"
+          },
+          {
+            "name": "turning_space:source_chunk_exists",
+            "passed": true,
+            "detail": "turning_space must reference a reviewed source chunk"
+          },
+          {
+            "name": "turning_space:confidence_threshold",
+            "passed": true,
+            "detail": "turning_space confidence 1.000 must be >= 0.500"
+          },
+          {
+            "name": "turning_space:provenance_complete",
+            "passed": true,
+            "detail": "turning_space must include complete candidate governance provenance"
+          },
+          {
+            "name": "turning_space:review_identity_complete",
+            "passed": true,
+            "detail": "turning_space must include review_id and decision_id"
+          },
+          {
+            "name": "turning_space:rule_review_approved",
+            "passed": true,
+            "detail": "turning_space must have an approved rule review queue item"
+          },
+          {
+            "name": "turning_space:mapping_review_approved",
+            "passed": true,
+            "detail": "turning_space must have an approved mapping review"
+          },
+          {
+            "name": "turning_space:duplicate_review_resolved",
+            "passed": true,
+            "detail": "turning_space duplicate groups must be reviewed"
+          },
+          {
+            "name": "turning_space:conflict_review_resolved",
+            "passed": true,
+            "detail": "turning_space conflict groups must be reviewed"
+          }
+        ]
+      }
+    ],
+    "publication_failures": []
+  },
+  "publication_inventory": {
+    "status": "published",
+    "checks": [
+      {
+        "name": "approved_review_exists",
+        "passed": true,
+        "detail": "approved review records are required"
+      },
+      {
+        "name": "review_queue_exists",
+        "passed": true,
+        "detail": "human review queue records are required"
+      },
+      {
+        "name": "decision_records_exist",
+        "passed": true,
+        "detail": "human review decision records are required"
+      },
+      {
+        "name": "no_unresolved_conflicts",
+        "passed": true,
+        "detail": "unresolved conflicts: 0"
+      },
+      {
+        "name": "no_unresolved_duplicate_groups",
+        "passed": true,
+        "detail": "unresolved duplicate groups: 0"
+      },
+      {
+        "name": "corridor_width:approved_review_record",
+        "passed": true,
+        "detail": "corridor_width must have explicit approval tied to candidate"
+      },
+      {
+        "name": "corridor_width:evidence_exists",
+        "passed": true,
+        "detail": "corridor_width must retain source text and evidence text"
+      },
+      {
+        "name": "corridor_width:source_chunk_exists",
+        "passed": true,
+        "detail": "corridor_width must reference a reviewed source chunk"
+      },
+      {
+        "name": "corridor_width:confidence_threshold",
+        "passed": true,
+        "detail": "corridor_width confidence 1.000 must be >= 0.500"
+      },
+      {
+        "name": "corridor_width:provenance_complete",
+        "passed": true,
+        "detail": "corridor_width must include complete candidate governance provenance"
+      },
+      {
+        "name": "corridor_width:review_identity_complete",
+        "passed": true,
+        "detail": "corridor_width must include review_id and decision_id"
+      },
+      {
+        "name": "corridor_width:rule_review_approved",
+        "passed": true,
+        "detail": "corridor_width must have an approved rule review queue item"
+      },
+      {
+        "name": "corridor_width:mapping_review_approved",
+        "passed": true,
+        "detail": "corridor_width must have an approved mapping review"
+      },
+      {
+        "name": "corridor_width:duplicate_review_resolved",
+        "passed": true,
+        "detail": "corridor_width duplicate groups must be reviewed"
+      },
+      {
+        "name": "corridor_width:conflict_review_resolved",
+        "passed": true,
+        "detail": "corridor_width conflict groups must be reviewed"
+      },
+      {
+        "name": "turning_space:approved_review_record",
+        "passed": true,
+        "detail": "turning_space must have explicit approval tied to candidate"
+      },
+      {
+        "name": "turning_space:evidence_exists",
+        "passed": true,
+        "detail": "turning_space must retain source text and evidence text"
+      },
+      {
+        "name": "turning_space:source_chunk_exists",
+        "passed": true,
+        "detail": "turning_space must reference a reviewed source chunk"
+      },
+      {
+        "name": "turning_space:confidence_threshold",
+        "passed": true,
+        "detail": "turning_space confidence 1.000 must be >= 0.500"
+      },
+      {
+        "name": "turning_space:provenance_complete",
+        "passed": true,
+        "detail": "turning_space must include complete candidate governance provenance"
+      },
+      {
+        "name": "turning_space:review_identity_complete",
+        "passed": true,
+        "detail": "turning_space must include review_id and decision_id"
+      },
+      {
+        "name": "turning_space:rule_review_approved",
+        "passed": true,
+        "detail": "turning_space must have an approved rule review queue item"
+      },
+      {
+        "name": "turning_space:mapping_review_approved",
+        "passed": true,
+        "detail": "turning_space must have an approved mapping review"
+      },
+      {
+        "name": "turning_space:duplicate_review_resolved",
+        "passed": true,
+        "detail": "turning_space duplicate groups must be reviewed"
+      },
+      {
+        "name": "turning_space:conflict_review_resolved",
+        "passed": true,
+        "detail": "turning_space conflict groups must be reviewed"
+      }
+    ]
+  },
+  "publication_checks": [
+    {
+      "name": "approved_review_exists",
+      "passed": true,
+      "detail": "approved review records are required"
+    },
+    {
+      "name": "review_queue_exists",
+      "passed": true,
+      "detail": "human review queue records are required"
+    },
+    {
+      "name": "decision_records_exist",
+      "passed": true,
+      "detail": "human review decision records are required"
+    },
+    {
+      "name": "no_unresolved_conflicts",
+      "passed": true,
+      "detail": "unresolved conflicts: 0"
+    },
+    {
+      "name": "no_unresolved_duplicate_groups",
+      "passed": true,
+      "detail": "unresolved duplicate groups: 0"
+    },
+    {
+      "name": "corridor_width:approved_review_record",
+      "passed": true,
+      "detail": "corridor_width must have explicit approval tied to candidate"
+    },
+    {
+      "name": "corridor_width:evidence_exists",
+      "passed": true,
+      "detail": "corridor_width must retain source text and evidence text"
+    },
+    {
+      "name": "corridor_width:source_chunk_exists",
+      "passed": true,
+      "detail": "corridor_width must reference a reviewed source chunk"
+    },
+    {
+      "name": "corridor_width:confidence_threshold",
+      "passed": true,
+      "detail": "corridor_width confidence 1.000 must be >= 0.500"
+    },
+    {
+      "name": "corridor_width:provenance_complete",
+      "passed": true,
+      "detail": "corridor_width must include complete candidate governance provenance"
+    },
+    {
+      "name": "corridor_width:review_identity_complete",
+      "passed": true,
+      "detail": "corridor_width must include review_id and decision_id"
+    },
+    {
+      "name": "corridor_width:rule_review_approved",
+      "passed": true,
+      "detail": "corridor_width must have an approved rule review queue item"
+    },
+    {
+      "name": "corridor_width:mapping_review_approved",
+      "passed": true,
+      "detail": "corridor_width must have an approved mapping review"
+    },
+    {
+      "name": "corridor_width:duplicate_review_resolved",
+      "passed": true,
+      "detail": "corridor_width duplicate groups must be reviewed"
+    },
+    {
+      "name": "corridor_width:conflict_review_resolved",
+      "passed": true,
+      "detail": "corridor_width conflict groups must be reviewed"
+    },
+    {
+      "name": "turning_space:approved_review_record",
+      "passed": true,
+      "detail": "turning_space must have explicit approval tied to candidate"
+    },
+    {
+      "name": "turning_space:evidence_exists",
+      "passed": true,
+      "detail": "turning_space must retain source text and evidence text"
+    },
+    {
+      "name": "turning_space:source_chunk_exists",
+      "passed": true,
+      "detail": "turning_space must reference a reviewed source chunk"
+    },
+    {
+      "name": "turning_space:confidence_threshold",
+      "passed": true,
+      "detail": "turning_space confidence 1.000 must be >= 0.500"
+    },
+    {
+      "name": "turning_space:provenance_complete",
+      "passed": true,
+      "detail": "turning_space must include complete candidate governance provenance"
+    },
+    {
+      "name": "turning_space:review_identity_complete",
+      "passed": true,
+      "detail": "turning_space must include review_id and decision_id"
+    },
+    {
+      "name": "turning_space:rule_review_approved",
+      "passed": true,
+      "detail": "turning_space must have an approved rule review queue item"
+    },
+    {
+      "name": "turning_space:mapping_review_approved",
+      "passed": true,
+      "detail": "turning_space must have an approved mapping review"
+    },
+    {
+      "name": "turning_space:duplicate_review_resolved",
+      "passed": true,
+      "detail": "turning_space duplicate groups must be reviewed"
+    },
+    {
+      "name": "turning_space:conflict_review_resolved",
+      "passed": true,
+      "detail": "turning_space conflict groups must be reviewed"
+    }
+  ],
+  "provenance_completeness": [
+    {
+      "rule_id": "corridor_width",
+      "candidate_id": "C0004",
+      "complete": true,
+      "missing": []
+    },
+    {
+      "rule_id": "turning_space",
+      "candidate_id": "C0005",
+      "complete": true,
+      "missing": []
+    }
+  ],
+  "decision_chain": {
+    "candidate_count": 8,
+    "selected_candidate_count": 4,
+    "approved_count": 2,
+    "rejected_count": 0,
+    "publication_status": "published"
+  }
+}

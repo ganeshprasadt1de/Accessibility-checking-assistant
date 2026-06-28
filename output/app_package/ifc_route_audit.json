@@ -38,8 +38,9 @@
   },
   "route_graph": {
     "route_edges": 317,
-    "doors_with_route_edges": 81,
-    "doors_without_route_edges": -4,
+    "route_nodes": 81,
+    "doors_with_route_edges": 77,
+    "doors_without_route_edges": 0,
     "connected_component_sizes": [
       23,
       22,

@@ -13,8 +13,9 @@
 ## Route Graph
 
 - Route edges: 317
-- Doors with route edges: 81
-- Doors without route edges: -4
+- Route graph nodes: 81
+- Doors with route edges: 77
+- Doors without route edges: 0
 - Connected component sizes: [23, 22, 19, 17]
 - Route status counts: {'pass': 313, 'fail': 4}
 - Failure reason counts: {'stair_block': 4}

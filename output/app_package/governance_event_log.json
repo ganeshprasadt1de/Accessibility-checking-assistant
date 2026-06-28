@@ -1,0 +1,948 @@
+[
+  {
+    "event_id": "GE-000001",
+    "timestamp": "2026-06-15T09:17:17.694791+00:00",
+    "actor": "system",
+    "event_type": "review_queued",
+    "artifact": {
+      "review_id": "RV-RULE-0001",
+      "review_type": "RULE",
+      "candidate_id": "C0004",
+      "rule_id": "corridor_width",
+      "mapping_id": "M001-027",
+      "evidence_chunk": "p011-page_render-001",
+      "source_page": 11,
+      "confidence": 1.0,
+      "retrieval_score": 0.885,
+      "selection_score": 0.739359,
+      "review_state": "PENDING",
+      "group_id": "",
+      "group_members": null,
+      "comparison_rationale": ""
+    }
+  },
+  {
+    "event_id": "GE-000002",
+    "timestamp": "2026-06-15T09:17:17.694817+00:00",
+    "actor": "system",
+    "event_type": "review_queued",
+    "artifact": {
+      "review_id": "RV-MAP-0001",
+      "review_type": "MAPPING",
+      "candidate_id": "C0004",
+      "rule_id": "corridor_width",
+      "mapping_id": "M001-027",
+      "evidence_chunk": "p011-page_render-001",
+      "source_page": 11,
+      "confidence": 0.805083,
+      "retrieval_score": 0.885,
+      "selection_score": 0.739359,
+      "review_state": "PENDING",
+      "group_id": "",
+      "group_members": null,
+      "comparison_rationale": "Rule corridor_width was mapped to IfcSpace / derivedClearSpaceWidthM from runtime RDF evidence. Strongest signals: ontology_consistency=1.000, graph_support=1.000, retrieval_support=0.885."
+    }
+  },
+  {
+    "event_id": "GE-000003",
+    "timestamp": "2026-06-15T09:17:17.694828+00:00",
+    "actor": "system",
+    "event_type": "review_queued",
+    "artifact": {
+      "review_id": "RV-RULE-0002",
+      "review_type": "RULE",
+      "candidate_id": "C0001",
+      "rule_id": "ramp_slope",
+      "mapping_id": "",
+      "evidence_chunk": "p017-page_render-005",
+      "source_page": 17,
+      "confidence": 1.0,
+      "retrieval_score": 0.965,
+      "selection_score": 0.760095,
+      "review_state": "PENDING",
+      "group_id": "",
+      "group_members": null,
+      "comparison_rationale": ""
+    }
+  },
+  {
+    "event_id": "GE-000004",
+    "timestamp": "2026-06-15T09:17:17.694835+00:00",
+    "actor": "system",
+    "event_type": "review_queued",
+    "artifact": {
+      "review_id": "RV-RULE-0003",
+      "review_type": "RULE",
+      "candidate_id": "C0002",
+      "rule_id": "ramp_width",
+      "mapping_id": "",
+      "evidence_chunk": "p017-page_render-005",
+      "source_page": 17,
+      "confidence": 1.0,
+      "retrieval_score": 0.965,
+      "selection_score": 0.760733,
+      "review_state": "PENDING",
+      "group_id": "",
+      "group_members": null,
+      "comparison_rationale": ""
+    }
+  },
+  {
+    "event_id": "GE-000005",
+    "timestamp": "2026-06-15T09:17:17.694842+00:00",
+    "actor": "system",
+    "event_type": "review_queued",
+    "artifact": {
+      "review_id": "RV-RULE-0004",
+      "review_type": "RULE",
+      "candidate_id": "C0005",
+      "rule_id": "turning_space",
+      "mapping_id": "M004-028",
+      "evidence_chunk": "p042-page_render-001",
+      "source_page": 42,
+      "confidence": 1.0,
+      "retrieval_score": 0.88,
+      "selection_score": 0.751255,
+      "review_state": "PENDING",
+      "group_id": "",
+      "group_members": null,
+      "comparison_rationale": ""
+    }
+  },
+  {
+    "event_id": "GE-000006",
+    "timestamp": "2026-06-15T09:17:17.694849+00:00",
+    "actor": "system",
+    "event_type": "review_queued",
+    "artifact": {
+      "review_id": "RV-MAP-0004",
+      "review_type": "MAPPING",
+      "candidate_id": "C0005",
+      "rule_id": "turning_space",
+      "mapping_id": "M004-028",
+      "evidence_chunk": "p042-page_render-001",
+      "source_page": 42,
+      "confidence": 0.754833,
+      "retrieval_score": 0.88,
+      "selection_score": 0.751255,
+      "review_state": "PENDING",
+      "group_id": "",
+      "group_members": null,
+      "comparison_rationale": "Rule turning_space was mapped to IfcSpace / movementAreaWidthM from runtime RDF evidence. Strongest signals: ontology_consistency=1.000, graph_support=1.000, retrieval_support=0.880."
+    }
+  },
+  {
+    "event_id": "GE-000007",
+    "timestamp": "2026-06-15T09:17:17.694858+00:00",
+    "actor": "system",
+    "event_type": "review_queued",
+    "artifact": {
+      "review_id": "RV-DUP-0001",
+      "review_type": "DUPLICATE_GROUP",
+      "candidate_id": "C0004",
+      "rule_id": "corridor_width",
+      "mapping_id": "",
+      "evidence_chunk": "",
+      "source_page": null,
+      "confidence": null,
+      "retrieval_score": null,
+      "selection_score": null,
+      "review_state": "PENDING",
+      "group_id": "dup-corridor_width",
+      "group_members": [
+        "C0004",
+        "C0003"
+      ],
+      "comparison_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,evidence_density_score=0.899,retrieval_support_score=0.885"
+    }
+  },
+  {
+    "event_id": "GE-000008",
+    "timestamp": "2026-06-15T09:17:17.694866+00:00",
+    "actor": "system",
+    "event_type": "review_queued",
+    "artifact": {
+      "review_id": "RV-DUP-0002",
+      "review_type": "DUPLICATE_GROUP",
+      "candidate_id": "C0001",
+      "rule_id": "ramp_slope",
+      "mapping_id": "",
+      "evidence_chunk": "",
+      "source_page": null,
+      "confidence": null,
+      "retrieval_score": null,
+      "selection_score": null,
+      "review_state": "PENDING",
+      "group_id": "dup-ramp_slope",
+      "group_members": [
+        "C0001",
+        "C0008"
+      ],
+      "comparison_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,retrieval_support_score=0.965,evidence_density_score=0.957"
+    }
+  },
+  {
+    "event_id": "GE-000009",
+    "timestamp": "2026-06-15T09:17:17.694873+00:00",
+    "actor": "system",
+    "event_type": "review_queued",
+    "artifact": {
+      "review_id": "RV-DUP-0003",
+      "review_type": "DUPLICATE_GROUP",
+      "candidate_id": "C0002",
+      "rule_id": "ramp_width",
+      "mapping_id": "",
+      "evidence_chunk": "",
+      "source_page": null,
+      "confidence": null,
+      "retrieval_score": null,
+      "selection_score": null,
+      "review_state": "PENDING",
+      "group_id": "dup-ramp_width",
+      "group_members": [
+        "C0002",
+        "C0007"
+      ],
+      "comparison_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,retrieval_support_score=0.965,evidence_density_score=0.957"
+    }
+  },
+  {
+    "event_id": "GE-000010",
+    "timestamp": "2026-06-15T09:17:17.694880+00:00",
+    "actor": "system",
+    "event_type": "review_queued",
+    "artifact": {
+      "review_id": "RV-DUP-0004",
+      "review_type": "DUPLICATE_GROUP",
+      "candidate_id": "C0005",
+      "rule_id": "turning_space",
+      "mapping_id": "",
+      "evidence_chunk": "",
+      "source_page": null,
+      "confidence": null,
+      "retrieval_score": null,
+      "selection_score": null,
+      "review_state": "PENDING",
+      "group_id": "dup-turning_space",
+      "group_members": [
+        "C0005",
+        "C0006"
+      ],
+      "comparison_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,evidence_density_score=0.940,retrieval_support_score=0.880"
+    }
+  },
+  {
+    "event_id": "GE-000011",
+    "timestamp": "2026-06-15T09:17:17.694887+00:00",
+    "actor": "system",
+    "event_type": "review_queued",
+    "artifact": {
+      "review_id": "RV-CONF-0001",
+      "review_type": "CONFLICT_GROUP",
+      "candidate_id": "M001-027",
+      "rule_id": "corridor_width",
+      "mapping_id": "",
+      "evidence_chunk": "",
+      "source_page": null,
+      "confidence": null,
+      "retrieval_score": null,
+      "selection_score": null,
+      "review_state": "PENDING",
+      "group_id": "mapping-conflict-corridor_width",
+      "group_members": [
+        "M001-027",
+        "M001-061",
+        "M001-045"
+      ],
+      "comparison_rationale": "Competing mappings require explicit review before M001-027 can be published."
+    }
+  },
+  {
+    "event_id": "GE-000012",
+    "timestamp": "2026-06-15T09:17:17.694895+00:00",
+    "actor": "system",
+    "event_type": "review_queued",
+    "artifact": {
+      "review_id": "RV-CONF-0002",
+      "review_type": "CONFLICT_GROUP",
+      "candidate_id": "M004-028",
+      "rule_id": "turning_space",
+      "mapping_id": "",
+      "evidence_chunk": "",
+      "source_page": null,
+      "confidence": null,
+      "retrieval_score": null,
+      "selection_score": null,
+      "review_state": "PENDING",
+      "group_id": "mapping-conflict-turning_space",
+      "group_members": [
+        "M004-028",
+        "M004-062",
+        "M004-027",
+        "M004-030",
+        "M004-061",
+        "M004-064",
+        "M004-046",
+        "M004-021",
+        "M004-044",
+        "M004-055",
+        "M004-045"
+      ],
+      "comparison_rationale": "Competing mappings require explicit review before M004-028 can be published."
+    }
+  },
+  {
+    "event_id": "GE-000013",
+    "timestamp": "2026-06-15T09:17:17.694976+00:00",
+    "actor": "ganesh",
+    "event_type": "review_approved",
+    "artifact": {
+      "queue_item": {
+        "review_id": "RV-RULE-0001",
+        "review_type": "RULE",
+        "candidate_id": "C0004",
+        "rule_id": "corridor_width",
+        "mapping_id": "M001-027",
+        "evidence_chunk": "p011-page_render-001",
+        "source_page": 11,
+        "confidence": 1.0,
+        "retrieval_score": 0.885,
+        "selection_score": 0.739359,
+        "review_state": "APPROVED",
+        "group_id": "",
+        "group_members": null,
+        "comparison_rationale": ""
+      },
+      "decision": {
+        "decision_id": "DEC-00001",
+        "review_id": "RV-RULE-0001",
+        "rule_id": "corridor_width",
+        "status": "APPROVED",
+        "reviewer": "ganesh",
+        "rationale": "Reviewed extracted rules for this run",
+        "review_timestamp": "2026-06-15T09:17:17.694931+00:00",
+        "candidate_id": "C0004",
+        "mapping_id": "M001-027",
+        "evidence_references": [
+          "p011-page_render-001",
+          "page:11",
+          "M001-027"
+        ],
+        "attachments": [],
+        "notes": ""
+      }
+    }
+  },
+  {
+    "event_id": "GE-000014",
+    "timestamp": "2026-06-15T09:17:17.695025+00:00",
+    "actor": "ganesh",
+    "event_type": "review_escalated",
+    "artifact": {
+      "queue_item": {
+        "review_id": "RV-RULE-0002",
+        "review_type": "RULE",
+        "candidate_id": "C0001",
+        "rule_id": "ramp_slope",
+        "mapping_id": "",
+        "evidence_chunk": "p017-page_render-005",
+        "source_page": 17,
+        "confidence": 1.0,
+        "retrieval_score": 0.965,
+        "selection_score": 0.760095,
+        "review_state": "ESCALATED",
+        "group_id": "",
+        "group_members": null,
+        "comparison_rationale": ""
+      },
+      "decision": {
+        "decision_id": "DEC-00002",
+        "review_id": "RV-RULE-0002",
+        "rule_id": "ramp_slope",
+        "status": "ESCALATED",
+        "reviewer": "ganesh",
+        "rationale": "Reviewed extracted rules for this run",
+        "review_timestamp": "2026-06-15T09:17:17.695005+00:00",
+        "candidate_id": "C0001",
+        "mapping_id": "",
+        "evidence_references": [
+          "p017-page_render-005",
+          "page:17"
+        ],
+        "attachments": [],
+        "notes": ""
+      }
+    }
+  },
+  {
+    "event_id": "GE-000015",
+    "timestamp": "2026-06-15T09:17:17.695058+00:00",
+    "actor": "ganesh",
+    "event_type": "review_escalated",
+    "artifact": {
+      "queue_item": {
+        "review_id": "RV-RULE-0003",
+        "review_type": "RULE",
+        "candidate_id": "C0002",
+        "rule_id": "ramp_width",
+        "mapping_id": "",
+        "evidence_chunk": "p017-page_render-005",
+        "source_page": 17,
+        "confidence": 1.0,
+        "retrieval_score": 0.965,
+        "selection_score": 0.760733,
+        "review_state": "ESCALATED",
+        "group_id": "",
+        "group_members": null,
+        "comparison_rationale": ""
+      },
+      "decision": {
+        "decision_id": "DEC-00003",
+        "review_id": "RV-RULE-0003",
+        "rule_id": "ramp_width",
+        "status": "ESCALATED",
+        "reviewer": "ganesh",
+        "rationale": "Reviewed extracted rules for this run",
+        "review_timestamp": "2026-06-15T09:17:17.695042+00:00",
+        "candidate_id": "C0002",
+        "mapping_id": "",
+        "evidence_references": [
+          "p017-page_render-005",
+          "page:17"
+        ],
+        "attachments": [],
+        "notes": ""
+      }
+    }
+  },
+  {
+    "event_id": "GE-000016",
+    "timestamp": "2026-06-15T09:17:17.695087+00:00",
+    "actor": "ganesh",
+    "event_type": "review_approved",
+    "artifact": {
+      "queue_item": {
+        "review_id": "RV-RULE-0004",
+        "review_type": "RULE",
+        "candidate_id": "C0005",
+        "rule_id": "turning_space",
+        "mapping_id": "M004-028",
+        "evidence_chunk": "p042-page_render-001",
+        "source_page": 42,
+        "confidence": 1.0,
+        "retrieval_score": 0.88,
+        "selection_score": 0.751255,
+        "review_state": "APPROVED",
+        "group_id": "",
+        "group_members": null,
+        "comparison_rationale": ""
+      },
+      "decision": {
+        "decision_id": "DEC-00004",
+        "review_id": "RV-RULE-0004",
+        "rule_id": "turning_space",
+        "status": "APPROVED",
+        "reviewer": "ganesh",
+        "rationale": "Reviewed extracted rules for this run",
+        "review_timestamp": "2026-06-15T09:17:17.695072+00:00",
+        "candidate_id": "C0005",
+        "mapping_id": "M004-028",
+        "evidence_references": [
+          "p042-page_render-001",
+          "page:42",
+          "M004-028"
+        ],
+        "attachments": [],
+        "notes": ""
+      }
+    }
+  },
+  {
+    "event_id": "GE-000017",
+    "timestamp": "2026-06-15T09:17:17.695116+00:00",
+    "actor": "ganesh",
+    "event_type": "review_approved",
+    "artifact": {
+      "queue_item": {
+        "review_id": "RV-MAP-0001",
+        "review_type": "MAPPING",
+        "candidate_id": "C0004",
+        "rule_id": "corridor_width",
+        "mapping_id": "M001-027",
+        "evidence_chunk": "p011-page_render-001",
+        "source_page": 11,
+        "confidence": 0.805083,
+        "retrieval_score": 0.885,
+        "selection_score": 0.739359,
+        "review_state": "APPROVED",
+        "group_id": "",
+        "group_members": null,
+        "comparison_rationale": "Rule corridor_width was mapped to IfcSpace / derivedClearSpaceWidthM from runtime RDF evidence. Strongest signals: ontology_consistency=1.000, graph_support=1.000, retrieval_support=0.885."
+      },
+      "decision": {
+        "decision_id": "DEC-00005",
+        "review_id": "RV-MAP-0001",
+        "rule_id": "corridor_width",
+        "status": "APPROVED",
+        "reviewer": "ganesh",
+        "rationale": "Reviewed extracted rules for this run",
+        "review_timestamp": "2026-06-15T09:17:17.695102+00:00",
+        "candidate_id": "C0004",
+        "mapping_id": "M001-027",
+        "evidence_references": [
+          "p011-page_render-001",
+          "page:11",
+          "M001-027"
+        ],
+        "attachments": [],
+        "notes": ""
+      }
+    }
+  },
+  {
+    "event_id": "GE-000018",
+    "timestamp": "2026-06-15T09:17:17.695141+00:00",
+    "actor": "ganesh",
+    "event_type": "review_approved",
+    "artifact": {
+      "queue_item": {
+        "review_id": "RV-MAP-0004",
+        "review_type": "MAPPING",
+        "candidate_id": "C0005",
+        "rule_id": "turning_space",
+        "mapping_id": "M004-028",
+        "evidence_chunk": "p042-page_render-001",
+        "source_page": 42,
+        "confidence": 0.754833,
+        "retrieval_score": 0.88,
+        "selection_score": 0.751255,
+        "review_state": "APPROVED",
+        "group_id": "",
+        "group_members": null,
+        "comparison_rationale": "Rule turning_space was mapped to IfcSpace / movementAreaWidthM from runtime RDF evidence. Strongest signals: ontology_consistency=1.000, graph_support=1.000, retrieval_support=0.880."
+      },
+      "decision": {
+        "decision_id": "DEC-00006",
+        "review_id": "RV-MAP-0004",
+        "rule_id": "turning_space",
+        "status": "APPROVED",
+        "reviewer": "ganesh",
+        "rationale": "Reviewed extracted rules for this run",
+        "review_timestamp": "2026-06-15T09:17:17.695127+00:00",
+        "candidate_id": "C0005",
+        "mapping_id": "M004-028",
+        "evidence_references": [
+          "p042-page_render-001",
+          "page:42",
+          "M004-028"
+        ],
+        "attachments": [],
+        "notes": ""
+      }
+    }
+  },
+  {
+    "event_id": "GE-000019",
+    "timestamp": "2026-06-15T09:17:17.695168+00:00",
+    "actor": "ganesh",
+    "event_type": "review_approved",
+    "artifact": {
+      "queue_item": {
+        "review_id": "RV-DUP-0001",
+        "review_type": "DUPLICATE_GROUP",
+        "candidate_id": "C0004",
+        "rule_id": "corridor_width",
+        "mapping_id": "",
+        "evidence_chunk": "",
+        "source_page": null,
+        "confidence": null,
+        "retrieval_score": null,
+        "selection_score": null,
+        "review_state": "APPROVED",
+        "group_id": "dup-corridor_width",
+        "group_members": [
+          "C0004",
+          "C0003"
+        ],
+        "comparison_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,evidence_density_score=0.899,retrieval_support_score=0.885"
+      },
+      "decision": {
+        "decision_id": "DEC-00007",
+        "review_id": "RV-DUP-0001",
+        "rule_id": "corridor_width",
+        "status": "APPROVED",
+        "reviewer": "ganesh",
+        "rationale": "Reviewed extracted rules for this run",
+        "review_timestamp": "2026-06-15T09:17:17.695153+00:00",
+        "candidate_id": "C0004",
+        "mapping_id": "",
+        "evidence_references": [
+          "dup-corridor_width"
+        ],
+        "attachments": [],
+        "notes": ""
+      }
+    }
+  },
+  {
+    "event_id": "GE-000020",
+    "timestamp": "2026-06-15T09:17:17.695192+00:00",
+    "actor": "ganesh",
+    "event_type": "review_approved",
+    "artifact": {
+      "queue_item": {
+        "review_id": "RV-DUP-0002",
+        "review_type": "DUPLICATE_GROUP",
+        "candidate_id": "C0001",
+        "rule_id": "ramp_slope",
+        "mapping_id": "",
+        "evidence_chunk": "",
+        "source_page": null,
+        "confidence": null,
+        "retrieval_score": null,
+        "selection_score": null,
+        "review_state": "APPROVED",
+        "group_id": "dup-ramp_slope",
+        "group_members": [
+          "C0001",
+          "C0008"
+        ],
+        "comparison_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,retrieval_support_score=0.965,evidence_density_score=0.957"
+      },
+      "decision": {
+        "decision_id": "DEC-00008",
+        "review_id": "RV-DUP-0002",
+        "rule_id": "ramp_slope",
+        "status": "APPROVED",
+        "reviewer": "ganesh",
+        "rationale": "Reviewed extracted rules for this run",
+        "review_timestamp": "2026-06-15T09:17:17.695178+00:00",
+        "candidate_id": "C0001",
+        "mapping_id": "",
+        "evidence_references": [
+          "dup-ramp_slope"
+        ],
+        "attachments": [],
+        "notes": ""
+      }
+    }
+  },
+  {
+    "event_id": "GE-000021",
+    "timestamp": "2026-06-15T09:17:17.695214+00:00",
+    "actor": "ganesh",
+    "event_type": "review_approved",
+    "artifact": {
+      "queue_item": {
+        "review_id": "RV-DUP-0003",
+        "review_type": "DUPLICATE_GROUP",
+        "candidate_id": "C0002",
+        "rule_id": "ramp_width",
+        "mapping_id": "",
+        "evidence_chunk": "",
+        "source_page": null,
+        "confidence": null,
+        "retrieval_score": null,
+        "selection_score": null,
+        "review_state": "APPROVED",
+        "group_id": "dup-ramp_width",
+        "group_members": [
+          "C0002",
+          "C0007"
+        ],
+        "comparison_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,retrieval_support_score=0.965,evidence_density_score=0.957"
+      },
+      "decision": {
+        "decision_id": "DEC-00009",
+        "review_id": "RV-DUP-0003",
+        "rule_id": "ramp_width",
+        "status": "APPROVED",
+        "reviewer": "ganesh",
+        "rationale": "Reviewed extracted rules for this run",
+        "review_timestamp": "2026-06-15T09:17:17.695201+00:00",
+        "candidate_id": "C0002",
+        "mapping_id": "",
+        "evidence_references": [
+          "dup-ramp_width"
+        ],
+        "attachments": [],
+        "notes": ""
+      }
+    }
+  },
+  {
+    "event_id": "GE-000022",
+    "timestamp": "2026-06-15T09:17:17.695236+00:00",
+    "actor": "ganesh",
+    "event_type": "review_approved",
+    "artifact": {
+      "queue_item": {
+        "review_id": "RV-DUP-0004",
+        "review_type": "DUPLICATE_GROUP",
+        "candidate_id": "C0005",
+        "rule_id": "turning_space",
+        "mapping_id": "",
+        "evidence_chunk": "",
+        "source_page": null,
+        "confidence": null,
+        "retrieval_score": null,
+        "selection_score": null,
+        "review_state": "APPROVED",
+        "group_id": "dup-turning_space",
+        "group_members": [
+          "C0005",
+          "C0006"
+        ],
+        "comparison_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,evidence_density_score=0.940,retrieval_support_score=0.880"
+      },
+      "decision": {
+        "decision_id": "DEC-00010",
+        "review_id": "RV-DUP-0004",
+        "rule_id": "turning_space",
+        "status": "APPROVED",
+        "reviewer": "ganesh",
+        "rationale": "Reviewed extracted rules for this run",
+        "review_timestamp": "2026-06-15T09:17:17.695223+00:00",
+        "candidate_id": "C0005",
+        "mapping_id": "",
+        "evidence_references": [
+          "dup-turning_space"
+        ],
+        "attachments": [],
+        "notes": ""
+      }
+    }
+  },
+  {
+    "event_id": "GE-000023",
+    "timestamp": "2026-06-15T09:17:17.695259+00:00",
+    "actor": "ganesh",
+    "event_type": "review_approved",
+    "artifact": {
+      "queue_item": {
+        "review_id": "RV-CONF-0001",
+        "review_type": "CONFLICT_GROUP",
+        "candidate_id": "M001-027",
+        "rule_id": "corridor_width",
+        "mapping_id": "",
+        "evidence_chunk": "",
+        "source_page": null,
+        "confidence": null,
+        "retrieval_score": null,
+        "selection_score": null,
+        "review_state": "APPROVED",
+        "group_id": "mapping-conflict-corridor_width",
+        "group_members": [
+          "M001-027",
+          "M001-061",
+          "M001-045"
+        ],
+        "comparison_rationale": "Competing mappings require explicit review before M001-027 can be published."
+      },
+      "decision": {
+        "decision_id": "DEC-00011",
+        "review_id": "RV-CONF-0001",
+        "rule_id": "corridor_width",
+        "status": "APPROVED",
+        "reviewer": "ganesh",
+        "rationale": "Reviewed extracted rules for this run",
+        "review_timestamp": "2026-06-15T09:17:17.695245+00:00",
+        "candidate_id": "M001-027",
+        "mapping_id": "",
+        "evidence_references": [
+          "mapping-conflict-corridor_width"
+        ],
+        "attachments": [],
+        "notes": ""
+      }
+    }
+  },
+  {
+    "event_id": "GE-000024",
+    "timestamp": "2026-06-15T09:17:17.695284+00:00",
+    "actor": "ganesh",
+    "event_type": "review_approved",
+    "artifact": {
+      "queue_item": {
+        "review_id": "RV-CONF-0002",
+        "review_type": "CONFLICT_GROUP",
+        "candidate_id": "M004-028",
+        "rule_id": "turning_space",
+        "mapping_id": "",
+        "evidence_chunk": "",
+        "source_page": null,
+        "confidence": null,
+        "retrieval_score": null,
+        "selection_score": null,
+        "review_state": "APPROVED",
+        "group_id": "mapping-conflict-turning_space",
+        "group_members": [
+          "M004-028",
+          "M004-062",
+          "M004-027",
+          "M004-030",
+          "M004-061",
+          "M004-064",
+          "M004-046",
+          "M004-021",
+          "M004-044",
+          "M004-055",
+          "M004-045"
+        ],
+        "comparison_rationale": "Competing mappings require explicit review before M004-028 can be published."
+      },
+      "decision": {
+        "decision_id": "DEC-00012",
+        "review_id": "RV-CONF-0002",
+        "rule_id": "turning_space",
+        "status": "APPROVED",
+        "reviewer": "ganesh",
+        "rationale": "Reviewed extracted rules for this run",
+        "review_timestamp": "2026-06-15T09:17:17.695270+00:00",
+        "candidate_id": "M004-028",
+        "mapping_id": "",
+        "evidence_references": [
+          "mapping-conflict-turning_space"
+        ],
+        "attachments": [],
+        "notes": ""
+      }
+    }
+  },
+  {
+    "event_id": "GE-000025",
+    "timestamp": "2026-06-15T09:17:17.751897+00:00",
+    "actor": "ganesh",
+    "event_type": "publication_published",
+    "artifact": {
+      "status": "published",
+      "checks": [
+        {
+          "name": "approved_review_exists",
+          "passed": true,
+          "detail": "approved review records are required"
+        },
+        {
+          "name": "review_queue_exists",
+          "passed": true,
+          "detail": "human review queue records are required"
+        },
+        {
+          "name": "decision_records_exist",
+          "passed": true,
+          "detail": "human review decision records are required"
+        },
+        {
+          "name": "no_unresolved_conflicts",
+          "passed": true,
+          "detail": "unresolved conflicts: 0"
+        },
+        {
+          "name": "no_unresolved_duplicate_groups",
+          "passed": true,
+          "detail": "unresolved duplicate groups: 0"
+        },
+        {
+          "name": "corridor_width:approved_review_record",
+          "passed": true,
+          "detail": "corridor_width must have explicit approval tied to candidate"
+        },
+        {
+          "name": "corridor_width:evidence_exists",
+          "passed": true,
+          "detail": "corridor_width must retain source text and evidence text"
+        },
+        {
+          "name": "corridor_width:source_chunk_exists",
+          "passed": true,
+          "detail": "corridor_width must reference a reviewed source chunk"
+        },
+        {
+          "name": "corridor_width:confidence_threshold",
+          "passed": true,
+          "detail": "corridor_width confidence 1.000 must be >= 0.500"
+        },
+        {
+          "name": "corridor_width:provenance_complete",
+          "passed": true,
+          "detail": "corridor_width must include complete candidate governance provenance"
+        },
+        {
+          "name": "corridor_width:review_identity_complete",
+          "passed": true,
+          "detail": "corridor_width must include review_id and decision_id"
+        },
+        {
+          "name": "corridor_width:rule_review_approved",
+          "passed": true,
+          "detail": "corridor_width must have an approved rule review queue item"
+        },
+        {
+          "name": "corridor_width:mapping_review_approved",
+          "passed": true,
+          "detail": "corridor_width must have an approved mapping review"
+        },
+        {
+          "name": "corridor_width:duplicate_review_resolved",
+          "passed": true,
+          "detail": "corridor_width duplicate groups must be reviewed"
+        },
+        {
+          "name": "corridor_width:conflict_review_resolved",
+          "passed": true,
+          "detail": "corridor_width conflict groups must be reviewed"
+        },
+        {
+          "name": "turning_space:approved_review_record",
+          "passed": true,
+          "detail": "turning_space must have explicit approval tied to candidate"
+        },
+        {
+          "name": "turning_space:evidence_exists",
+          "passed": true,
+          "detail": "turning_space must retain source text and evidence text"
+        },
+        {
+          "name": "turning_space:source_chunk_exists",
+          "passed": true,
+          "detail": "turning_space must reference a reviewed source chunk"
+        },
+        {
+          "name": "turning_space:confidence_threshold",
+          "passed": true,
+          "detail": "turning_space confidence 1.000 must be >= 0.500"
+        },
+        {
+          "name": "turning_space:provenance_complete",
+          "passed": true,
+          "detail": "turning_space must include complete candidate governance provenance"
+        },
+        {
+          "name": "turning_space:review_identity_complete",
+          "passed": true,
+          "detail": "turning_space must include review_id and decision_id"
+        },
+        {
+          "name": "turning_space:rule_review_approved",
+          "passed": true,
+          "detail": "turning_space must have an approved rule review queue item"
+        },
+        {
+          "name": "turning_space:mapping_review_approved",
+          "passed": true,
+          "detail": "turning_space must have an approved mapping review"
+        },
+        {
+          "name": "turning_space:duplicate_review_resolved",
+          "passed": true,
+          "detail": "turning_space duplicate groups must be reviewed"
+        },
+        {
+          "name": "turning_space:conflict_review_resolved",
+          "passed": true,
+          "detail": "turning_space conflict groups must be reviewed"
+        }
+      ]
+    }
+  }
+]

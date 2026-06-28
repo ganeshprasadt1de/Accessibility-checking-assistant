@@ -1,0 +1,603 @@
+{
+  "pdf_pages": 65,
+  "pymupdf_embedded_image_refs_total": 120,
+  "pymupdf_image_blocks_total": 120,
+  "saved_image_files_total": 120,
+  "pages_with_embedded_images": [
+    1,
+    8,
+    9,
+    14,
+    17,
+    18,
+    19,
+    23,
+    26,
+    27,
+    29,
+    39,
+    40,
+    45,
+    48,
+    49,
+    51,
+    54,
+    55,
+    59,
+    60,
+    61,
+    63
+  ],
+  "pages_with_image_blocks": [
+    1,
+    8,
+    9,
+    14,
+    17,
+    18,
+    19,
+    23,
+    26,
+    27,
+    29,
+    39,
+    40,
+    45,
+    48,
+    49,
+    51,
+    54,
+    55,
+    59,
+    60,
+    61,
+    63
+  ],
+  "pages_with_figure_word_but_no_embedded_images": [
+    7,
+    11,
+    13,
+    22,
+    24,
+    25,
+    28,
+    35,
+    38,
+    50,
+    53,
+    58,
+    62
+  ],
+  "pages_with_many_vector_drawings_no_embedded_images": [
+    12,
+    43,
+    50,
+    56,
+    57,
+    58,
+    62,
+    64
+  ],
+  "per_page": [
+    {
+      "page": 1,
+      "embedded_images": 2,
+      "image_blocks": 2,
+      "vector_drawings": 9,
+      "has_figure_word": false,
+      "text_preview": "Bayerisches Staatsministerium des Innern, für Bau und Verkehr Oberste Baubehörde im Bayerischen Staatsministerium des Innern, für Bau und Verkehr • Postfach 22 "
+    },
+    {
+      "page": 2,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 6,
+      "has_figure_word": false,
+      "text_preview": "Oktober 2010 DEUTSCHE NORM Normenausschuss Bauwesen (NABau) im DIN Normenausschuss Medizin (NAMed) im DIN Preisgruppe 14 DIN Deutsches Institut für Normung e.V."
+    },
+    {
+      "page": 3,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 0,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-1:2010-10 Inhalt Seite Vorwort ......................................................................................................................."
+    },
+    {
+      "page": 4,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 0,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-1:2010-10 Vorwort Dieses Dokument wurde vom NA 005-01-11 AA „Barrierefreies Bauen“ im Normenausschuss Bauwesen (NABau) erarbeitet. Ziel dieser Norm is"
+    },
+    {
+      "page": 5,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 0,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-1:2010-10 1 Anwendungsbereich Dieser Teil der Norm gilt für die barrierefreie Planung, Ausführung und Ausstattung von öffentlich zugänglichen Gebäuden"
+    },
+    {
+      "page": 6,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 4,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-1:2010-10 BGR 1811), BG-Regel — Fußböden in Arbeitsräumen und Arbeitsbereichen mit Rutschgefahr GUV-I 85272), GUV-Informationen — Bodenbeläge für nass"
+    },
+    {
+      "page": 7,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 0,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-1:2010-10 3.8 Sehbehinderung erhebliche Einschränkung des Sehvermögens, wobei sich der Betroffene noch in hohem Maße visuell orientieren und informier"
+    },
+    {
+      "page": 8,
+      "embedded_images": 8,
+      "image_blocks": 8,
+      "vector_drawings": 8,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-1:2010-10 Maße in Zentimeter Maße in Zentimeter Bild 1 —Platzbedarf und Bewegungsflächen ohne Richtungsänderung Bild 2 —Platzbedarf und Bewegungsfläch"
+    },
+    {
+      "page": 9,
+      "embedded_images": 5,
+      "image_blocks": 5,
+      "vector_drawings": 5,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-1:2010-10 Legende 1 abzusichernder Bereich 2 Gehbereich Bild 3 — Abzusichernder Bereich von Bauteilen am Beispiel Treppen Zur Verkehrssicherheit auch "
+    },
+    {
+      "page": 10,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 0,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-1:2010-10 4.2.2 PKW-Stellplätze PKW-Stellplätze, die für Menschen mit Behinderungen ausgewiesen werden, sind entsprechend zu kennzeichnen und sollten "
+    },
+    {
+      "page": 11,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 0,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-1:2010-10 4.3.2 Flure und sonstige Verkehrsflächen Flure und sonstige Verkehrsflächen müssen ausreichend breit für die Nutzung mit dem Rollstuhl oder "
+    },
+    {
+      "page": 12,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 162,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-1:2010-10 Tabelle 1 — Geometrische Anforderungen an Türen Komponente Geometrie Maße cm 1 2 3 alle Türen 1 lichte Breite ≥ 90 2 Durchgang lichte Höhe ü"
+    },
+    {
+      "page": 13,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 0,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-1:2010-10 Es wird empfohlen, Türschließer mit stufenlos einstellbarer Schließkraft zu verwenden. Damit z. B. Menschen mit motorischen Einschränkungen "
+    },
+    {
+      "page": 14,
+      "embedded_images": 6,
+      "image_blocks": 6,
+      "vector_drawings": 6,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-1:2010-10 Maße in Zentimeter Bild 4 — Bewegungsflächen vor Drehflügeltüren Bild 5 — Bewegungsflächen vor Schiebetüren 4.3.3.5 Orientierungshilfen an T"
+    },
+    {
+      "page": 15,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 0,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-1:2010-10 4.3.4 Bodenbeläge Bodenbeläge müssen rutschhemmend (sinngemäß mindestens R 9 nach BGR 181) und fest verlegt sein und für die Benutzung z. B."
+    },
+    {
+      "page": 16,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 0,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-1:2010-10 4.3.6.3 Handläufe Beidseitig von Treppenläufen und Zwischenpodesten müssen Handläufe einen sicheren Halt bei der Benutzung der Treppe bieten"
+    },
+    {
+      "page": 17,
+      "embedded_images": 4,
+      "image_blocks": 4,
+      "vector_drawings": 4,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-1:2010-10 4.3.7 Fahrtreppen und geneigte Fahrsteige Mit den nachfolgenden Eigenschaften sind Fahrtreppen und geneigte Fahrsteige für Menschen mit begr"
+    },
+    {
+      "page": 18,
+      "embedded_images": 8,
+      "image_blocks": 8,
+      "vector_drawings": 8,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-1:2010-10 Maße in Zentimeter Legende 1 Handlauf 2 Radabweiser Bild 7 — Rampe, Seitenansicht Maße in Zentimeter Legende 1 Handlauf 2 Aufkantung als Rad"
+    },
+    {
+      "page": 19,
+      "embedded_images": 5,
+      "image_blocks": 5,
+      "vector_drawings": 5,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-1:2010-10 Die Handläufe sind so zu gestalten, dass sie griffsicher und gut umgreifbar sind und keine Verletzungsgefahr besteht. Das wird erreicht mit "
+    },
+    {
+      "page": 20,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 0,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-1:2010-10 4.4 Warnen/Orientieren/Informieren/Leiten 4.4.1 Allgemeines Informationen für die Gebäudenutzung, die warnen, der Orientierung dienen oder l"
+    },
+    {
+      "page": 21,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 0,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-1:2010-10 4.4.3 Auditiv Akustische Informationen müssen auch für Menschen mit eingeschränktem Hörvermögen hörbar und verstehbar sein. Die wichtigsten "
+    },
+    {
+      "page": 22,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 0,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-1:2010-10 Als Orientierungsmöglichkeiten dienen z. B. bauliche Elemente oder taktil kontrastreiche Bodenstrukturen. Es können auch Bodenindikatoren zu"
+    },
+    {
+      "page": 23,
+      "embedded_images": 4,
+      "image_blocks": 4,
+      "vector_drawings": 4,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-1:2010-10 4.5.3 Kommunikationsanlagen Kommunikationsanlagen, z. B. Türöffner- und Klingelanlagen, Gegensprechanlagen und Notrufanlagen, Telekommunikat"
+    },
+    {
+      "page": 24,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 0,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-1:2010-10 4.6 Service-Schalter, Kassen und Kontrollen Bei Service-Schaltern, Kassen, Kontrollen und ähnlichen Einrichtungen muss mindestens jeweils ei"
+    },
+    {
+      "page": 25,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 0,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-1:2010-10 5 Räume 5.1 Allgemeines Für die barrierefreie Nutzbarkeit von Räumen gelten die Anforderungen aus Abschnitt 4 entsprechend. Zusätzlich werde"
+    },
+    {
+      "page": 26,
+      "embedded_images": 6,
+      "image_blocks": 6,
+      "vector_drawings": 6,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-1:2010-10 Maße in Zentimeter Bestuhlung 1. Reihe Bestuhlung Gangseite Bild 11 — Beispiele für Rollstuhlplätze in Räumen für Veranstaltungen 5.2.2 Info"
+    },
+    {
+      "page": 27,
+      "embedded_images": 7,
+      "image_blocks": 7,
+      "vector_drawings": 7,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-1:2010-10 Armaturen müssen als Einhebel- oder berührungslose Armaturen ausgebildet sein. Berührungslose Armaturen dürfen nur in Verbindung mit Tempera"
+    },
+    {
+      "page": 28,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 0,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-1:2010-10 5.3.3 Toiletten Je Sanitäranlage muss mindestens eine barrierefreie Toilette vorhanden sein. Sie ist jeweils in die geschlechtsspezifisch ge"
+    },
+    {
+      "page": 29,
+      "embedded_images": 4,
+      "image_blocks": 4,
+      "vector_drawings": 4,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-1:2010-10 Maße in Zentimeter Legende 1 Beinfreiraum im Bereich des Knies 2 Bau-, Ausrüstungs- oder Ausstattungselement 3 Beinfreiraum im Bereich des F"
+    },
+    {
+      "page": 30,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 0,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-1:2010-10 5.3.6 Liegen Ist in einem Sanitärraum eine Liege als zweckentsprechende Umkleidemöglichkeit für mobilitäts- eingeschränkte Menschen vorgeseh"
+    },
+    {
+      "page": 31,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 3,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-1:2010-10 30 Literaturhinweise DIN 4844-1, Graphische Symbole — Sicherheitsfarben und Sicherheitszeichen — Teil 1: Gestaltungs- grundlagen für Sicherh"
+    },
+    {
+      "page": 32,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 5,
+      "has_figure_word": false,
+      "text_preview": "September 2011 DEUTSCHE NORM Normenausschuss Bauwesen (NABau) im DIN Normenausschuss Medizin (NAMed) im DIN Preisgruppe 15 DIN Deutsches Institut für Normung e."
+    },
+    {
+      "page": 33,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 0,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-2:2011-09 Inhalt Seite Vorwort ......................................................................................................................."
+    },
+    {
+      "page": 34,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 0,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-2:2011-09 Vorwort Dieses Dokument wurde vom NA 005-01-11 AA „Barrierefreies Bauen“ im Normenausschuss Bauwesen (NABau) erarbeitet. Ziel dieser Norm is"
+    },
+    {
+      "page": 35,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 7,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-2:2011-09 1 Anwendungsbereich Dieser Teil der Norm gilt für die barrierefreie Planung, Ausführung und Ausstattung von Wohnungen sowie Gebäuden mit Woh"
+    },
+    {
+      "page": 36,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 3,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-2:2011-09 2 Normative Verweisungen Die folgenden zitierten Dokumente sind für die Anwendung dieses Dokuments erforderlich. Bei datierten Verweisungen "
+    },
+    {
+      "page": 37,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 0,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-2:2011-09 3.3 Blindheit vollständiger Ausfall des Sehvermögens oder eine so minimale Lichtwahrnehmung, dass sich der Betroffene primär taktil und akus"
+    },
+    {
+      "page": 38,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 0,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-2:2011-09 4 Infrastruktur 4.1 Allgemeines Unter Infrastruktur versteht die Norm die Bereiche eines Gebäudes mit barrierefreien Wohnungen, die — einsch"
+    },
+    {
+      "page": 39,
+      "embedded_images": 8,
+      "image_blocks": 8,
+      "vector_drawings": 8,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-2:2011-09 Maße in Zentimeter Maße in Zentimeter Bild 1 — Platzbedarf und Bewegungsflächen ohne Richtungsänderung Bild 2 — Platzbedarf und Bewegungsflä"
+    },
+    {
+      "page": 40,
+      "embedded_images": 5,
+      "image_blocks": 5,
+      "vector_drawings": 5,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-2:2011-09 Legende 1 abzusichernder Bereich 2 Gehbereich Bild 3 — Abzusichernder Bereich von Bauteilen am Beispiel Treppen Zur Verkehrssicherheit, auch"
+    },
+    {
+      "page": 41,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 9,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-2:2011-09 4.2.2 PKW-Stellplätze PKW-Stellplätze, die für Menschen mit Behinderungen ausgewiesen werden, sind entsprechend zu kenn- zeichnen und sollte"
+    },
+    {
+      "page": 42,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 0,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-2:2011-09 4.3.2 Flure und sonstige Verkehrsflächen Flure und sonstige Verkehrsflächen müssen ausreichend breit für die Nutzung mit dem Rollstuhl oder "
+    },
+    {
+      "page": 43,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 196,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-2:2011-09 Tabelle 1 — Geometrische Anforderungen an Türen Komponente Geometrie Maße cm 1 2 3 alle Türen 1 lichte Breite ≥ 90 2 Durchgang lichte Höhe ü"
+    },
+    {
+      "page": 44,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 0,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-2:2011-09 4.3.3.3 Anforderungen an Türkonstruktionen Das Öffnen und Schließen von Türen muss auch mit geringem Kraftaufwand möglich sein. Das wird err"
+    },
+    {
+      "page": 45,
+      "embedded_images": 6,
+      "image_blocks": 6,
+      "vector_drawings": 6,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-2:2011-09 4.3.3.4 Bewegungsflächen vor Türen Bewegungsflächen vor Türen sind nach Bild 4 und Bild 5 zu bemessen. Abweichend davon gilt: Wird die Beweg"
+    },
+    {
+      "page": 46,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 0,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-2:2011-09 Ganzglastüren und großflächig verglaste Türen müssen sicher erkennbar sein durch Sicherheits- markierungen, die ⎯ über die gesamte Glasbreit"
+    },
+    {
+      "page": 47,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 1,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-2:2011-09 4.3.6.2 Laufgestaltung und Stufenausbildung Treppen müssen gerade Läufe haben. Treppen müssen Setzstufen haben. Trittstufen dürfen über die "
+    },
+    {
+      "page": 48,
+      "embedded_images": 4,
+      "image_blocks": 4,
+      "vector_drawings": 4,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-2:2011-09 4.3.7 Rampen 4.3.7.1 Allgemeines Rampen müssen leicht zu nutzen und verkehrssicher sein. Das gilt bei Einhaltung der nachfolgenden An- forde"
+    },
+    {
+      "page": 49,
+      "embedded_images": 8,
+      "image_blocks": 8,
+      "vector_drawings": 8,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-2:2011-09 Maße in Zentimeter Legende 1 Handlauf 2 Radabweiser Bild 7 — Rampe, Seitenansicht Maße in Zentimeter Legende 1 Handlauf 2 Aufkantung als Rad"
+    },
+    {
+      "page": 50,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 28,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-2:2011-09 Die Handläufe sind so zu gestalten, dass sie griffsicher und gut umgreifbar sind und keine Verletzungsgefahr besteht. Das wird erreicht mit "
+    },
+    {
+      "page": 51,
+      "embedded_images": 5,
+      "image_blocks": 5,
+      "vector_drawings": 5,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-2:2011-09 Maße in Zentimeter Bild 9 — Platzbedarf für den Rollstuhlabstellplatz einer Person, Bewegungsfläche für Rangieren und Wechsel 4.4 Warnen/Ori"
+    },
+    {
+      "page": 52,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 1,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-2:2011-09 4.4.2 Visuell Visuelle Informationen müssen hinsichtlich der Leuchtdichte zu ihrem Umfeld einen visuellen Kontrast aufweisen. Je höher der L"
+    },
+    {
+      "page": 53,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 0,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-2:2011-09 4.5.2 Bedienelemente Bedienelemente mit folgenden Eigenschaften sind barrierefrei erkennbar und nutzbar: ⎯ sie sind nach dem Zwei-Sinne-Prin"
+    },
+    {
+      "page": 54,
+      "embedded_images": 3,
+      "image_blocks": 3,
+      "vector_drawings": 3,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-2:2011-09 Maße in Zentimeter Legende 1 Bedienelemente z. B. auf Bau- oder Ausstattungselement 2 Freiraum im Bereich der Füße 3 taktil erfassbarer Sock"
+    },
+    {
+      "page": 55,
+      "embedded_images": 4,
+      "image_blocks": 4,
+      "vector_drawings": 13,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-2:2011-09 siehe Bild 11. Maße in Zentimeter Legende a) Herunterreichen bis zum Boden b) unteres Ende max. 15 cm über dem Boden c) Sockel von mindesten"
+    },
+    {
+      "page": 56,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 36,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-2:2011-09 5.2 Flure innerhalb von Wohnungen Flure müssen ausreichend breit sein für die Nutzung mit Gehhilfen bzw. Rollstühlen. Ausreichend ist eine n"
+    },
+    {
+      "page": 57,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 36,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-2:2011-09 5.3.2 Fenster Mindestens ein Fenster je Raum muss auch für Menschen mit motorischen Einschränkungen bzw. für Rollstuhlnutzer leicht zu öffne"
+    },
+    {
+      "page": 58,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 18,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-2:2011-09 vor Kücheneinrichtungen: ⎯ 120 cm; — 150 cm. Bei der Planung der haustechnischen Anschlüsse in einer Küche für Rollstuhlnutzer ist die Anord"
+    },
+    {
+      "page": 59,
+      "embedded_images": 4,
+      "image_blocks": 4,
+      "vector_drawings": 4,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-2:2011-09 Maße in Zentimeter Legende 1 Bewegungsfläche vor dem WC-Becken 2 Rückenstütze 3 Stützklappgriff 4 WC-Becken Hinweis: Für den Zugang von der "
+    },
+    {
+      "page": 60,
+      "embedded_images": 4,
+      "image_blocks": 4,
+      "vector_drawings": 4,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-2:2011-09 Maße in Zentimeter Legende 1 Bewegungsfläche vor dem WC-Becken 2 Bewegungsfläche vor dem Waschtisch 3 Bewegungsfläche im Duschplatz Bild 14 "
+    },
+    {
+      "page": 61,
+      "embedded_images": 6,
+      "image_blocks": 6,
+      "vector_drawings": 19,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-2:2011-09 Maße in Zentimeter Legende 1 Bewegungsfläche vor dem WC-Becken 2 Bewegungsfläche vor dem Waschtisch 3 Bewegungsfläche im Duschplatz 4 Bewegu"
+    },
+    {
+      "page": 62,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 22,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-2:2011-09 Folgende Bedienelemente und Stützen sind erforderlich: ⎯ Rückenstütze, angeordnet 55 cm hinter der Vorderkante des WC-Beckens. Der WC-Deckel"
+    },
+    {
+      "page": 63,
+      "embedded_images": 4,
+      "image_blocks": 4,
+      "vector_drawings": 13,
+      "has_figure_word": true,
+      "text_preview": "DIN 18040-2:2011-09 Maße in Zentimeter Legende 1 Beinfreiraum im Bereich der Knie 2 Bau-, Ausrüstungs- oder Ausstattungselement 3 Beinfreiraum im Bereich der Fü"
+    },
+    {
+      "page": 64,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 36,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-2:2011-09 — die zur Entwässerung erforderliche Neigung max. 2 % beträgt. Eine Einhebel-Duscharmatur mit Handbrause muss aus der Sitzposition in 85 cm "
+    },
+    {
+      "page": 65,
+      "embedded_images": 0,
+      "image_blocks": 0,
+      "vector_drawings": 3,
+      "has_figure_word": false,
+      "text_preview": "DIN 18040-2:2011-09 34 Literaturhinweise DIN 32975:2009-12, Gestaltung visueller Informationen im öffentlichen Raum zur barrierefreien Nutzung DIN 32984, Bodeni"
+    }
+  ]
+}

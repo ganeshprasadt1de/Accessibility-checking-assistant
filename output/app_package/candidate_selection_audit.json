@@ -1,0 +1,913 @@
+{
+  "phase": "candidate_selection_reliability",
+  "audit_timing": "after_implementation",
+  "before_implementation": {
+    "phase": "candidate_selection_reliability",
+    "audit_timing": "before_implementation",
+    "source_artifacts": {
+      "governance_audit": "output\\app_package\\governance_audit.json",
+      "rule_review": "output\\app_package\\rule_review.json"
+    },
+    "approved_rule_count": 5,
+    "records": [
+      {
+        "rule_id": "corridor_width",
+        "approved_candidate_id": "C0009",
+        "source_chunk": "p038-table-001",
+        "page": 38,
+        "confidence": 1.0,
+        "selection_score": 0.869083,
+        "rejected_competitors": [
+          {
+            "candidate_id": "C0007",
+            "source_chunk": "p050-text-009",
+            "page": 50,
+            "confidence": 1.0,
+            "selection_score": 0.82975,
+            "candidate_evaluation": {
+              "retrieval_score": 0.645,
+              "semantic_relevance_score": 0.0,
+              "source_specificity_score": 0.85,
+              "measurement_confidence": 1.0,
+              "evidence_completeness_score": 1.0,
+              "ontology_consistency_score": 1.0,
+              "duplicate_similarity_score": 1.0
+            },
+            "supporting_evidence": "Rollstuhlabstellplätze sind für den Wechsel des Rollstuhls ausreichend groß, wenn sie eine Bewegungsfläche von mindestens 180 cm × 150 cm haben. Vor den Rollstuhlabstellplätzen ist eine weitere Bewegungsfläche von mindestens 180 cm × 150 cm zu berücksichtigen, siehe Bild 9."
+          }
+        ],
+        "strongest_evidence_candidate_won": true,
+        "strongest_candidate_by_current_score": "C0009",
+        "finding": "winner_has_highest_current_selection_score",
+        "winner_snapshot": {
+          "candidate_id": "C0009",
+          "rule_id": "corridor_width",
+          "value": 1.5,
+          "unit": "m",
+          "operator": ">=",
+          "source_page": 38,
+          "source_chunk": "p038-table-001",
+          "retrieval_rank": 97,
+          "confidence": 1.0,
+          "candidate_evaluation": {
+            "retrieval_score": 0.515,
+            "semantic_relevance_score": 0.0,
+            "source_specificity_score": 1.0,
+            "measurement_confidence": 1.0,
+            "evidence_completeness_score": 1.0,
+            "ontology_consistency_score": 0.666667,
+            "duplicate_similarity_score": 1.0
+          },
+          "governance_scores": {
+            "retrieval_score": 0.515,
+            "semantic_relevance_score": 0.0,
+            "source_specificity_score": 1.0,
+            "measurement_confidence": 1.0,
+            "evidence_completeness_score": 1.0,
+            "ontology_consistency_score": 0.666667,
+            "duplicate_similarity_score": 1.0
+          },
+          "selection_score": 0.869083,
+          "selected": true,
+          "selection_rationale": "selected_by_evidence_quality:source_specificity_score=1.000,measurement_confidence=1.000,evidence_completeness_score=1.000,duplicate_similarity_score=1.000",
+          "supporting_evidence": "Ausreichend groß ist eine Fläche von ⎯ 180 cm Breite und 180 cm Länge für die Begegnung zweier Rollstuhlnutzer;\n⎯ 150 cm Breite und 150 cm Länge für die Begegnung eines Rollstuhlnutzers mit anderen Personen;\n⎯ 150 cm Breite und 150 cm Länge für Richtungswechsel und Rangiervorgänge;"
+        }
+      },
+      {
+        "rule_id": "door_width",
+        "approved_candidate_id": "C0006",
+        "source_chunk": "p012-table-001",
+        "page": 12,
+        "confidence": 0.95,
+        "selection_score": 0.854049,
+        "rejected_competitors": [
+          {
+            "candidate_id": "C0011",
+            "source_chunk": "p062-text-023",
+            "page": 62,
+            "confidence": 1.0,
+            "selection_score": 0.620375,
+            "candidate_evaluation": {
+              "retrieval_score": 0.36,
+              "semantic_relevance_score": 0.0,
+              "source_specificity_score": 0.5125,
+              "measurement_confidence": 0.75,
+              "evidence_completeness_score": 0.85,
+              "ontology_consistency_score": 1.0,
+              "duplicate_similarity_score": 1.0
+            },
+            "supporting_evidence": "⎯ Beinfreiraum unter dem Waschtisch mit einer Breite von mindestens 90 cm (axial gemessen); Angaben zu den erforderlichen gestaffelten Höhen und Tiefen (siehe Bild 16);"
+          }
+        ],
+        "strongest_evidence_candidate_won": true,
+        "strongest_candidate_by_current_score": "C0006",
+        "finding": "winner_has_highest_current_selection_score",
+        "winner_snapshot": {
+          "candidate_id": "C0006",
+          "rule_id": "door_width",
+          "value": 0.9,
+          "unit": "m",
+          "operator": ">=",
+          "source_page": 12,
+          "source_chunk": "p012-table-001",
+          "retrieval_rank": 66,
+          "confidence": 0.95,
+          "candidate_evaluation": {
+            "retrieval_score": 0.67,
+            "semantic_relevance_score": 0.0,
+            "source_specificity_score": 0.915854,
+            "measurement_confidence": 1.0,
+            "evidence_completeness_score": 1.0,
+            "ontology_consistency_score": 1.0,
+            "duplicate_similarity_score": 1.0
+          },
+          "governance_scores": {
+            "retrieval_score": 0.67,
+            "semantic_relevance_score": 0.0,
+            "source_specificity_score": 0.915854,
+            "measurement_confidence": 1.0,
+            "evidence_completeness_score": 1.0,
+            "ontology_consistency_score": 1.0,
+            "duplicate_similarity_score": 1.0
+          },
+          "selection_score": 0.854049,
+          "selected": true,
+          "selection_rationale": "selected_by_evidence_quality:measurement_confidence=1.000,evidence_completeness_score=1.000,ontology_consistency_score=1.000,duplicate_similarity_score=1.000",
+          "supporting_evidence": " |  |  | Komponente |  | Geometrie | Maße cm | \n |  |  | 1 |  | 2 | 3 | \n |  |  |  | alle Türen |  |  | \n1 |  |  | Durchgang |  | lichte Breite | ≥ 90 | \n2 |  |  |  |  | lichte Höhe über OFF | ≥ 205 | \n3 |  |  | Leibung |  | Tiefe | ≤ 26a | \n4 |  |  | Drücker, Griff |  | Abstand zu Bauteilen , Ausrüstungs- und Ausstattungselementen | ≥ 50 | \n5 |  |  | zugeordnete Beschilderung |  | Höhe über OFF | 120 – 140 | \n |  |  |  | manuell bedienbare Türen |  |  | \n6 |  |  | Drücker |  | Höhe Drehachse üb"
+        }
+      },
+      {
+        "rule_id": "ramp_slope",
+        "approved_candidate_id": "C0004",
+        "source_chunk": "p048-page-context",
+        "page": 48,
+        "confidence": 1.0,
+        "selection_score": 0.842,
+        "rejected_competitors": [
+          {
+            "candidate_id": "C0012",
+            "source_chunk": "p017-text-015",
+            "page": 17,
+            "confidence": 1.0,
+            "selection_score": 0.64,
+            "candidate_evaluation": {
+              "retrieval_score": 0.0,
+              "semantic_relevance_score": 0.0,
+              "source_specificity_score": 0.4,
+              "measurement_confidence": 1.0,
+              "evidence_completeness_score": 1.0,
+              "ontology_consistency_score": 1.0,
+              "duplicate_similarity_score": 1.0
+            },
+            "supporting_evidence": "Die Neigung von Rampenläufen darf maximal 6 % betragen; eine Querneigung ist unzulässig. Die Ent- wässerung der Podeste von im Freien liegenden Rampen ist sicherzustellen."
+          },
+          {
+            "candidate_id": "C0008",
+            "source_chunk": "p017-text-018",
+            "page": 17,
+            "confidence": 1.0,
+            "selection_score": 0.5705,
+            "candidate_evaluation": {
+              "retrieval_score": 0.575,
+              "semantic_relevance_score": 0.0,
+              "source_specificity_score": 0.625,
+              "measurement_confidence": 0.25,
+              "evidence_completeness_score": 0.85,
+              "ontology_consistency_score": 1.0,
+              "duplicate_similarity_score": 1.0
+            },
+            "supporting_evidence": "Die Länge der einzelnen Rampenläufe darf höchstens 600 cm betragen. Bei längeren Rampen und bei Richtungsänderungen sind Zwischenpodeste mit einer nutzbaren Länge von mindestens 150 cm erforderlich."
+          }
+        ],
+        "strongest_evidence_candidate_won": true,
+        "strongest_candidate_by_current_score": "C0004",
+        "finding": "winner_has_highest_current_selection_score",
+        "winner_snapshot": {
+          "candidate_id": "C0004",
+          "rule_id": "ramp_slope",
+          "value": 6.0,
+          "unit": "%",
+          "operator": "<=",
+          "source_page": 48,
+          "source_chunk": "p048-page-context",
+          "retrieval_rank": 22,
+          "confidence": 1.0,
+          "candidate_evaluation": {
+            "retrieval_score": 0.89,
+            "semantic_relevance_score": 0.0,
+            "source_specificity_score": 0.85,
+            "measurement_confidence": 1.0,
+            "evidence_completeness_score": 1.0,
+            "ontology_consistency_score": 1.0,
+            "duplicate_similarity_score": 1.0
+          },
+          "governance_scores": {
+            "retrieval_score": 0.89,
+            "semantic_relevance_score": 0.0,
+            "source_specificity_score": 0.85,
+            "measurement_confidence": 1.0,
+            "evidence_completeness_score": 1.0,
+            "ontology_consistency_score": 1.0,
+            "duplicate_similarity_score": 1.0
+          },
+          "selection_score": 0.842,
+          "selected": true,
+          "selection_rationale": "selected_by_evidence_quality:measurement_confidence=1.000,evidence_completeness_score=1.000,ontology_consistency_score=1.000,duplicate_similarity_score=1.000",
+          "supporting_evidence": "DIN 18040-2:2011-09 4.3.7 Rampen 4.3.7.1 Allgemeines Rampen müssen leicht zu nutzen und verkehrssicher sein. Das gilt bei Einhaltung der nachfolgenden An- forderungen an Rampenläufe, Podeste, Radabweiser und Handläufe als erreicht. Die maßlichen Anforderungen sind in den Bildern 6 bis 8 dargestellt. 4.3.7.2 Rampenläufe und Podeste Die Neigung von Rampenläufen darf höchstens 6 % betragen; eine Querneigung ist unzulässig. Die Ent- wässerung der Podeste von im Freien liegenden Rampen ist sicherzust"
+        }
+      },
+      {
+        "rule_id": "ramp_width",
+        "approved_candidate_id": "C0005",
+        "source_chunk": "p048-page-context",
+        "page": 48,
+        "confidence": 1.0,
+        "selection_score": 0.842,
+        "rejected_competitors": [
+          {
+            "candidate_id": "C0002",
+            "source_chunk": "p058-page-context",
+            "page": 58,
+            "confidence": 1.0,
+            "selection_score": 0.616763,
+            "candidate_evaluation": {
+              "retrieval_score": 0.95,
+              "semantic_relevance_score": 0.0,
+              "source_specificity_score": 0.417895,
+              "measurement_confidence": 0.75,
+              "evidence_completeness_score": 0.85,
+              "ontology_consistency_score": 1.0,
+              "duplicate_similarity_score": 1.0
+            },
+            "supporting_evidence": "DIN 18040-2:2011-09 vor Kücheneinrichtungen: ⎯ 120 cm; — 150 cm. Bei der Planung der haustechnischen Anschlüsse in einer Küche für Rollstuhlnutzer ist die Anordnung von Herd, Arbeitsplatte und Spüle übereck zu empfehlen. R 5.5 Sanitärräume 5.5.1 Allgemeines In einer Wohnung mit mehreren Sanitärräumen muss mindestens einer der Sanitärräume barrierefrei nutzbar sein. Mit den Anforderungen dieses Abschnitts der Norm sind Sanitärräume sowohl für Menschen mit motorischen Einschränkungen bzw. für Roll"
+          }
+        ],
+        "strongest_evidence_candidate_won": true,
+        "strongest_candidate_by_current_score": "C0005",
+        "finding": "winner_has_highest_current_selection_score",
+        "winner_snapshot": {
+          "candidate_id": "C0005",
+          "rule_id": "ramp_width",
+          "value": 1.2,
+          "unit": "m",
+          "operator": ">=",
+          "source_page": 48,
+          "source_chunk": "p048-page-context",
+          "retrieval_rank": 22,
+          "confidence": 1.0,
+          "candidate_evaluation": {
+            "retrieval_score": 0.89,
+            "semantic_relevance_score": 0.0,
+            "source_specificity_score": 0.85,
+            "measurement_confidence": 1.0,
+            "evidence_completeness_score": 1.0,
+            "ontology_consistency_score": 1.0,
+            "duplicate_similarity_score": 1.0
+          },
+          "governance_scores": {
+            "retrieval_score": 0.89,
+            "semantic_relevance_score": 0.0,
+            "source_specificity_score": 0.85,
+            "measurement_confidence": 1.0,
+            "evidence_completeness_score": 1.0,
+            "ontology_consistency_score": 1.0,
+            "duplicate_similarity_score": 1.0
+          },
+          "selection_score": 0.842,
+          "selected": true,
+          "selection_rationale": "selected_by_evidence_quality:measurement_confidence=1.000,evidence_completeness_score=1.000,ontology_consistency_score=1.000,duplicate_similarity_score=1.000",
+          "supporting_evidence": "DIN 18040-2:2011-09 4.3.7 Rampen 4.3.7.1 Allgemeines Rampen müssen leicht zu nutzen und verkehrssicher sein. Das gilt bei Einhaltung der nachfolgenden An- forderungen an Rampenläufe, Podeste, Radabweiser und Handläufe als erreicht. Die maßlichen Anforderungen sind in den Bildern 6 bis 8 dargestellt. 4.3.7.2 Rampenläufe und Podeste Die Neigung von Rampenläufen darf höchstens 6 % betragen; eine Querneigung ist unzulässig. Die Ent- wässerung der Podeste von im Freien liegenden Rampen ist sicherzust"
+        }
+      },
+      {
+        "rule_id": "turning_space",
+        "approved_candidate_id": "C0003",
+        "source_chunk": "p040-table-001",
+        "page": 40,
+        "confidence": 1.0,
+        "selection_score": 0.88475,
+        "rejected_competitors": [
+          {
+            "candidate_id": "C0010",
+            "source_chunk": "p038-table-001",
+            "page": 38,
+            "confidence": 1.0,
+            "selection_score": 0.86075,
+            "candidate_evaluation": {
+              "retrieval_score": 0.515,
+              "semantic_relevance_score": 0.0,
+              "source_specificity_score": 1.0,
+              "measurement_confidence": 1.0,
+              "evidence_completeness_score": 1.0,
+              "ontology_consistency_score": 0.25,
+              "duplicate_similarity_score": 1.0
+            },
+            "supporting_evidence": "Ausreichend groß ist eine Fläche von ⎯ 180 cm Breite und 180 cm Länge für die Begegnung zweier Rollstuhlnutzer;\n⎯ 150 cm Breite und 150 cm Länge für die Begegnung eines Rollstuhlnutzers mit anderen Personen;\n⎯ 150 cm Breite und 150 cm Länge für Richtungswechsel und Rangiervorgänge;"
+          },
+          {
+            "candidate_id": "C0001",
+            "source_chunk": "p056-page-context",
+            "page": 56,
+            "confidence": 1.0,
+            "selection_score": 0.629051,
+            "candidate_evaluation": {
+              "retrieval_score": 0.955,
+              "semantic_relevance_score": 0.0,
+              "source_specificity_score": 0.480859,
+              "measurement_confidence": 0.75,
+              "evidence_completeness_score": 0.85,
+              "ontology_consistency_score": 0.5,
+              "duplicate_similarity_score": 1.0
+            },
+            "supporting_evidence": "DIN 18040-2:2011-09 5.2 Flure innerhalb von Wohnungen Flure müssen ausreichend breit sein für die Nutzung mit Gehhilfen bzw. Rollstühlen. Ausreichend ist eine nutzbare Breite von mindestens 120 cm. Mindestens einmal ist eine Bewegungsfläche von mindestens 150 cm × 150 cm vorzusehen. Bewegungsflächen vor Türen sind zu beachten, siehe 4.3.3.4. R Bewegungsflächen dürfen sich überlagern. 5.3 Türen, Fenster 5.3.1 Türen 5.3.1.1 Wohnungseingangstüren Wohnungseingangstüren müssen 4.3.3 entsprechen, mit "
+          }
+        ],
+        "strongest_evidence_candidate_won": true,
+        "strongest_candidate_by_current_score": "C0003",
+        "finding": "winner_has_highest_current_selection_score",
+        "winner_snapshot": {
+          "candidate_id": "C0003",
+          "rule_id": "turning_space",
+          "value": 1.5,
+          "unit": "m",
+          "operator": ">=",
+          "source_page": 40,
+          "source_chunk": "p040-table-001",
+          "retrieval_rank": 21,
+          "confidence": 1.0,
+          "candidate_evaluation": {
+            "retrieval_score": 0.895,
+            "semantic_relevance_score": 0.0,
+            "source_specificity_score": 1.0,
+            "measurement_confidence": 1.0,
+            "evidence_completeness_score": 1.0,
+            "ontology_consistency_score": 0.5,
+            "duplicate_similarity_score": 1.0
+          },
+          "governance_scores": {
+            "retrieval_score": 0.895,
+            "semantic_relevance_score": 0.0,
+            "source_specificity_score": 1.0,
+            "measurement_confidence": 1.0,
+            "evidence_completeness_score": 1.0,
+            "ontology_consistency_score": 0.5,
+            "duplicate_similarity_score": 1.0
+          },
+          "selection_score": 0.88475,
+          "selected": true,
+          "selection_rationale": "selected_by_evidence_quality:source_specificity_score=1.000,measurement_confidence=1.000,evidence_completeness_score=1.000,duplicate_similarity_score=1.000",
+          "supporting_evidence": "Für den Weg zum Haupteingang ist es ausreichend, wenn er eine Breite von mindestens 150 cm hat und nach höchstens 15 m Länge eine Fläche von mindestens 180 cm × 180 cm zur Begegnung von Personen mit Rollstühlen oder Gehhilfen aufweist, siehe Bild 2.\nFür Gehwege zum Haupteingang mit bis zu 6 m Länge ohne Richtungsänderung ist auch die Wegbreite von mindestens 120 cm möglich, soweit am Anfang und am Ende eine Wendemöglichkeit gegeben ist.\nSie darf bis zu 6 % betragen, wenn in Abständen von höchste"
+        }
+      }
+    ],
+    "contradiction_inventory": [],
+    "duplicate_inventory": [
+      {
+        "duplicate_group_id": "dup-corridor_width",
+        "rule_id": "corridor_width",
+        "group_members": [
+          "C0009",
+          "C0007"
+        ],
+        "selected_candidate": "C0009",
+        "rejected_candidates": [
+          "C0007"
+        ],
+        "merge_rationale": "selected_by_evidence_quality:source_specificity_score=1.000,measurement_confidence=1.000,evidence_completeness_score=1.000,duplicate_similarity_score=1.000",
+        "normalized_requirement_keys": {
+          "C0009": ">=:1.5:m",
+          "C0007": ">=:1.5:m"
+        }
+      },
+      {
+        "duplicate_group_id": "dup-door_width",
+        "rule_id": "door_width",
+        "group_members": [
+          "C0006",
+          "C0011"
+        ],
+        "selected_candidate": "C0006",
+        "rejected_candidates": [
+          "C0011"
+        ],
+        "merge_rationale": "selected_by_evidence_quality:measurement_confidence=1.000,evidence_completeness_score=1.000,ontology_consistency_score=1.000,duplicate_similarity_score=1.000",
+        "normalized_requirement_keys": {
+          "C0006": ">=:0.9:m",
+          "C0011": ">=:0.9:m"
+        }
+      },
+      {
+        "duplicate_group_id": "dup-ramp_slope",
+        "rule_id": "ramp_slope",
+        "group_members": [
+          "C0004",
+          "C0012",
+          "C0008"
+        ],
+        "selected_candidate": "C0004",
+        "rejected_candidates": [
+          "C0012",
+          "C0008"
+        ],
+        "merge_rationale": "selected_by_evidence_quality:measurement_confidence=1.000,evidence_completeness_score=1.000,ontology_consistency_score=1.000,duplicate_similarity_score=1.000",
+        "normalized_requirement_keys": {
+          "C0004": "<=:6:%",
+          "C0012": "<=:6:%",
+          "C0008": "<=:6:%"
+        }
+      },
+      {
+        "duplicate_group_id": "dup-ramp_width",
+        "rule_id": "ramp_width",
+        "group_members": [
+          "C0005",
+          "C0002"
+        ],
+        "selected_candidate": "C0005",
+        "rejected_candidates": [
+          "C0002"
+        ],
+        "merge_rationale": "selected_by_evidence_quality:measurement_confidence=1.000,evidence_completeness_score=1.000,ontology_consistency_score=1.000,duplicate_similarity_score=1.000",
+        "normalized_requirement_keys": {
+          "C0005": ">=:1.2:m",
+          "C0002": ">=:1.2:m"
+        }
+      },
+      {
+        "duplicate_group_id": "dup-turning_space",
+        "rule_id": "turning_space",
+        "group_members": [
+          "C0003",
+          "C0010",
+          "C0001"
+        ],
+        "selected_candidate": "C0003",
+        "rejected_candidates": [
+          "C0010",
+          "C0001"
+        ],
+        "merge_rationale": "selected_by_evidence_quality:source_specificity_score=1.000,measurement_confidence=1.000,evidence_completeness_score=1.000,duplicate_similarity_score=1.000",
+        "normalized_requirement_keys": {
+          "C0003": ">=:1.5:m",
+          "C0010": ">=:1.5:m",
+          "C0001": ">=:1.5:m"
+        }
+      }
+    ],
+    "score_distribution": {
+      "candidate_count": 12,
+      "scores": [
+        0.869083,
+        0.82975,
+        0.854049,
+        0.620375,
+        0.842,
+        0.64,
+        0.5705,
+        0.842,
+        0.616763,
+        0.88475,
+        0.86075,
+        0.629051
+      ],
+      "min": 0.5705,
+      "max": 0.88475
+    }
+  },
+  "approved_rule_count": 2,
+  "records": [
+    {
+      "rule_id": "corridor_width",
+      "candidate_id": "C0004",
+      "source_chunk": "p011-page_render-001",
+      "page": 11,
+      "confidence": 1.0,
+      "selection_score": 0.739359,
+      "selection_reason": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,evidence_density_score=0.899,retrieval_support_score=0.885",
+      "score_breakdown": {
+        "semantic_relevance_score": 0.054348,
+        "measurement_specificity_score": 1.0,
+        "source_specificity_score": 0.57975,
+        "requirement_completeness_score": 1.0,
+        "ontology_consistency_score": 0.034211,
+        "retrieval_support_score": 0.885,
+        "evidence_density_score": 0.89875,
+        "contradiction_penalty": 0.0
+      },
+      "evidence_breakdown": {
+        "source_text": "Ausreichend ist eine nutzbare Breite von mindestens 150 cm",
+        "evidence_text": "DIN 18040-1:2010-10 4.3.2 Flure und sonstige Verkehrsflächen Flure und sonstige Verkehrsflächen müssen ausreichend breit für die Nutzung mit dem Rollstuhl oder mit Gehhilfen, auch im Begegnungsfall, sein. Ausreichend ist eine nutzbare Breite von mindestens 150 cm; in Durchgängen von mindestens 90 cm; von mindestens 180 cm und mindestens 180 cm Länge nach höchstens 15 m Flurlänge zur Begegnung von Personen mit Rollstühlen oder Gehhilfen ; von mindestens 120 cm und höchstens 6 m Länge, wenn keine Richtungsänderung erforderlich ist und davor und danach eine Wendemöglichkeit gegeben ist, siehe Bild 1 und Bild 2. Glaswände oder großflächig verglaste Wände an Verkehrsflächen müssen deutlich erkennbar sein, z. B. durch visuell stark kontrastierende Sicherheitsmarkierungen, es sei denn die Erkennbarkeit dieser Wände ist auf andere Weise sichergestellt (z. B. Schaufenster mit Auslage und entsprechender Beleuchtung). Zu Sicherheitsmarkierungen siehe 4.3.3.5. 4.3.3 Türen 4.3.3.1 Allgemeines Türen",
+        "raw_agent_rule": {
+          "rule_id": "corridor_width",
+          "entity": "Flure und sonstige Verkehrsflächen",
+          "property": "nutzbare Breite",
+          "operator": ">=",
+          "value": 150,
+          "unit": "cm",
+          "source_text": "Ausreichend ist eine nutzbare Breite von mindestens 150 cm",
+          "source_page": 11,
+          "confidence": 1.0,
+          "evidence_chunk_id": "[image p011-page_render-001]",
+          "evidence_chunk_type": "text"
+        }
+      },
+      "rejected_alternatives": [
+        {
+          "candidate_id": "C0003",
+          "rule_id": "corridor_width",
+          "value": 1.5,
+          "unit": "m",
+          "operator": ">=",
+          "source_page": 9,
+          "source_chunk": "p009-page_render-006",
+          "retrieval_rank": 20,
+          "confidence": 0.95,
+          "candidate_evaluation": {
+            "semantic_relevance_score": 0.02,
+            "measurement_specificity_score": 1.0,
+            "source_specificity_score": 0.573817,
+            "requirement_completeness_score": 1.0,
+            "ontology_consistency_score": 0.012621,
+            "retrieval_support_score": 0.9,
+            "evidence_density_score": 0.884856,
+            "contradiction_penalty": 0.0
+          },
+          "governance_scores": {
+            "semantic_relevance_score": 0.02,
+            "measurement_specificity_score": 1.0,
+            "source_specificity_score": 0.573817,
+            "requirement_completeness_score": 1.0,
+            "ontology_consistency_score": 0.012621,
+            "retrieval_support_score": 0.9,
+            "evidence_density_score": 0.884856,
+            "contradiction_penalty": 0.0
+          },
+          "selection_score": 0.733678,
+          "selected": false,
+          "selection_rationale": "lower_evidence_quality_than_selected_candidate",
+          "supporting_evidence": "DIN 18040-1:2010-10 2 Legende 1 abzusichernder Bereich 2 Gehbereich Bild 3 — Abzusichernder Bereich von Bauteilen am Beispiel Treppen Zur Verkehrssicherheit auch für großwüchsige Menschen darf die nutzbare Höhe über Verkehrsflächen 220 cm nicht unterschreiten, ausgenommen sind Türen (siehe Tabelle 1), Durchgänge und lichte Treppen- durchgangshöhen. 4.2 Äußere Erschließung auf dem Grundstück 4.2.1 Gehwege, Verkehrsflächen Gehwege müssen ausreichend breit für die Nutzung mit dem Rollstuhl oder mit",
+          "evidence_breakdown": {
+            "source_text": "Ausreichend ist eine Breite von mindestens 150 cm",
+            "evidence_text": "DIN 18040-1:2010-10 2 Legende 1 abzusichernder Bereich 2 Gehbereich Bild 3 — Abzusichernder Bereich von Bauteilen am Beispiel Treppen Zur Verkehrssicherheit auch für großwüchsige Menschen darf die nutzbare Höhe über Verkehrsflächen 220 cm nicht unterschreiten, ausgenommen sind Türen (siehe Tabelle 1), Durchgänge und lichte Treppen- durchgangshöhen. 4.2 Äußere Erschließung auf dem Grundstück 4.2.1 Gehwege, Verkehrsflächen Gehwege müssen ausreichend breit für die Nutzung mit dem Rollstuhl oder mit Gehhilfen, auch im Begegnungsfall, sein. Ausreichend ist eine Breite von mindestens 150 cm und nach höchstens 15 m Länge eine Fläche von mindestens 180 cm × 180 cm zur Begegnung von Personen mit Rollstühlen oder Gehhilfen, siehe Bild 2. Für Gehwege bis 6 m ohne Richtungsänderung ist auch die Wegbreite von 120 cm möglich, soweit am Anfang und am Ende eine Wendemöglichkeit gegeben ist. Zur gefahrlosen Nutzung müssen Gehwege und Verkehrsflächen eine feste und ebene Oberfläche aufweisen, die z. B. ",
+            "raw_agent_rule": {
+              "rule_id": "corridor_width",
+              "entity": "Gehwege",
+              "property": "Breite",
+              "operator": ">=",
+              "value": 150,
+              "unit": "cm",
+              "source_text": "Ausreichend ist eine Breite von mindestens 150 cm",
+              "source_page": 9,
+              "confidence": 0.95,
+              "evidence_chunk_id": "[image p009-page_render-006 page 9]",
+              "evidence_chunk_type": "OCR"
+            }
+          }
+        }
+      ],
+      "winner_loser_comparisons": [
+        {
+          "rule_id": "corridor_width",
+          "winner_candidate_id": "C0004",
+          "loser_candidate_id": "C0003",
+          "winner_score": 0.739359,
+          "loser_score": 0.733678,
+          "score_delta": 0.005682,
+          "component_deltas": {
+            "semantic_relevance_score": 0.034348,
+            "source_specificity_score": 0.005933,
+            "measurement_specificity_score": 0.0,
+            "ontology_consistency_score": 0.021589,
+            "retrieval_support_score": -0.015,
+            "evidence_density_score": 0.013894,
+            "requirement_completeness_score": 0.0,
+            "contradiction_penalty": 0.0
+          },
+          "comparison_rationale": "winner_has_stronger_semantic_relevance_score,source_specificity_score,ontology_consistency_score,evidence_density_score;loser_stronger_retrieval_support_score",
+          "winner_evidence": "DIN 18040-1:2010-10 4.3.2 Flure und sonstige Verkehrsflächen Flure und sonstige Verkehrsflächen müssen ausreichend breit für die Nutzung mit dem Rollstuhl oder mit Gehhilfen, auch im Begegnungsfall, sein. Ausreichend ist eine nutzbare Breite von mindestens 150 cm; in Durchgängen von mindestens 90 cm; von mindestens 180 cm und mindestens 180 cm Länge nach höchstens 15 m Flurlänge zur Begegnung von Personen mit Rollstühlen oder Gehhilfen ; von mindestens 120 cm und höchstens 6 m Länge, wenn keine ",
+          "loser_evidence": "DIN 18040-1:2010-10 2 Legende 1 abzusichernder Bereich 2 Gehbereich Bild 3 — Abzusichernder Bereich von Bauteilen am Beispiel Treppen Zur Verkehrssicherheit auch für großwüchsige Menschen darf die nutzbare Höhe über Verkehrsflächen 220 cm nicht unterschreiten, ausgenommen sind Türen (siehe Tabelle 1), Durchgänge und lichte Treppen- durchgangshöhen. 4.2 Äußere Erschließung auf dem Grundstück 4.2.1 Gehwege, Verkehrsflächen Gehwege müssen ausreichend breit für die Nutzung mit dem Rollstuhl oder mit"
+        }
+      ]
+    },
+    {
+      "rule_id": "turning_space",
+      "candidate_id": "C0005",
+      "source_chunk": "p042-page_render-001",
+      "page": 42,
+      "confidence": 1.0,
+      "selection_score": 0.751255,
+      "selection_reason": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,evidence_density_score=0.940,retrieval_support_score=0.880",
+      "score_breakdown": {
+        "semantic_relevance_score": 0.025641,
+        "measurement_specificity_score": 1.0,
+        "source_specificity_score": 0.59985,
+        "requirement_completeness_score": 1.0,
+        "ontology_consistency_score": 0.024074,
+        "retrieval_support_score": 0.88,
+        "evidence_density_score": 0.94,
+        "contradiction_penalty": 0.0
+      },
+      "evidence_breakdown": {
+        "source_text": "mindestens einmal eine Bewegungsfläche von mindestens 150 cm × 150 cm zum Wenden",
+        "evidence_text": "DIN 18040-2:2011-09 4.3.2 Flure und sonstige Verkehrsflächen Flure und sonstige Verkehrsflächen müssen ausreichend breit für die Nutzung mit dem Rollstuhl oder mit Gehhilfen sein. Ausreichend ist eine nutzbare Breite von mindestens 150 cm; in Durchgängen von mindestens 90 cm. Es genügt eine Flurbreite von mindestens 120 cm, wenn mindestens einmal eine Bewegungsfläche von mindestens 150 cm × 150 cm zum Wenden vorhanden ist; bei langen Fluren muss diese Bewegungsfläche mindestens alle 15 m angeordnet werden. 4.3.3 Türen 4.3.3.1 Allgemeines Türen müssen deutlich wahrnehmbar, leicht zu öffnen und schließen und sicher zu passieren sein. Untere Türanschläge und Schwellen sind nicht zulässig. Sind sie technisch unabdingbar, dürfen sie nicht höher als 2 cm sein. ANMERKUNG Zu Wohnungseingangstüren und Wohnungstüren siehe 5.3.1. 4.3.3.2 Maßliche Anforderungen Die geometrischen Anforderungen an Türen sind in Tabelle 1 dargestellt. 11 { \"document_identifier\": \"DIN 18040-2:2011-09\", \"sections\": [ {",
+        "raw_agent_rule": {
+          "rule_id": "turning_space",
+          "entity": "Bewegungsfläche",
+          "property": "Breite",
+          "operator": ">=",
+          "value": 150,
+          "unit": "cm",
+          "source_text": "mindestens einmal eine Bewegungsfläche von mindestens 150 cm × 150 cm zum Wenden",
+          "source_page": 42,
+          "confidence": 1.0,
+          "evidence_chunk_id": "[image p042-page_render-001]",
+          "evidence_chunk_type": "text"
+        }
+      },
+      "rejected_alternatives": [
+        {
+          "candidate_id": "C0006",
+          "rule_id": "turning_space",
+          "value": 1.5,
+          "unit": "m",
+          "operator": ">=",
+          "source_page": 57,
+          "source_chunk": "p057-text-010",
+          "retrieval_rank": 278,
+          "confidence": 0.9,
+          "candidate_evaluation": {
+            "semantic_relevance_score": 0.058824,
+            "measurement_specificity_score": 0.4,
+            "source_specificity_score": 0.3425,
+            "requirement_completeness_score": 0.8,
+            "ontology_consistency_score": 0.030952,
+            "retrieval_support_score": 0.0,
+            "evidence_density_score": 0.373333,
+            "contradiction_penalty": 0.0
+          },
+          "governance_scores": {
+            "semantic_relevance_score": 0.058824,
+            "measurement_specificity_score": 0.4,
+            "source_specificity_score": 0.3425,
+            "requirement_completeness_score": 0.8,
+            "ontology_consistency_score": 0.030952,
+            "retrieval_support_score": 0.0,
+            "evidence_density_score": 0.373333,
+            "contradiction_penalty": 0.0
+          },
+          "selection_score": 0.398442,
+          "selected": false,
+          "selection_rationale": "lower_evidence_quality_than_selected_candidate",
+          "supporting_evidence": "Bewegungsflächen dürfen sich überlagern. In jedem Raum muss zum Drehen und Wenden mit Gehhilfen bzw. Rollstühlen wenigstens eine Bewegungs- fläche von mindestens",
+          "evidence_breakdown": {
+            "source_text": "In jedem Raum muss zum Drehen und Wenden mit Gehhilfen bzw. Rollstühlen wenigstens eine Bewegungs- fläche von mindestens",
+            "evidence_text": "Bewegungsflächen dürfen sich überlagern. In jedem Raum muss zum Drehen und Wenden mit Gehhilfen bzw. Rollstühlen wenigstens eine Bewegungs- fläche von mindestens",
+            "raw_agent_rule": {
+              "rule_id": "turning_space",
+              "entity": "Bewegungsfläche",
+              "property": "mindestens eine Bewegungsfläche",
+              "operator": ">=",
+              "value": 1.5,
+              "unit": "m",
+              "source_text": "In jedem Raum muss zum Drehen und Wenden mit Gehhilfen bzw. Rollstühlen wenigstens eine Bewegungs- fläche von mindestens",
+              "source_page": 57,
+              "confidence": 0.9,
+              "evidence_chunk_id": "[text p057-text-010]",
+              "evidence_chunk_type": "text"
+            }
+          }
+        }
+      ],
+      "winner_loser_comparisons": [
+        {
+          "rule_id": "turning_space",
+          "winner_candidate_id": "C0005",
+          "loser_candidate_id": "C0006",
+          "winner_score": 0.751255,
+          "loser_score": 0.398442,
+          "score_delta": 0.352813,
+          "component_deltas": {
+            "semantic_relevance_score": -0.033183,
+            "source_specificity_score": 0.25735,
+            "measurement_specificity_score": 0.6,
+            "ontology_consistency_score": -0.006878,
+            "retrieval_support_score": 0.88,
+            "evidence_density_score": 0.566667,
+            "requirement_completeness_score": 0.2,
+            "contradiction_penalty": 0.0
+          },
+          "comparison_rationale": "winner_has_stronger_source_specificity_score,measurement_specificity_score,retrieval_support_score,evidence_density_score,requirement_completeness_score;loser_stronger_semantic_relevance_score,ontology_consistency_score",
+          "winner_evidence": "DIN 18040-2:2011-09 4.3.2 Flure und sonstige Verkehrsflächen Flure und sonstige Verkehrsflächen müssen ausreichend breit für die Nutzung mit dem Rollstuhl oder mit Gehhilfen sein. Ausreichend ist eine nutzbare Breite von mindestens 150 cm; in Durchgängen von mindestens 90 cm. Es genügt eine Flurbreite von mindestens 120 cm, wenn mindestens einmal eine Bewegungsfläche von mindestens 150 cm × 150 cm zum Wenden vorhanden ist; bei langen Fluren muss diese Bewegungsfläche mindestens alle 15 m angeord",
+          "loser_evidence": "Bewegungsflächen dürfen sich überlagern. In jedem Raum muss zum Drehen und Wenden mit Gehhilfen bzw. Rollstühlen wenigstens eine Bewegungs- fläche von mindestens"
+        }
+      ]
+    }
+  ],
+  "before_after_selection_comparison": [
+    {
+      "rule_id": "corridor_width",
+      "before_candidate_id": "C0009",
+      "after_candidate_id": "C0004",
+      "before_source_chunk": "p038-table-001",
+      "after_source_chunk": "p011-page_render-001",
+      "before_selection_score": 0.869083,
+      "after_selection_score": 0.739359,
+      "selection_changed": true
+    },
+    {
+      "rule_id": "turning_space",
+      "before_candidate_id": "C0003",
+      "after_candidate_id": "C0005",
+      "before_source_chunk": "p040-table-001",
+      "after_source_chunk": "p042-page_render-001",
+      "before_selection_score": 0.88475,
+      "after_selection_score": 0.751255,
+      "selection_changed": true
+    }
+  ],
+  "contradiction_inventory": [],
+  "duplicate_inventory": [
+    {
+      "duplicate_group_id": "dup-corridor_width",
+      "rule_id": "corridor_width",
+      "group_members": [
+        "C0004",
+        "C0003"
+      ],
+      "selected_candidate": "C0004",
+      "rejected_candidates": [
+        "C0003"
+      ],
+      "merge_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,evidence_density_score=0.899,retrieval_support_score=0.885",
+      "normalized_requirement_keys": {
+        "C0004": ">=:1.5:m",
+        "C0003": ">=:1.5:m"
+      }
+    },
+    {
+      "duplicate_group_id": "dup-ramp_slope",
+      "rule_id": "ramp_slope",
+      "group_members": [
+        "C0001",
+        "C0008"
+      ],
+      "selected_candidate": "C0001",
+      "rejected_candidates": [
+        "C0008"
+      ],
+      "merge_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,retrieval_support_score=0.965,evidence_density_score=0.957",
+      "normalized_requirement_keys": {
+        "C0001": "<=:6:%",
+        "C0008": "<=:6:%"
+      }
+    },
+    {
+      "duplicate_group_id": "dup-ramp_width",
+      "rule_id": "ramp_width",
+      "group_members": [
+        "C0002",
+        "C0007"
+      ],
+      "selected_candidate": "C0002",
+      "rejected_candidates": [
+        "C0007"
+      ],
+      "merge_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,retrieval_support_score=0.965,evidence_density_score=0.957",
+      "normalized_requirement_keys": {
+        "C0002": ">=:1.2:m",
+        "C0007": ">=:1.2:m"
+      }
+    },
+    {
+      "duplicate_group_id": "dup-turning_space",
+      "rule_id": "turning_space",
+      "group_members": [
+        "C0005",
+        "C0006"
+      ],
+      "selected_candidate": "C0005",
+      "rejected_candidates": [
+        "C0006"
+      ],
+      "merge_rationale": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,evidence_density_score=0.940,retrieval_support_score=0.880",
+      "normalized_requirement_keys": {
+        "C0005": ">=:1.5:m",
+        "C0006": ">=:1.5:m"
+      }
+    }
+  ],
+  "pairwise_comparisons": [
+    {
+      "rule_id": "corridor_width",
+      "winner_candidate_id": "C0004",
+      "loser_candidate_id": "C0003",
+      "winner_score": 0.739359,
+      "loser_score": 0.733678,
+      "score_delta": 0.005682,
+      "component_deltas": {
+        "semantic_relevance_score": 0.034348,
+        "source_specificity_score": 0.005933,
+        "measurement_specificity_score": 0.0,
+        "ontology_consistency_score": 0.021589,
+        "retrieval_support_score": -0.015,
+        "evidence_density_score": 0.013894,
+        "requirement_completeness_score": 0.0,
+        "contradiction_penalty": 0.0
+      },
+      "comparison_rationale": "winner_has_stronger_semantic_relevance_score,source_specificity_score,ontology_consistency_score,evidence_density_score;loser_stronger_retrieval_support_score",
+      "winner_evidence": "DIN 18040-1:2010-10 4.3.2 Flure und sonstige Verkehrsflächen Flure und sonstige Verkehrsflächen müssen ausreichend breit für die Nutzung mit dem Rollstuhl oder mit Gehhilfen, auch im Begegnungsfall, sein. Ausreichend ist eine nutzbare Breite von mindestens 150 cm; in Durchgängen von mindestens 90 cm; von mindestens 180 cm und mindestens 180 cm Länge nach höchstens 15 m Flurlänge zur Begegnung von Personen mit Rollstühlen oder Gehhilfen ; von mindestens 120 cm und höchstens 6 m Länge, wenn keine ",
+      "loser_evidence": "DIN 18040-1:2010-10 2 Legende 1 abzusichernder Bereich 2 Gehbereich Bild 3 — Abzusichernder Bereich von Bauteilen am Beispiel Treppen Zur Verkehrssicherheit auch für großwüchsige Menschen darf die nutzbare Höhe über Verkehrsflächen 220 cm nicht unterschreiten, ausgenommen sind Türen (siehe Tabelle 1), Durchgänge und lichte Treppen- durchgangshöhen. 4.2 Äußere Erschließung auf dem Grundstück 4.2.1 Gehwege, Verkehrsflächen Gehwege müssen ausreichend breit für die Nutzung mit dem Rollstuhl oder mit"
+    },
+    {
+      "rule_id": "ramp_slope",
+      "winner_candidate_id": "C0001",
+      "loser_candidate_id": "C0008",
+      "winner_score": 0.760095,
+      "loser_score": 0.54086,
+      "score_delta": 0.219235,
+      "component_deltas": {
+        "semantic_relevance_score": -0.12013,
+        "source_specificity_score": 0.286577,
+        "measurement_specificity_score": 0.0,
+        "ontology_consistency_score": -0.066806,
+        "retrieval_support_score": 0.965,
+        "evidence_density_score": 0.618184,
+        "requirement_completeness_score": 0.0,
+        "contradiction_penalty": 0.0
+      },
+      "comparison_rationale": "winner_has_stronger_source_specificity_score,retrieval_support_score,evidence_density_score;loser_stronger_semantic_relevance_score,ontology_consistency_score",
+      "winner_evidence": "DIN 18040-1:2010-10 4.3.7 Fahrtreppen und geneigte Fahrsteige Mit den nachfolgenden Eigenschaften sind Fahrtreppen und geneigte Fahrsteige für Menschen mit begrenzten motorischen Einschränkungen sowie für blinde und sehbehinderte Menschen barrierefrei nutzbar: Geschwindigkeit bis zu 0,5 m/s; Vorlauf bei Fahrtreppen mindestens drei Stufen; Steigungswinkel der Fahrtreppen vorzugsweise nicht mehr als 30° (entspricht 57,7 %); Steigungswinkel der Fahrsteige nicht mehr als 7° (entspricht 12,3 %). ANME",
+      "loser_evidence": "Die Neigung von Rampenläufen darf maximal 6 % betragen; eine Querneigung ist unzulässig. Die Ent- wässerung der Podeste von im Freien liegenden Rampen ist sicherzustellen."
+    },
+    {
+      "rule_id": "ramp_width",
+      "winner_candidate_id": "C0002",
+      "loser_candidate_id": "C0007",
+      "winner_score": 0.760733,
+      "loser_score": 0.603125,
+      "score_delta": 0.157608,
+      "component_deltas": {
+        "semantic_relevance_score": -0.465909,
+        "source_specificity_score": 0.225327,
+        "measurement_specificity_score": 0.0,
+        "ontology_consistency_score": -0.195238,
+        "retrieval_support_score": 0.965,
+        "evidence_density_score": 0.477351,
+        "requirement_completeness_score": 0.0,
+        "contradiction_penalty": 0.0
+      },
+      "comparison_rationale": "winner_has_stronger_source_specificity_score,retrieval_support_score,evidence_density_score;loser_stronger_semantic_relevance_score,ontology_consistency_score",
+      "winner_evidence": "DIN 18040-1:2010-10 4.3.7 Fahrtreppen und geneigte Fahrsteige Mit den nachfolgenden Eigenschaften sind Fahrtreppen und geneigte Fahrsteige für Menschen mit begrenzten motorischen Einschränkungen sowie für blinde und sehbehinderte Menschen barrierefrei nutzbar: Geschwindigkeit bis zu 0,5 m/s; Vorlauf bei Fahrtreppen mindestens drei Stufen; Steigungswinkel der Fahrtreppen vorzugsweise nicht mehr als 30° (entspricht 57,7 %); Steigungswinkel der Fahrsteige nicht mehr als 7° (entspricht 12,3 %). ANME",
+      "loser_evidence": "Die nutzbare Laufbreite der Rampe muss mindestens 120 cm betragen."
+    },
+    {
+      "rule_id": "turning_space",
+      "winner_candidate_id": "C0005",
+      "loser_candidate_id": "C0006",
+      "winner_score": 0.751255,
+      "loser_score": 0.398442,
+      "score_delta": 0.352813,
+      "component_deltas": {
+        "semantic_relevance_score": -0.033183,
+        "source_specificity_score": 0.25735,
+        "measurement_specificity_score": 0.6,
+        "ontology_consistency_score": -0.006878,
+        "retrieval_support_score": 0.88,
+        "evidence_density_score": 0.566667,
+        "requirement_completeness_score": 0.2,
+        "contradiction_penalty": 0.0
+      },
+      "comparison_rationale": "winner_has_stronger_source_specificity_score,measurement_specificity_score,retrieval_support_score,evidence_density_score,requirement_completeness_score;loser_stronger_semantic_relevance_score,ontology_consistency_score",
+      "winner_evidence": "DIN 18040-2:2011-09 4.3.2 Flure und sonstige Verkehrsflächen Flure und sonstige Verkehrsflächen müssen ausreichend breit für die Nutzung mit dem Rollstuhl oder mit Gehhilfen sein. Ausreichend ist eine nutzbare Breite von mindestens 150 cm; in Durchgängen von mindestens 90 cm. Es genügt eine Flurbreite von mindestens 120 cm, wenn mindestens einmal eine Bewegungsfläche von mindestens 150 cm × 150 cm zum Wenden vorhanden ist; bei langen Fluren muss diese Bewegungsfläche mindestens alle 15 m angeord",
+      "loser_evidence": "Bewegungsflächen dürfen sich überlagern. In jedem Raum muss zum Drehen und Wenden mit Gehhilfen bzw. Rollstühlen wenigstens eine Bewegungs- fläche von mindestens"
+    }
+  ],
+  "score_distribution": {
+    "candidate_count": 8,
+    "min": 0.398442,
+    "max": 0.760733,
+    "mean": 0.660943,
+    "by_rule": {
+      "ramp_slope": {
+        "count": 2,
+        "min": 0.54086,
+        "max": 0.760095
+      },
+      "ramp_width": {
+        "count": 2,
+        "min": 0.603125,
+        "max": 0.760733
+      },
+      "corridor_width": {
+        "count": 2,
+        "min": 0.733678,
+        "max": 0.739359
+      },
+      "turning_space": {
+        "count": 2,
+        "min": 0.398442,
+        "max": 0.751255
+      }
+    }
+  }
+}

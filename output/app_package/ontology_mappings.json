@@ -1,0 +1,106 @@
+[
+  {
+    "rule_id": "corridor_width",
+    "entity": "corridor",
+    "property": "clear_width",
+    "ontology_class": "https://example.org/wheelchair-accessibility#IfcSpace",
+    "ontology_property": "https://example.org/wheelchair-accessibility#derivedClearSpaceWidthM",
+    "ifc_target": "https://example.org/wheelchair-accessibility#IfcSpace",
+    "mapping_candidate_id": "M001-027",
+    "confidence": 0.805083,
+    "scores": {
+      "target_semantic_relevance": 0.0,
+      "semantic_relevance": 0.666667,
+      "ontology_consistency": 1.0,
+      "property_compatibility": 0.666667,
+      "measurement_compatibility": 0.85,
+      "graph_support": 1.0,
+      "retrieval_support": 0.885
+    },
+    "evidence": {
+      "class_uri": "https://example.org/wheelchair-accessibility#IfcSpace",
+      "predicate_uri": "https://example.org/wheelchair-accessibility#derivedClearSpaceWidthM",
+      "subject_count": 82,
+      "predicate_count": 82,
+      "sample_values": [
+        "4.4",
+        "4.4",
+        "2.8",
+        "4.4",
+        "4.4"
+      ],
+      "sample_labels": [
+        "IfcSpace 115",
+        "IfcSpace 303",
+        "IfcSpace 216",
+        "IfcSpace 305",
+        "IfcSpace 203"
+      ],
+      "semantic_gate_passed": true,
+      "semantic_gate_reason": "passed generic semantic evidence gate"
+    },
+    "reasoning": "Rule corridor_width was mapped to IfcSpace / derivedClearSpaceWidthM from runtime RDF evidence. Strongest signals: ontology_consistency=1.000, graph_support=1.000, retrieval_support=0.885.",
+    "review_decision": {
+      "mapping_candidate_id": "M001-027",
+      "rule_id": "corridor_width",
+      "status": "APPROVED",
+      "reviewer": "ganesh",
+      "timestamp": "2026-06-15T09:17:17.695102+00:00",
+      "rationale": "Reviewed extracted rules for this run",
+      "review_id": "RV-MAP-0001",
+      "decision_id": "DEC-00005"
+    }
+  },
+  {
+    "rule_id": "turning_space",
+    "entity": "movement_area",
+    "property": "turning_width",
+    "ontology_class": "https://example.org/wheelchair-accessibility#IfcSpace",
+    "ontology_property": "https://example.org/wheelchair-accessibility#movementAreaWidthM",
+    "ifc_target": "https://example.org/wheelchair-accessibility#IfcSpace",
+    "mapping_candidate_id": "M004-028",
+    "confidence": 0.754833,
+    "scores": {
+      "target_semantic_relevance": 0.2,
+      "semantic_relevance": 0.8,
+      "ontology_consistency": 1.0,
+      "property_compatibility": 0.333333,
+      "measurement_compatibility": 0.85,
+      "graph_support": 1.0,
+      "retrieval_support": 0.88
+    },
+    "evidence": {
+      "class_uri": "https://example.org/wheelchair-accessibility#IfcSpace",
+      "predicate_uri": "https://example.org/wheelchair-accessibility#movementAreaWidthM",
+      "subject_count": 82,
+      "predicate_count": 82,
+      "sample_values": [
+        "4.4",
+        "4.4",
+        "2.8",
+        "4.4",
+        "4.4"
+      ],
+      "sample_labels": [
+        "IfcSpace 115",
+        "IfcSpace 303",
+        "IfcSpace 216",
+        "IfcSpace 305",
+        "IfcSpace 203"
+      ],
+      "semantic_gate_passed": true,
+      "semantic_gate_reason": "passed generic semantic evidence gate"
+    },
+    "reasoning": "Rule turning_space was mapped to IfcSpace / movementAreaWidthM from runtime RDF evidence. Strongest signals: ontology_consistency=1.000, graph_support=1.000, retrieval_support=0.880.",
+    "review_decision": {
+      "mapping_candidate_id": "M004-028",
+      "rule_id": "turning_space",
+      "status": "APPROVED",
+      "reviewer": "ganesh",
+      "timestamp": "2026-06-15T09:17:17.695127+00:00",
+      "rationale": "Reviewed extracted rules for this run",
+      "review_id": "RV-MAP-0004",
+      "decision_id": "DEC-00006"
+    }
+  }
+]

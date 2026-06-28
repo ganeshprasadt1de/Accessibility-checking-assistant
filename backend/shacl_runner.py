@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from pathlib import Path
 
 from rdflib import Graph, Literal, Namespace, RDF, URIRef
@@ -17,15 +18,18 @@ def run_shacl(data_graph: Path, shapes_graph: Path, report_ttl: Path) -> dict:
         from pyshacl import validate
     except Exception as exc:
         raise RuntimeError(f"pySHACL is not installed or could not be imported: {exc}") from exc
-    conforms, report_graph, report_text = validate(
-        str(data_graph),
-        shacl_graph=str(shapes_graph),
-        data_graph_format="turtle",
-        shacl_graph_format="turtle",
-        advanced=True,
-        inference="rdfs",
-        serialize_report_graph=True,
-    )
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=DeprecationWarning, module=r"pyshacl\..*")
+        warnings.filterwarnings("ignore", category=DeprecationWarning, module=r"rdflib\..*")
+        conforms, report_graph, report_text = validate(
+            str(data_graph),
+            shacl_graph=str(shapes_graph),
+            data_graph_format="turtle",
+            shacl_graph_format="turtle",
+            advanced=True,
+            inference="rdfs",
+            serialize_report_graph=True,
+        )
     report = Graph()
     report.parse(data=report_graph if isinstance(report_graph, str) else report_graph.decode("utf-8"), format="turtle")
     _write_report(report, bool(conforms), report_ttl)
@@ -85,6 +89,58 @@ def issues_from_shacl_report(report_ttl: Path, data_graph: Path, elements: list[
         edge.reasons = reasons
         edge.status = "fail" if reasons else "pass"
     return issues
+
+
+def issues_from_python_route_geometry(elements: list[Element], edges: list[RouteEdge], existing_issues: list[Issue] | None = None) -> list[Issue]:
+    element_by_guid = {element.guid: element for element in elements}
+    existing_keys = {
+        (issue.element_guid, issue.rule_id, issue.details)
+        for issue in existing_issues or []
+    }
+    issues: list[Issue] = []
+    next_index = len(existing_issues or []) + 1
+    for edge in edges:
+        if edge.measurements.get("routeHitsStair") is not True:
+            continue
+        if "stair_block" not in edge.reasons:
+            edge.reasons = sorted(set(edge.reasons + ["stair_block"]))
+        edge.status = "fail"
+        element = element_by_guid.get(edge.via_space_guid or edge.end_guid) or element_by_guid.get(edge.start_guid)
+        if not element:
+            continue
+        details = (
+            f"Route {edge.edge_id} intersects or approaches stair geometry between "
+            f"{_element_label(element_by_guid.get(edge.start_guid), edge.start_guid)} and "
+            f"{_element_label(element_by_guid.get(edge.end_guid), edge.end_guid)}."
+        )
+        key = (element.guid, "stair_block", details)
+        if key in existing_keys:
+            continue
+        issues.append(
+            Issue(
+                issue_id=f"I{next_index:04d}",
+                element_guid=element.guid,
+                element_label=element.label,
+                element_type=element.ifc_type,
+                rule_id="stair_block",
+                severity="fail",
+                measured=1.0,
+                required=0.0,
+                unit="bool",
+                source="Route geometry",
+                short_text="stair blocks route",
+                details=details,
+            )
+        )
+        next_index += 1
+        existing_keys.add(key)
+    return issues
+
+
+def _element_label(element: Element | None, fallback: str) -> str:
+    if not element:
+        return fallback
+    return element.name or element.label or fallback
 
 
 def _validation_results(report: Graph) -> list[tuple[str, str, str | None, str | None]]:

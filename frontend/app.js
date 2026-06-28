@@ -564,22 +564,27 @@ function buildFloorScenario() {
   const passEdges = rawFloorEdges.filter((edge) => edge.status === "pass");
   const failedEdges = rawFloorEdges.filter((edge) => edge.status === "fail");
   const transform = createFloorTransform(floorElements);
-  const startDoors = chooseFloorStartDoors(floor, routeStartDoors.length ? routeStartDoors : floorDoors, floorEdges);
-  const floorStart = chooseFloorStartPoint(floor, startDoors, floorElements, floorEdges);
-  const routePaths = buildSimulationRoutesFromStarts(startDoors, floorEdges, transform, floorStart);
+  const usableDoors = routeStartDoors.length ? routeStartDoors : floorDoors;
+  const mainEntranceDoor = chooseMainEntranceDoor(usableDoors, floorEdges, floorElements);
+  const floorStart = chooseFloorStartPoint(floor, mainEntranceDoor, floorElements, floorEdges);
+  const routingStartDoor = chooseRoutingStartDoor(floor, usableDoors, floorEdges, floorStart, mainEntranceDoor);
+  const stairApproachRoutes = buildStairApproachRoutes(floorStart, floorElements, transform);
+  const doorRoutePaths = buildSimulationRoutesFromStart(routingStartDoor, usableDoors, floorEdges, transform, floorStart);
+  const routePaths = [...stairApproachRoutes, ...doorRoutePaths];
   const chosenRoute = routePaths[0];
   const path = routePaths[0]?.path || [new THREE.Vector3(-5, 0.08, 0), new THREE.Vector3(5, 0.08, 0)];
   const reasonCounts = countReasons(rawFloorEdges);
   const floorFailReason = topReasonText(reasonCounts);
-  const startText = floorStart?.label || startDoors.map((door) => cleanElementName(door.name || door.label)).join(", ") || "no start point";
+  const startText = floorStart?.label || cleanElementName(routingStartDoor?.name || routingStartDoor?.label) || "no start point";
+  const routingText = cleanElementName(routingStartDoor?.name || routingStartDoor?.label) || "no route connector";
   const visualFailedRoutes = routePaths.filter((route) => route.status === "fail").length;
   const blockerText = failedEdges.length ? floorFailReason : visualFailedRoutes ? "stair blocks route" : "none";
   return {
     title: `${floor.name} indoor check`,
     status: chosenRoute
       ? visualFailedRoutes
-        ? `Starting from ${startText}. The stair approach is shown as blocked, then the other door routes continue.`
-        : `Starting from ${startText}. All generated routes on this floor pass the indoor checks.`
+        ? `Starting from ${startText}. Routes to the other doors are shown, including blocked paths.`
+        : `Starting from ${startText}. Routes to the other doors on this floor pass the indoor checks.`
       : "No door-to-door route edges were generated for this floor.",
     source: "SHACL rules over IFCtoLBD RDF and IFC-derived route measurements.",
     fail: Boolean(chosenRoute && chosenRoute.status === "fail"),
@@ -587,8 +592,10 @@ function buildFloorScenario() {
     routePaths,
     path,
     metrics: [
-      ["Start door", startText, startDoors.length ? "pass" : "fail"],
+      ["Start point", startText, floorStart?.point ? "pass" : "fail"],
+      ["Route connector", routingText, routingStartDoor ? "pass" : "fail"],
       ["Doors on floor", String(floorDoors.length), floorDoors.length ? "pass" : "fail"],
+      ["Door routes shown", String(doorRoutePaths.length), doorRoutePaths.length ? "pass" : "fail"],
       ["Route edges", String(rawFloorEdges.length), rawFloorEdges.length ? "pass" : "fail"],
       ["Failed door routes", String(failedEdges.length), failedEdges.length ? "fail" : "pass"],
       ["Stair approach", visualFailedRoutes ? "blocked" : "clear", visualFailedRoutes ? "fail" : "pass"],
@@ -604,101 +611,182 @@ function buildFloorScenario() {
   };
 }
 
-function chooseFloorStartPoint(floor, startDoors, floorElements, floorEdges) {
+function chooseFloorStartPoint(floor, mainEntranceDoor, floorElements, floorEdges) {
   const entranceFloor = guessEntranceFloor();
-  const stairs = floorElements.filter((element) => isStairType(element.ifcType) && element.center && element.bboxMin && element.bboxMax);
-  if (floor.name !== entranceFloor && stairs.length) {
-    const stair = stairs[0];
+  if (floor.name === entranceFloor && mainEntranceDoor?.center) {
     return {
-      label: "stair landing",
-      point: stairLandingPoint(stair, floorEdges),
+      label: "main entrance",
+      point: mainEntranceDoor.center,
     };
   }
-  const door = startDoors[0];
-  return door?.center ? { label: cleanElementName(door.name || door.label), point: door.center } : null;
+  const stairPoint = stairConnectionPoint(floorElements, floorEdges);
+  if (stairPoint) {
+    return {
+      label: "stair connection area",
+      point: stairPoint,
+    };
+  }
+  const center = floorWalkableCenter(floorElements);
+  return center ? { label: "floor center", point: center } : null;
 }
 
-function stairLandingPoint(stair, floorEdges) {
+function stairConnectionPoint(floorElements, floorEdges) {
+  const stairs = floorElements.filter((element) => isStairType(element.ifcType) && element.center && element.bboxMin && element.bboxMax);
+  if (!stairs.length) return null;
+  const floorCenter = floorWalkableCenter(floorElements);
+  const stair = floorCenter
+    ? [...stairs].sort((a, b) => distance2d(a.center, floorCenter) - distance2d(b.center, floorCenter))[0]
+    : stairs[0];
+  return connectedStairAreaCenter(stair, floorElements) || stairLandingPoint(stair, floorEdges, floorCenter);
+}
+
+function connectedStairAreaCenter(stair, floorElements) {
+  const spaces = floorElements
+    .filter((element) => element.ifcType === "IfcSpace" && element.center && element.bboxMin && element.bboxMax)
+    .map((space) => {
+      const overlap = boxOverlap2d(stair, space);
+      const gap = boxGap2d(stair, space);
+      const area = Math.max(0.01, (space.bboxMax[0] - space.bboxMin[0]) * (space.bboxMax[1] - space.bboxMin[1]));
+      const width = Number(space.extra?.derivedClearSpaceWidthM || 0);
+      return { space, overlap, gap, area, width };
+    })
+    .filter((item) => item.overlap > 0 || item.gap <= 0.45);
+  if (!spaces.length) return null;
+  const selected = spaces.sort((a, b) => {
+    const overlapDiff = b.overlap - a.overlap;
+    if (Math.abs(overlapDiff) > 0.01) return overlapDiff;
+    const widthDiff = b.width - a.width;
+    if (Math.abs(widthDiff) > 0.01) return widthDiff;
+    return b.area - a.area;
+  })[0].space;
+  return selected.center;
+}
+
+function stairLandingPoint(stair, floorEdges, floorCenter = null) {
   const candidates = [];
   for (const edge of floorEdges) {
     for (const point of edge.path || []) {
-      const insideStairX = point[0] >= stair.bboxMin[0] - 0.2 && point[0] <= stair.bboxMax[0] + 0.2;
-      const beforeStair = point[1] <= stair.bboxMin[1] - 0.25;
-      if (insideStairX && beforeStair) {
+      const insideStair =
+        point[0] >= stair.bboxMin[0] - 0.15 &&
+        point[0] <= stair.bboxMax[0] + 0.15 &&
+        point[1] >= stair.bboxMin[1] - 0.15 &&
+        point[1] <= stair.bboxMax[1] + 0.15;
+      const closeToStair = distance2d(point, stair.center) <= 3.2;
+      if (!insideStair && closeToStair) {
         candidates.push(point);
       }
     }
   }
   if (candidates.length) {
-    return candidates.sort((a, b) => Math.abs(a[1] - stair.bboxMin[1]) - Math.abs(b[1] - stair.bboxMin[1]) || Math.abs(a[0] - stair.center[0]) - Math.abs(b[0] - stair.center[0]))[0];
+    const best = candidates
+      .sort((a, b) => distance2d(a, stair.center) - distance2d(b, stair.center))
+      .slice(0, Math.min(5, candidates.length));
+    return averagePoint(best);
+  }
+  if (floorCenter) {
+    return pointOutsideBoxToward(stair, floorCenter, 1.2);
   }
   return [stair.center[0], stair.bboxMin[1] - 1.2, stair.center[2]];
 }
 
-function chooseFloorStartDoors(floor, floorDoors, floorEdges) {
+function buildStairApproachRoutes(floorStart, floorElements, transform) {
+  const stairs = floorElements.filter((element) => isStairType(element.ifcType) && element.center && element.bboxMin && element.bboxMax);
+  if (!floorStart?.point || !stairs.length || floorStart.label !== "stair connection area") return [];
+  const stair = [...stairs]
+    .map((item) => ({ item, distance: distance2d(item.center, floorStart.point) }))
+    .sort((a, b) => a.distance - b.distance)[0].item;
+  const startPoint = transform.point(floorStart.point);
+  const stairPoint = transform.point(stair.center);
+  const midPoint = new THREE.Vector3(startPoint.x, startPoint.y, stairPoint.z);
+  const path = [startPoint, midPoint, stairPoint];
+  return [
+    {
+      key: `stair:${stair.guid}`,
+      edgeId: "stair approach",
+      targetGuid: stair.guid,
+      status: "fail",
+      reason: "stair blocks route",
+      blockAt: 0.88,
+      path,
+      pathLength: pathLength(path),
+    },
+  ];
+}
+
+function chooseRoutingStartDoor(floor, floorDoors, floorEdges, floorStart, mainEntranceDoor) {
+  const entranceFloor = guessEntranceFloor();
+  if (floor.name === entranceFloor && mainEntranceDoor) {
+    return mainEntranceDoor;
+  }
+  if (!floorDoors.length) return null;
+  const edgeDegree = routeEdgeDegree(floorEdges);
+  const point = floorStart?.point;
+  const routeCapableDoors = floorDoors.filter((door) => (appData.routesByDoor?.[door.guid] || []).length);
+  const candidates = routeCapableDoors.length ? routeCapableDoors : floorDoors;
+  return [...candidates].sort((a, b) => {
+    const distanceDiff = (point ? distance2d(a.center, point) : 0) - (point ? distance2d(b.center, point) : 0);
+    if (Math.abs(distanceDiff) > 0.01) return distanceDiff;
+    return (edgeDegree.get(b.guid) || 0) - (edgeDegree.get(a.guid) || 0);
+  })[0];
+}
+
+function chooseMainEntranceDoor(floorDoors, floorEdges, floorElements) {
+  if (!floorDoors.length) return null;
+  const edgeDegree = routeEdgeDegree(floorEdges);
+  const bounds = rawBounds(floorElements);
+  return [...floorDoors].sort((a, b) => mainEntranceScore(b, edgeDegree, bounds) - mainEntranceScore(a, edgeDegree, bounds))[0];
+}
+
+function mainEntranceScore(door, edgeDegree, bounds) {
+  const text = `${door?.name || ""} ${door?.label || ""}`.toLowerCase();
+  let score = 0;
+  if (/\b(main|entrance|entry|eingang|haupt|lobby|foyer)\b/.test(text)) score += 8;
+  score += Math.min(Number(door?.extra?.derivedDoorWidthM || 0), 2.0);
+  score += Math.max(0, 3 - (edgeDegree.get(door.guid) || 0)) * 0.6;
+  if (bounds && door.center) score += perimeterScore(door.center, bounds) * 2;
+  return score;
+}
+
+function routeEdgeDegree(floorEdges) {
   const edgeDegree = new Map();
   for (const edge of floorEdges) {
     edgeDegree.set(edge.startGuid, (edgeDegree.get(edge.startGuid) || 0) + 1);
     edgeDegree.set(edge.endGuid, (edgeDegree.get(edge.endGuid) || 0) + 1);
   }
-  const doorByGuid = new Map(floorDoors.map((door) => [door.guid, door]));
-  const stairStartGuids = new Set();
-  for (const edge of floorEdges.filter((item) => item.reasons?.includes("stair_block"))) {
-    const startRoutes = appData.accessibleRoutesByDoor?.[edge.startGuid] || [];
-    const endRoutes = appData.accessibleRoutesByDoor?.[edge.endGuid] || [];
-    if (startRoutes.length && doorByGuid.has(edge.startGuid)) stairStartGuids.add(edge.startGuid);
-    if (endRoutes.length && doorByGuid.has(edge.endGuid)) stairStartGuids.add(edge.endGuid);
-  }
-  const stairStarts = [...stairStartGuids]
-    .map((guid) => doorByGuid.get(guid))
-    .filter(Boolean)
-    .sort((a, b) => String(a.name || a.label).localeCompare(String(b.name || b.label)));
-  if (stairStarts.length) return stairStarts;
-
-  const entranceFloor = guessEntranceFloor();
-  if (floor.name === entranceFloor) {
-    const entrance = [...floorDoors].sort((a, b) => {
-      const widthDiff = Number(b.extra?.derivedDoorWidthM || 0) - Number(a.extra?.derivedDoorWidthM || 0);
-      if (Math.abs(widthDiff) > 0.001) return widthDiff;
-      return (edgeDegree.get(a.guid) || 0) - (edgeDegree.get(b.guid) || 0);
-    })[0];
-    return entrance ? [entrance] : [];
-  }
-
-  const bestStart = [...floorDoors].sort((a, b) => {
-    const reachDiff = (appData.accessibleRoutesByDoor?.[b.guid]?.length || 0) - (appData.accessibleRoutesByDoor?.[a.guid]?.length || 0);
-    if (reachDiff) return reachDiff;
-    return (edgeDegree.get(b.guid) || 0) - (edgeDegree.get(a.guid) || 0);
-  })[0];
-  return bestStart ? [bestStart] : [];
+  return edgeDegree;
 }
 
-function buildSimulationRoutesFromStarts(startDoors, floorEdges, transform, floorStart) {
+function buildSimulationRoutesFromStart(startDoor, floorDoors, floorEdges, transform, floorStart) {
   const edgeById = new Map(floorEdges.map((edge) => [edge.edgeId, edge]));
+  const floorDoorGuids = new Set(floorDoors.map((door) => door.guid));
   const routes = [];
   const seen = new Set();
-  for (const startDoor of startDoors) {
-    const failedEdges = floorEdges.filter((edge) => edge.status === "fail" && (edge.startGuid === startDoor.guid || edge.endGuid === startDoor.guid));
-    for (const edge of failedEdges) {
-      const startGuid = edge.startGuid === startDoor.guid ? edge.startGuid : edge.endGuid;
-      const targetGuid = edge.startGuid === startDoor.guid ? edge.endGuid : edge.startGuid;
-      const item = routePathFromEdgeIds(startGuid, [edge.edgeId], edgeById, transform, "fail", edge.reasons?.map(reasonText).join(", ") || "blocked", targetGuid);
-      if (item && !seen.has(item.key)) {
-        seen.add(item.key);
-        routes.push(item);
-      }
-    }
-    const passRoutes = appData.accessibleRoutesByDoor?.[startDoor.guid] || [];
-    for (const route of passRoutes) {
-      const item = routePathFromEdgeIds(startDoor.guid, route.edge_ids || [], edgeById, transform, "pass", "clear", route.target_guid);
-      prependFloorStart(item, floorStart, transform);
-      if (item && !seen.has(item.key)) {
-        seen.add(item.key);
-        routes.push(item);
-      }
+  const seenTargets = new Set();
+  if (!startDoor) return routes;
+  const startPoint = floorStart?.point || startDoor.center;
+  const graphRoutes = appData.routesByDoor?.[startDoor.guid] || [];
+  for (const route of graphRoutes) {
+    if (!floorDoorGuids.has(route.target_guid) || route.target_guid === startDoor.guid || seenTargets.has(route.target_guid)) continue;
+    const item = routePathFromEdgeIds(startDoor.guid, route.edge_ids || [], edgeById, "auto", "clear", route.target_guid, transform);
+    prependFloorStart(item, floorStart, transform);
+    if (item && !seen.has(item.key)) {
+      seen.add(item.key);
+      seenTargets.add(route.target_guid);
+      routes.push(item);
     }
   }
-  return routes;
+  for (const targetDoor of floorDoors) {
+    if (targetDoor.guid === startDoor.guid || seenTargets.has(targetDoor.guid)) continue;
+    const key = `${startDoor.guid}:unreachable:${targetDoor.guid}`;
+    if (seen.has(key)) continue;
+    const item = syntheticRouteFromPoints(startDoor.guid, startPoint, targetDoor, transform, key);
+    if (item) {
+      seen.add(key);
+      seenTargets.add(targetDoor.guid);
+      routes.push(item);
+    }
+  }
+  return routes.sort((a, b) => (a.status === b.status ? a.pathLength - b.pathLength : a.status === "fail" ? 1 : -1));
 }
 
 function floorRouteBounds(elements) {
@@ -731,19 +819,89 @@ function routeEdgeLooksDrawable(edge, bounds) {
   return true;
 }
 
+function floorWalkableCenter(elements) {
+  const spaces = elements.filter((element) => element.ifcType === "IfcSpace" && element.center);
+  const source = spaces.length ? spaces : elements.filter((element) => element.center);
+  if (!source.length) return null;
+  return averagePoint(source.map((element) => element.center));
+}
+
+function averagePoint(points) {
+  if (!points.length) return null;
+  const sum = points.reduce((acc, point) => [acc[0] + point[0], acc[1] + point[1], acc[2] + point[2]], [0, 0, 0]);
+  return [sum[0] / points.length, sum[1] / points.length, sum[2] / points.length];
+}
+
+function pointOutsideBoxToward(element, target, clearance) {
+  const center = element.center;
+  const dx = target[0] - center[0];
+  const dy = target[1] - center[1];
+  if (Math.abs(dx) >= Math.abs(dy)) {
+    const x = dx >= 0 ? element.bboxMax[0] + clearance : element.bboxMin[0] - clearance;
+    return [x, center[1], center[2]];
+  }
+  const y = dy >= 0 ? element.bboxMax[1] + clearance : element.bboxMin[1] - clearance;
+  return [center[0], y, center[2]];
+}
+
+function rawBounds(elements) {
+  const boxes = elements.filter((element) => element.bboxMin && element.bboxMax);
+  if (!boxes.length) return null;
+  return {
+    minX: Math.min(...boxes.map((element) => element.bboxMin[0])),
+    maxX: Math.max(...boxes.map((element) => element.bboxMax[0])),
+    minY: Math.min(...boxes.map((element) => element.bboxMin[1])),
+    maxY: Math.max(...boxes.map((element) => element.bboxMax[1])),
+  };
+}
+
+function boxOverlap2d(a, b) {
+  if (!a?.bboxMin || !a?.bboxMax || !b?.bboxMin || !b?.bboxMax) return 0;
+  const overlapX = Math.max(0, Math.min(a.bboxMax[0], b.bboxMax[0]) - Math.max(a.bboxMin[0], b.bboxMin[0]));
+  const overlapY = Math.max(0, Math.min(a.bboxMax[1], b.bboxMax[1]) - Math.max(a.bboxMin[1], b.bboxMin[1]));
+  return overlapX * overlapY;
+}
+
+function boxGap2d(a, b) {
+  if (!a?.bboxMin || !a?.bboxMax || !b?.bboxMin || !b?.bboxMax) return Number.POSITIVE_INFINITY;
+  const gapX = Math.max(0, Math.max(a.bboxMin[0], b.bboxMin[0]) - Math.min(a.bboxMax[0], b.bboxMax[0]));
+  const gapY = Math.max(0, Math.max(a.bboxMin[1], b.bboxMin[1]) - Math.min(a.bboxMax[1], b.bboxMax[1]));
+  return Math.hypot(gapX, gapY);
+}
+
+function perimeterScore(point, bounds) {
+  const spanX = Math.max(bounds.maxX - bounds.minX, 0.001);
+  const spanY = Math.max(bounds.maxY - bounds.minY, 0.001);
+  const edgeDistance = Math.min(
+    Math.abs(point[0] - bounds.minX) / spanX,
+    Math.abs(point[0] - bounds.maxX) / spanX,
+    Math.abs(point[1] - bounds.minY) / spanY,
+    Math.abs(point[1] - bounds.maxY) / spanY,
+  );
+  return 1 - Math.min(edgeDistance * 4, 1);
+}
+
+function distance2d(a, b) {
+  if (!a || !b) return Number.POSITIVE_INFINITY;
+  return Math.hypot(a[0] - b[0], a[1] - b[1]);
+}
+
 function prependFloorStart(route, floorStart, transform) {
   if (!route?.path?.length || !floorStart?.point) return;
   const start = transform.point(floorStart.point);
   const gap = route.path[0].distanceTo(start);
-  if (gap > 0.03 && gap <= 1.6) {
+  if (gap > 0.03 && gap <= 4.0) {
     route.path = [start, ...route.path];
+    route.pathLength = pathLength(route.path);
   }
 }
 
-function routePathFromEdgeIds(startGuid, edgeIds, edgeById, transform, status, reason, targetGuid) {
+function routePathFromEdgeIds(startGuid, edgeIds, edgeById, status, reason, targetGuid, transform) {
   let currentGuid = startGuid;
   const points = [];
   const ids = [];
+  const reasons = [];
+  let finalStatus = status;
   for (const edgeId of edgeIds) {
     const edge = edgeById.get(edgeId);
     if (!edge?.path?.length) return null;
@@ -757,16 +915,47 @@ function routePathFromEdgeIds(startGuid, edgeIds, edgeById, transform, status, r
     }
     currentGuid = forward ? edge.endGuid : edge.startGuid;
     ids.push(edge.edgeId);
+    if (edge.status === "fail") finalStatus = "fail";
+    for (const item of edge.reasons || []) {
+      if (!reasons.includes(item)) reasons.push(item);
+    }
   }
   if (!points.length) return null;
+  if (finalStatus === "auto") finalStatus = "pass";
+  const finalReason = reasons.length ? reasons.map(reasonText).join(", ") : reason;
   return {
     key: `${startGuid}:${ids.join("-")}:${targetGuid || currentGuid}`,
     edgeId: ids.join(" + "),
-    status,
-    reason,
-    blockAt: status === "fail" ? 0.72 : 1,
+    targetGuid: targetGuid || currentGuid,
+    status: finalStatus,
+    reason: finalReason,
+    blockAt: finalStatus === "fail" ? 0.72 : 1,
     path: points,
+    pathLength: pathLength(points),
   };
+}
+
+function syntheticRouteFromPoints(startGuid, startPoint, targetDoor, transform, key) {
+  if (!startPoint || !targetDoor?.center) return null;
+  const path = [transform.point(startPoint), transform.point(targetDoor.center)];
+  return {
+    key,
+    edgeId: "unreachable",
+    targetGuid: targetDoor.guid,
+    status: "fail",
+    reason: reasonText("unreachable"),
+    blockAt: 0.92,
+    path,
+    pathLength: pathLength(path),
+  };
+}
+
+function pathLength(points) {
+  let total = 0;
+  for (let i = 1; i < points.length; i++) {
+    total += points[i - 1].distanceTo(points[i]);
+  }
+  return total;
 }
 
 function createFloorTransform(elements) {

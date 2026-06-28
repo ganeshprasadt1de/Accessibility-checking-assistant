@@ -1,0 +1,59 @@
+{
+  "rules": [
+    {
+      "rule_id": "door_width",
+      "description": "door or opening clear width",
+      "entity": "door",
+      "property": "clear_width",
+      "operator": ">=",
+      "value": 0.9,
+      "unit": "m",
+      "tolerance": 0.05,
+      "dimension_unit": true
+    },
+    {
+      "rule_id": "corridor_width",
+      "description": "corridor or traffic-area clear width",
+      "entity": "corridor",
+      "property": "clear_width",
+      "operator": ">=",
+      "value": 1.5,
+      "unit": "m",
+      "tolerance": 0.05,
+      "dimension_unit": true
+    },
+    {
+      "rule_id": "turning_space",
+      "description": "movement or turning area width",
+      "entity": "movement_area",
+      "property": "turning_width",
+      "operator": ">=",
+      "value": 1.5,
+      "unit": "m",
+      "tolerance": 0.05,
+      "dimension_unit": true
+    },
+    {
+      "rule_id": "ramp_slope",
+      "description": "ramp slope",
+      "entity": "ramp",
+      "property": "slope",
+      "operator": "<=",
+      "value": 6.0,
+      "unit": "%",
+      "tolerance": 0.05,
+      "dimension_unit": false
+    },
+    {
+      "rule_id": "ramp_width",
+      "description": "ramp usable width",
+      "entity": "ramp",
+      "property": "usable_width",
+      "operator": ">=",
+      "value": 1.2,
+      "unit": "m",
+      "tolerance": 0.05,
+      "dimension_unit": true
+    }
+  ]
+}

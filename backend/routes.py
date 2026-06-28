@@ -5,6 +5,7 @@ import pickle
 from collections import defaultdict
 from itertools import combinations
 from pathlib import Path
+from typing import Iterable
 
 from rdflib import Graph, Literal, Namespace, RDF, RDFS
 from rdflib.namespace import XSD
@@ -194,23 +195,20 @@ def _route_intersects_any(path: list[tuple[float, float, float]], obstacles: lis
     return False
 
 
-def _sample_path(path: list[tuple[float, float, float]], step: float) -> list[tuple[float, float, float]]:
+def _sample_path(path: list[tuple[float, float, float]], step: float) -> Iterable[tuple[float, float, float]]:
     if len(path) < 2:
-        return path
-    points: list[tuple[float, float, float]] = []
+        yield from path
+        return
     for start, end in zip(path, path[1:]):
         segment_length = distance(start, end)
         count = max(1, int(segment_length / step))
         for index in range(count + 1):
             t = index / count
-            points.append(
-                (
-                    start[0] + (end[0] - start[0]) * t,
-                    start[1] + (end[1] - start[1]) * t,
-                    start[2] + (end[2] - start[2]) * t,
-                )
+            yield (
+                start[0] + (end[0] - start[0]) * t,
+                start[1] + (end[1] - start[1]) * t,
+                start[2] + (end[2] - start[2]) * t,
             )
-    return points
 
 
 def _ramp_measurements(obstacles: list[Element], space: Element | None, path: list[tuple[float, float, float]]) -> dict[str, float | str | bool | None]:

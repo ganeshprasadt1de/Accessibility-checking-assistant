@@ -2,32 +2,4 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 
 [] a sh:ValidationReport ;
-    sh:conforms false ;
-    sh:result [ a sh:ValidationResult ;
-            sh:focusNode <https://example.org/wheelchair-accessibility#route/E00314> ;
-            sh:resultMessage "stair_block|Route intersects a stair volume." ;
-            sh:resultSeverity sh:Violation ;
-            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
-            sh:sourceShape acc:RouteShape ;
-            sh:value <https://example.org/wheelchair-accessibility#route/E00314> ] ;
-    sh:result [ a sh:ValidationResult ;
-            sh:focusNode <https://example.org/wheelchair-accessibility#route/E00315> ;
-            sh:resultMessage "stair_block|Route intersects a stair volume." ;
-            sh:resultSeverity sh:Violation ;
-            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
-            sh:sourceShape acc:RouteShape ;
-            sh:value <https://example.org/wheelchair-accessibility#route/E00315> ] ;
-    sh:result [ a sh:ValidationResult ;
-            sh:focusNode <https://example.org/wheelchair-accessibility#route/E00316> ;
-            sh:resultMessage "stair_block|Route intersects a stair volume." ;
-            sh:resultSeverity sh:Violation ;
-            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
-            sh:sourceShape acc:RouteShape ;
-            sh:value <https://example.org/wheelchair-accessibility#route/E00316> ] ;
-    sh:result [ a sh:ValidationResult ;
-            sh:focusNode <https://example.org/wheelchair-accessibility#route/E00317> ;
-            sh:resultMessage "stair_block|Route intersects a stair volume." ;
-            sh:resultSeverity sh:Violation ;
-            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
-            sh:sourceShape acc:RouteShape ;
-            sh:value <https://example.org/wheelchair-accessibility#route/E00317> ] .
+    sh:conforms true .

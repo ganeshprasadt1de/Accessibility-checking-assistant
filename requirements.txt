@@ -2,3 +2,8 @@ ifcopenshell
 rdflib
 pyshacl
 shapely
+PyMuPDF
+Pillow
+paddleocr
+paddlepaddle==3.2.2
+opencv-python-headless

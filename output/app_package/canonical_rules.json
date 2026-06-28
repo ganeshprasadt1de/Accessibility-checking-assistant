@@ -1,0 +1,4246 @@
+{
+  "source_pdf": "C:\\Users\\ganes\\Desktop\\Ubung - UniStuttgart\\Ubung - UniStuttgart\\LAB - Knowledge representations for Buildings\\Mid Term 1\\planungsgrundlagen_barrierefreies_bauen.pdf",
+  "rule_count": 4,
+  "metadata": {
+    "document_chunks": "C:\\Users\\ganes\\Desktop\\Ubung - UniStuttgart\\Ubung - UniStuttgart\\LAB - Knowledge representations for Buildings\\Mid Term 1\\output\\app_package\\document_chunks.json",
+    "document_chunk_counts": {
+      "pages": 65,
+      "text": 1111,
+      "images": 210,
+      "tables": 53
+    },
+    "document_intelligence": {
+      "format": "PDF 1.6",
+      "title": "DIN 18040-1 und DIN 18040-2 – Planungsgrundlagen des barrierefreien Bauens",
+      "author": "OBB",
+      "creator": "Adobe Acrobat Pro 10.1.11",
+      "producer": "Adobe Acrobat Pro 10.1.11",
+      "creationDate": "D:20150126084756+01'00'",
+      "modDate": "D:20150127164200+01'00'",
+      "page_count": 65,
+      "pdf_parser": "pymupdf",
+      "document_intelligence_service": "DocumentIntelligenceService",
+      "image_extractor": "pymupdf_image_extractor",
+      "ocr_provider": "paddleocr",
+      "vision_provider": "ollama_qwen3-vl:8b",
+      "vision_selection": {
+        "ranker": "generic_evidence_quality_image_ranker",
+        "total_images": 210,
+        "selected_images": 30,
+        "excluded_images": 180,
+        "selection_budget": 30,
+        "scored_images": [
+          {
+            "chunk_id": "p062-table_region-002",
+            "page_number": 62,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 1.0,
+              "visual_salience": 1.0,
+              "uniqueness": 1.0
+            },
+            "final_score": 1.0,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 1,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p062-table_region-003",
+            "page_number": 62,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 1.0,
+              "visual_salience": 0.5577,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.9447,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 2,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p056-page_render-001",
+            "page_number": 56,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 1.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.9437,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 3,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p057-page_render-001",
+            "page_number": 57,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 1.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.9437,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 4,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p058-page_render-001",
+            "page_number": 58,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 1.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.9437,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 5,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p062-page_render-001",
+            "page_number": 62,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 1.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.9437,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 6,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p064-page_render-001",
+            "page_number": 64,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 1.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.9437,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 7,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p012-table_region-002",
+            "page_number": 12,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 1.0,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.9375,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 8,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p056-table_region-003",
+            "page_number": 56,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 1.0,
+              "visual_salience": 0.3405,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.9176,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 9,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p057-table_region-002",
+            "page_number": 57,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 1.0,
+              "visual_salience": 0.2307,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.9038,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 10,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p064-table_region-004",
+            "page_number": 64,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 1.0,
+              "visual_salience": 0.2302,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.9038,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 11,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p058-table_region-002",
+            "page_number": 58,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.9167,
+              "page_context_density": 1.0,
+              "table_context": 1.0,
+              "visual_salience": 0.2774,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8993,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 12,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p050-table_region-002",
+            "page_number": 50,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.6305,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8913,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 13,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p009-page_render-006",
+            "page_number": 9,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8812,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 14,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p010-page_render-001",
+            "page_number": 10,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8812,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 15,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p011-page_render-001",
+            "page_number": 11,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8812,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 16,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p012-page_render-001",
+            "page_number": 12,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8812,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 17,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p015-page_render-001",
+            "page_number": 15,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8812,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 18,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p016-page_render-001",
+            "page_number": 16,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8812,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 19,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p017-page_render-005",
+            "page_number": 17,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8812,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 20,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p022-page_render-001",
+            "page_number": 22,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8812,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 21,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p023-page_render-005",
+            "page_number": 23,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8812,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 22,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p024-page_render-001",
+            "page_number": 24,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8812,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 23,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p025-page_render-001",
+            "page_number": 25,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8812,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 24,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p027-page_render-008",
+            "page_number": 27,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8812,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 25,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p028-page_render-001",
+            "page_number": 28,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8812,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 26,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p029-page_render-005",
+            "page_number": 29,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8812,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 27,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p030-page_render-001",
+            "page_number": 30,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8812,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 28,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p040-page_render-006",
+            "page_number": 40,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8812,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 29,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p042-page_render-001",
+            "page_number": 42,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8812,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 30,
+            "selected_for_vision": true,
+            "exclusion_reason": ""
+          },
+          {
+            "chunk_id": "p046-page_render-001",
+            "page_number": 46,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8812,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 31,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 31 below selection budget 30"
+          },
+          {
+            "chunk_id": "p047-page_render-001",
+            "page_number": 47,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8812,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 32,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 32 below selection budget 30"
+          },
+          {
+            "chunk_id": "p048-page_render-005",
+            "page_number": 48,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8812,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 33,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 33 below selection budget 30"
+          },
+          {
+            "chunk_id": "p050-page_render-001",
+            "page_number": 50,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8812,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 34,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 34 below selection budget 30"
+          },
+          {
+            "chunk_id": "p053-page_render-001",
+            "page_number": 53,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8812,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 35,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 35 below selection budget 30"
+          },
+          {
+            "chunk_id": "p054-page_render-004",
+            "page_number": 54,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8812,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 36,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 36 below selection budget 30"
+          },
+          {
+            "chunk_id": "p056-table_region-002",
+            "page_number": 56,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.8167,
+              "page_context_density": 1.0,
+              "table_context": 1.0,
+              "visual_salience": 0.212,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8786,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 37,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 37 below selection budget 30"
+          },
+          {
+            "chunk_id": "p061-table_region-008",
+            "page_number": 61,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.75,
+              "table_context": 0.5,
+              "visual_salience": 0.7197,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8712,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 38,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 38 below selection budget 30"
+          },
+          {
+            "chunk_id": "p007-page_render-001",
+            "page_number": 7,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.9167,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8708,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 39,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 39 below selection budget 30"
+          },
+          {
+            "chunk_id": "p019-page_render-006",
+            "page_number": 19,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.9167,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8708,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 40,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 40 below selection budget 30"
+          },
+          {
+            "chunk_id": "p038-page_render-001",
+            "page_number": 38,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.9167,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8708,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 41,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 41 below selection budget 30"
+          },
+          {
+            "chunk_id": "p055-page_render-005",
+            "page_number": 55,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.9167,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8708,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 42,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 42 below selection budget 30"
+          },
+          {
+            "chunk_id": "p064-table_region-003",
+            "page_number": 64,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.7389,
+              "page_context_density": 1.0,
+              "table_context": 1.0,
+              "visual_salience": 0.1858,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8656,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 43,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 43 below selection budget 30"
+          },
+          {
+            "chunk_id": "p043-table_region-002",
+            "page_number": 43,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.8,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.5833,
+              "table_context": 0.5,
+              "visual_salience": 1.0,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8604,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, ocr_text_quality=1.00",
+            "rank": 44,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 44 below selection budget 30"
+          },
+          {
+            "chunk_id": "p061-page_render-007",
+            "page_number": 61,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.75,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.85,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 45,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 45 below selection budget 30"
+          },
+          {
+            "chunk_id": "p064-table_region-002",
+            "page_number": 64,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.6056,
+              "page_context_density": 1.0,
+              "table_context": 1.0,
+              "visual_salience": 0.185,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8488,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 46,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 46 below selection budget 30"
+          },
+          {
+            "chunk_id": "p014-page_render-007",
+            "page_number": 14,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.6667,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8396,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 47,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 47 below selection budget 30"
+          },
+          {
+            "chunk_id": "p041-page_render-001",
+            "page_number": 41,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.9167,
+              "table_context": 0.25,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8396,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 48,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 48 below selection budget 30"
+          },
+          {
+            "chunk_id": "p055-table_region-006",
+            "page_number": 55,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.9167,
+              "table_context": 0.5,
+              "visual_salience": 0.2746,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8364,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 49,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 49 below selection budget 30"
+          },
+          {
+            "chunk_id": "p063-page_render-005",
+            "page_number": 63,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.5833,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8292,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 50,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 50 below selection budget 30"
+          },
+          {
+            "chunk_id": "p057-table_region-004",
+            "page_number": 57,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.3833,
+              "page_context_density": 1.0,
+              "table_context": 1.0,
+              "visual_salience": 0.141,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8155,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 51,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 51 below selection budget 30"
+          },
+          {
+            "chunk_id": "p056-table_region-005",
+            "page_number": 56,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.35,
+              "page_context_density": 1.0,
+              "table_context": 1.0,
+              "visual_salience": 0.105,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8069,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 52,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 52 below selection budget 30"
+          },
+          {
+            "chunk_id": "p043-page_render-001",
+            "page_number": 43,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.8,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.5833,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8042,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, ocr_text_quality=1.00",
+            "rank": 53,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 53 below selection budget 30"
+          },
+          {
+            "chunk_id": "p056-table_region-004",
+            "page_number": 56,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.2722,
+              "page_context_density": 1.0,
+              "table_context": 1.0,
+              "visual_salience": 0.141,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.8016,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 54,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 54 below selection budget 30"
+          },
+          {
+            "chunk_id": "p058-table_region-003",
+            "page_number": 58,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.2333,
+              "page_context_density": 1.0,
+              "table_context": 1.0,
+              "visual_salience": 0.1438,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.7971,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 55,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 55 below selection budget 30"
+          },
+          {
+            "chunk_id": "p064-table_region-005",
+            "page_number": 64,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.1111,
+              "page_context_density": 1.0,
+              "table_context": 1.0,
+              "visual_salience": 0.1437,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.7819,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 56,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 56 below selection budget 30"
+          },
+          {
+            "chunk_id": "p057-table_region-003",
+            "page_number": 57,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.1056,
+              "page_context_density": 1.0,
+              "table_context": 1.0,
+              "visual_salience": 0.1414,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.7809,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 57,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 57 below selection budget 30"
+          },
+          {
+            "chunk_id": "p057-table_region-005",
+            "page_number": 57,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.05,
+              "page_context_density": 1.0,
+              "table_context": 1.0,
+              "visual_salience": 0.1438,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.7742,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 58,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 58 below selection budget 30"
+          },
+          {
+            "chunk_id": "p063-table_region-006",
+            "page_number": 63,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.5833,
+              "table_context": 0.5,
+              "visual_salience": 0.2816,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.7456,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, ocr_text_quality=1.00",
+            "rank": 59,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 59 below selection budget 30"
+          },
+          {
+            "chunk_id": "p018-page_render-009",
+            "page_number": 18,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.4,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.3333,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.7229,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, ocr_text_quality=1.00",
+            "rank": 60,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 60 below selection budget 30"
+          },
+          {
+            "chunk_id": "p049-page_render-009",
+            "page_number": 49,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.4,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.3333,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.7229,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, ocr_text_quality=1.00",
+            "rank": 61,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 61 below selection budget 30"
+          },
+          {
+            "chunk_id": "p017-image-004",
+            "page_number": 17,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.1333,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.0898,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.7154,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 62,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 62 below selection budget 30"
+          },
+          {
+            "chunk_id": "p017-image-002",
+            "page_number": 17,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.1167,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.091,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.7135,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 63,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 63 below selection budget 30"
+          },
+          {
+            "chunk_id": "p023-image-002",
+            "page_number": 23,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0722,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.0936,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.7082,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 64,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 64 below selection budget 30"
+          },
+          {
+            "chunk_id": "p017-image-003",
+            "page_number": 17,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0611,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.091,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.7065,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 65,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 65 below selection budget 30"
+          },
+          {
+            "chunk_id": "p041-table_region-002",
+            "page_number": 41,
+            "individual_scores": {
+              "measurement_density": 0.5,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.8,
+              "page_context_density": 0.9167,
+              "table_context": 0.25,
+              "visual_salience": 0.169,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.7045,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, uniqueness=1.00",
+            "rank": 66,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 66 below selection budget 30"
+          },
+          {
+            "chunk_id": "p017-image-001",
+            "page_number": 17,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.091,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6989,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 67,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 67 below selection budget 30"
+          },
+          {
+            "chunk_id": "p048-image-004",
+            "page_number": 48,
+            "individual_scores": {
+              "measurement_density": 0.8333,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.1333,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.0991,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6957,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, page_context_density=1.00",
+            "rank": 68,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 68 below selection budget 30"
+          },
+          {
+            "chunk_id": "p048-image-003",
+            "page_number": 48,
+            "individual_scores": {
+              "measurement_density": 0.8333,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.1056,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.0999,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6924,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, page_context_density=1.00",
+            "rank": 69,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 69 below selection budget 30"
+          },
+          {
+            "chunk_id": "p054-image-003",
+            "page_number": 54,
+            "individual_scores": {
+              "measurement_density": 0.8333,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0833,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.1001,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6896,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, page_context_density=1.00",
+            "rank": 70,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 70 below selection budget 30"
+          },
+          {
+            "chunk_id": "p054-image-002",
+            "page_number": 54,
+            "individual_scores": {
+              "measurement_density": 0.8333,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0444,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.1003,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6847,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, page_context_density=1.00",
+            "rank": 71,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 71 below selection budget 30"
+          },
+          {
+            "chunk_id": "p048-image-002",
+            "page_number": 48,
+            "individual_scores": {
+              "measurement_density": 0.8333,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0389,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.0999,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.684,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, page_context_density=1.00",
+            "rank": 72,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 72 below selection budget 30"
+          },
+          {
+            "chunk_id": "p013-page_render-001",
+            "page_number": 13,
+            "individual_scores": {
+              "measurement_density": 0.3333,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.5833,
+              "table_context": 0.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6833,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, ocr_text_quality=1.00",
+            "rank": 73,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 73 below selection budget 30"
+          },
+          {
+            "chunk_id": "p054-image-001",
+            "page_number": 54,
+            "individual_scores": {
+              "measurement_density": 0.8333,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0111,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.1003,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6806,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, page_context_density=1.00",
+            "rank": 74,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 74 below selection budget 30"
+          },
+          {
+            "chunk_id": "p048-image-001",
+            "page_number": 48,
+            "individual_scores": {
+              "measurement_density": 0.8333,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.0999,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6792,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, page_context_density=1.00",
+            "rank": 75,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 75 below selection budget 30"
+          },
+          {
+            "chunk_id": "p055-image-002",
+            "page_number": 55,
+            "individual_scores": {
+              "measurement_density": 0.8333,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0778,
+              "page_context_density": 0.9167,
+              "table_context": 0.5,
+              "visual_salience": 0.0936,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6777,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, uniqueness=1.00",
+            "rank": 76,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 76 below selection budget 30"
+          },
+          {
+            "chunk_id": "p029-image-003",
+            "page_number": 29,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0778,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.1071,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.674,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 77,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 77 below selection budget 30"
+          },
+          {
+            "chunk_id": "p021-page_render-001",
+            "page_number": 21,
+            "individual_scores": {
+              "measurement_density": 0.3333,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.5,
+              "table_context": 0.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6729,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, ocr_text_quality=1.00",
+            "rank": 78,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 78 below selection budget 30"
+          },
+          {
+            "chunk_id": "p044-page_render-001",
+            "page_number": 44,
+            "individual_scores": {
+              "measurement_density": 0.3333,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.5,
+              "table_context": 0.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6729,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, ocr_text_quality=1.00",
+            "rank": 79,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 79 below selection budget 30"
+          },
+          {
+            "chunk_id": "p029-image-004",
+            "page_number": 29,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0611,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.1071,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.6719,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 80,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 80 below selection budget 30"
+          },
+          {
+            "chunk_id": "p019-image-002",
+            "page_number": 19,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.8,
+              "ocr_text_quality": 0.05,
+              "page_context_density": 0.9167,
+              "table_context": 0.5,
+              "visual_salience": 0.1003,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6709,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, uniqueness=1.00",
+            "rank": 81,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 81 below selection budget 30"
+          },
+          {
+            "chunk_id": "p023-image-004",
+            "page_number": 23,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0611,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.0936,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.6702,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 82,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 82 below selection budget 30"
+          },
+          {
+            "chunk_id": "p029-image-001",
+            "page_number": 29,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0389,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.1071,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.6691,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 83,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 83 below selection budget 30"
+          },
+          {
+            "chunk_id": "p009-image-005",
+            "page_number": 9,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0278,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.1126,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.6684,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 84,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 84 below selection budget 30"
+          },
+          {
+            "chunk_id": "p040-image-005",
+            "page_number": 40,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0278,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.1126,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.6684,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 85,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 85 below selection budget 30"
+          },
+          {
+            "chunk_id": "p027-image-001",
+            "page_number": 27,
+            "individual_scores": {
+              "measurement_density": 0.6667,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0722,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.1045,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6679,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, page_context_density=1.00",
+            "rank": 86,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 86 below selection budget 30"
+          },
+          {
+            "chunk_id": "p023-image-003",
+            "page_number": 23,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0333,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.0936,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.6667,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 87,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 87 below selection budget 30"
+          },
+          {
+            "chunk_id": "p009-image-002",
+            "page_number": 9,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0056,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.114,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.6658,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 88,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 88 below selection budget 30"
+          },
+          {
+            "chunk_id": "p040-image-002",
+            "page_number": 40,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0056,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.114,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.6658,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 89,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 89 below selection budget 30"
+          },
+          {
+            "chunk_id": "p029-image-002",
+            "page_number": 29,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.1071,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.6643,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 90,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 90 below selection budget 30"
+          },
+          {
+            "chunk_id": "p027-image-004",
+            "page_number": 27,
+            "individual_scores": {
+              "measurement_density": 0.6667,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0333,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.1045,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6631,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, page_context_density=1.00",
+            "rank": 91,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 91 below selection budget 30"
+          },
+          {
+            "chunk_id": "p023-image-001",
+            "page_number": 23,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.0936,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.6626,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 92,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 92 below selection budget 30"
+          },
+          {
+            "chunk_id": "p027-image-002",
+            "page_number": 27,
+            "individual_scores": {
+              "measurement_density": 0.6667,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0222,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.1045,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6617,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, page_context_density=1.00",
+            "rank": 93,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 93 below selection budget 30"
+          },
+          {
+            "chunk_id": "p027-image-003",
+            "page_number": 27,
+            "individual_scores": {
+              "measurement_density": 0.6667,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0222,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.1045,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6617,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, page_context_density=1.00",
+            "rank": 94,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 94 below selection budget 30"
+          },
+          {
+            "chunk_id": "p027-image-006",
+            "page_number": 27,
+            "individual_scores": {
+              "measurement_density": 0.6667,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0222,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.1045,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6617,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, page_context_density=1.00",
+            "rank": 95,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 95 below selection budget 30"
+          },
+          {
+            "chunk_id": "p027-image-005",
+            "page_number": 27,
+            "individual_scores": {
+              "measurement_density": 0.6667,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0056,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.1045,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6596,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, page_context_density=1.00",
+            "rank": 96,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 96 below selection budget 30"
+          },
+          {
+            "chunk_id": "p027-image-007",
+            "page_number": 27,
+            "individual_scores": {
+              "measurement_density": 0.6667,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.1045,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6589,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, page_context_density=1.00",
+            "rank": 97,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 97 below selection budget 30"
+          },
+          {
+            "chunk_id": "p020-page_render-001",
+            "page_number": 20,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.6667,
+              "table_context": 0.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6521,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, ocr_text_quality=1.00",
+            "rank": 98,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 98 below selection budget 30"
+          },
+          {
+            "chunk_id": "p045-page_render-007",
+            "page_number": 45,
+            "individual_scores": {
+              "measurement_density": 0.3333,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.3333,
+              "table_context": 0.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6521,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, ocr_text_quality=1.00",
+            "rank": 99,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 99 below selection budget 30"
+          },
+          {
+            "chunk_id": "p052-page_render-001",
+            "page_number": 52,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.5833,
+              "table_context": 0.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6417,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, ocr_text_quality=1.00",
+            "rank": 100,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 100 below selection budget 30"
+          },
+          {
+            "chunk_id": "p055-image-004",
+            "page_number": 55,
+            "individual_scores": {
+              "measurement_density": 0.8333,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0611,
+              "page_context_density": 0.9167,
+              "table_context": 0.5,
+              "visual_salience": 0.0936,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.639,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, page_context_density=0.92",
+            "rank": 101,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 101 below selection budget 30"
+          },
+          {
+            "chunk_id": "p055-image-003",
+            "page_number": 55,
+            "individual_scores": {
+              "measurement_density": 0.8333,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0333,
+              "page_context_density": 0.9167,
+              "table_context": 0.5,
+              "visual_salience": 0.0936,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.6355,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, page_context_density=0.92",
+            "rank": 102,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 102 below selection budget 30"
+          },
+          {
+            "chunk_id": "p055-image-001",
+            "page_number": 55,
+            "individual_scores": {
+              "measurement_density": 0.8333,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0,
+              "page_context_density": 0.9167,
+              "table_context": 0.5,
+              "visual_salience": 0.0936,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.6313,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, page_context_density=0.92",
+            "rank": 103,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 103 below selection budget 30"
+          },
+          {
+            "chunk_id": "p019-image-004",
+            "page_number": 19,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.8,
+              "ocr_text_quality": 0.0222,
+              "page_context_density": 0.9167,
+              "table_context": 0.5,
+              "visual_salience": 0.1003,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.6308,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, page_context_density=0.92",
+            "rank": 104,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 104 below selection budget 30"
+          },
+          {
+            "chunk_id": "p019-image-005",
+            "page_number": 19,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.8,
+              "ocr_text_quality": 0.0222,
+              "page_context_density": 0.9167,
+              "table_context": 0.5,
+              "visual_salience": 0.1001,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.6308,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, page_context_density=0.92",
+            "rank": 105,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 105 below selection budget 30"
+          },
+          {
+            "chunk_id": "p061-image-001",
+            "page_number": 61,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0833,
+              "page_context_density": 0.75,
+              "table_context": 0.5,
+              "visual_salience": 0.1099,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6304,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, uniqueness=1.00",
+            "rank": 106,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 106 below selection budget 30"
+          },
+          {
+            "chunk_id": "p061-image-003",
+            "page_number": 61,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0722,
+              "page_context_density": 0.75,
+              "table_context": 0.5,
+              "visual_salience": 0.1099,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.629,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, uniqueness=1.00",
+            "rank": 107,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 107 below selection budget 30"
+          },
+          {
+            "chunk_id": "p019-image-003",
+            "page_number": 19,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.8,
+              "ocr_text_quality": 0.0056,
+              "page_context_density": 0.9167,
+              "table_context": 0.5,
+              "visual_salience": 0.1003,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.6287,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, page_context_density=0.92",
+            "rank": 108,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 108 below selection budget 30"
+          },
+          {
+            "chunk_id": "p061-image-004",
+            "page_number": 61,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0667,
+              "page_context_density": 0.75,
+              "table_context": 0.5,
+              "visual_salience": 0.1099,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6283,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, uniqueness=1.00",
+            "rank": 109,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 109 below selection budget 30"
+          },
+          {
+            "chunk_id": "p019-image-001",
+            "page_number": 19,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.8,
+              "ocr_text_quality": 0.0,
+              "page_context_density": 0.9167,
+              "table_context": 0.5,
+              "visual_salience": 0.1003,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.628,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, page_context_density=0.92",
+            "rank": 110,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 110 below selection budget 30"
+          },
+          {
+            "chunk_id": "p009-image-001",
+            "page_number": 9,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.114,
+              "uniqueness": 0.4082
+            },
+            "final_score": 0.6278,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 111,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 111 below selection budget 30"
+          },
+          {
+            "chunk_id": "p009-image-003",
+            "page_number": 9,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.114,
+              "uniqueness": 0.4082
+            },
+            "final_score": 0.6278,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 112,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 112 below selection budget 30"
+          },
+          {
+            "chunk_id": "p009-image-004",
+            "page_number": 9,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.114,
+              "uniqueness": 0.4082
+            },
+            "final_score": 0.6278,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 113,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 113 below selection budget 30"
+          },
+          {
+            "chunk_id": "p040-image-001",
+            "page_number": 40,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.114,
+              "uniqueness": 0.4082
+            },
+            "final_score": 0.6278,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 114,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 114 below selection budget 30"
+          },
+          {
+            "chunk_id": "p040-image-003",
+            "page_number": 40,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.114,
+              "uniqueness": 0.4082
+            },
+            "final_score": 0.6278,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 115,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 115 below selection budget 30"
+          },
+          {
+            "chunk_id": "p040-image-004",
+            "page_number": 40,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 0.0,
+              "page_context_density": 1.0,
+              "table_context": 0.5,
+              "visual_salience": 0.114,
+              "uniqueness": 0.4082
+            },
+            "final_score": 0.6278,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, normative_language=1.00",
+            "rank": 116,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 116 below selection budget 30"
+          },
+          {
+            "chunk_id": "p061-image-002",
+            "page_number": 61,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0278,
+              "page_context_density": 0.75,
+              "table_context": 0.5,
+              "visual_salience": 0.1099,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6235,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, uniqueness=1.00",
+            "rank": 117,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 117 below selection budget 30"
+          },
+          {
+            "chunk_id": "p061-image-006",
+            "page_number": 61,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0222,
+              "page_context_density": 0.75,
+              "table_context": 0.5,
+              "visual_salience": 0.1089,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6226,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, uniqueness=1.00",
+            "rank": 118,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 118 below selection budget 30"
+          },
+          {
+            "chunk_id": "p061-image-005",
+            "page_number": 61,
+            "individual_scores": {
+              "measurement_density": 1.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0167,
+              "page_context_density": 0.75,
+              "table_context": 0.5,
+              "visual_salience": 0.1099,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6221,
+            "selection_reason": "measurement_density=1.00, numeric_density=1.00, uniqueness=1.00",
+            "rank": 119,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 119 below selection budget 30"
+          },
+          {
+            "chunk_id": "p035-page_render-001",
+            "page_number": 35,
+            "individual_scores": {
+              "measurement_density": 0.6667,
+              "numeric_density": 1.0,
+              "normative_language": 0.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.1667,
+              "table_context": 0.5,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6104,
+            "selection_reason": "numeric_density=1.00, ocr_text_quality=1.00, uniqueness=1.00",
+            "rank": 120,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 120 below selection budget 30"
+          },
+          {
+            "chunk_id": "p026-page_render-007",
+            "page_number": 26,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 1.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.25,
+              "table_context": 0.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.6,
+            "selection_reason": "numeric_density=1.00, normative_language=1.00, ocr_text_quality=1.00",
+            "rank": 121,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 121 below selection budget 30"
+          },
+          {
+            "chunk_id": "p014-image-003",
+            "page_number": 14,
+            "individual_scores": {
+              "measurement_density": 0.8333,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0722,
+              "page_context_density": 0.6667,
+              "table_context": 0.5,
+              "visual_salience": 0.117,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.5987,
+            "selection_reason": "numeric_density=1.00, uniqueness=1.00, measurement_density=0.83",
+            "rank": 122,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 122 below selection budget 30"
+          },
+          {
+            "chunk_id": "p014-image-001",
+            "page_number": 14,
+            "individual_scores": {
+              "measurement_density": 0.8333,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0611,
+              "page_context_density": 0.6667,
+              "table_context": 0.5,
+              "visual_salience": 0.117,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.5973,
+            "selection_reason": "numeric_density=1.00, uniqueness=1.00, measurement_density=0.83",
+            "rank": 123,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 123 below selection budget 30"
+          },
+          {
+            "chunk_id": "p014-image-006",
+            "page_number": 14,
+            "individual_scores": {
+              "measurement_density": 0.8333,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0389,
+              "page_context_density": 0.6667,
+              "table_context": 0.5,
+              "visual_salience": 0.1017,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.5926,
+            "selection_reason": "numeric_density=1.00, uniqueness=1.00, measurement_density=0.83",
+            "rank": 124,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 124 below selection budget 30"
+          },
+          {
+            "chunk_id": "p008-page_render-009",
+            "page_number": 8,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.8,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.1667,
+              "table_context": 0.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.5646,
+            "selection_reason": "numeric_density=1.00, ocr_text_quality=1.00, uniqueness=1.00",
+            "rank": 125,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 125 below selection budget 30"
+          },
+          {
+            "chunk_id": "p039-page_render-009",
+            "page_number": 39,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.8,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.1667,
+              "table_context": 0.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.5646,
+            "selection_reason": "numeric_density=1.00, ocr_text_quality=1.00, uniqueness=1.00",
+            "rank": 126,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 126 below selection budget 30"
+          },
+          {
+            "chunk_id": "p014-image-002",
+            "page_number": 14,
+            "individual_scores": {
+              "measurement_density": 0.8333,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0667,
+              "page_context_density": 0.6667,
+              "table_context": 0.5,
+              "visual_salience": 0.117,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.5614,
+            "selection_reason": "numeric_density=1.00, measurement_density=0.83, uniqueness=0.71",
+            "rank": 127,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 127 below selection budget 30"
+          },
+          {
+            "chunk_id": "p014-image-004",
+            "page_number": 14,
+            "individual_scores": {
+              "measurement_density": 0.8333,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0611,
+              "page_context_density": 0.6667,
+              "table_context": 0.5,
+              "visual_salience": 0.1019,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.5588,
+            "selection_reason": "numeric_density=1.00, measurement_density=0.83, uniqueness=0.71",
+            "rank": 128,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 128 below selection budget 30"
+          },
+          {
+            "chunk_id": "p014-image-005",
+            "page_number": 14,
+            "individual_scores": {
+              "measurement_density": 0.8333,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0389,
+              "page_context_density": 0.6667,
+              "table_context": 0.5,
+              "visual_salience": 0.1019,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.556,
+            "selection_reason": "numeric_density=1.00, measurement_density=0.83, uniqueness=0.71",
+            "rank": 129,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 129 below selection budget 30"
+          },
+          {
+            "chunk_id": "p063-image-003",
+            "page_number": 63,
+            "individual_scores": {
+              "measurement_density": 0.6667,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0778,
+              "page_context_density": 0.5833,
+              "table_context": 0.5,
+              "visual_salience": 0.1071,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.5302,
+            "selection_reason": "numeric_density=1.00, uniqueness=0.71, measurement_density=0.67",
+            "rank": 130,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 130 below selection budget 30"
+          },
+          {
+            "chunk_id": "p063-image-004",
+            "page_number": 63,
+            "individual_scores": {
+              "measurement_density": 0.6667,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0611,
+              "page_context_density": 0.5833,
+              "table_context": 0.5,
+              "visual_salience": 0.1071,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.5282,
+            "selection_reason": "numeric_density=1.00, uniqueness=0.71, measurement_density=0.67",
+            "rank": 131,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 131 below selection budget 30"
+          },
+          {
+            "chunk_id": "p063-image-001",
+            "page_number": 63,
+            "individual_scores": {
+              "measurement_density": 0.6667,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0389,
+              "page_context_density": 0.5833,
+              "table_context": 0.5,
+              "visual_salience": 0.1071,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.5254,
+            "selection_reason": "numeric_density=1.00, uniqueness=0.71, measurement_density=0.67",
+            "rank": 132,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 132 below selection budget 30"
+          },
+          {
+            "chunk_id": "p063-image-002",
+            "page_number": 63,
+            "individual_scores": {
+              "measurement_density": 0.6667,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0,
+              "page_context_density": 0.5833,
+              "table_context": 0.5,
+              "visual_salience": 0.1071,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.5205,
+            "selection_reason": "numeric_density=1.00, uniqueness=0.71, measurement_density=0.67",
+            "rank": 133,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 133 below selection budget 30"
+          },
+          {
+            "chunk_id": "p004-page_render-001",
+            "page_number": 4,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.4,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.0833,
+              "table_context": 0.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.5042,
+            "selection_reason": "numeric_density=1.00, ocr_text_quality=1.00, uniqueness=1.00",
+            "rank": 134,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 134 below selection budget 30"
+          },
+          {
+            "chunk_id": "p005-page_render-001",
+            "page_number": 5,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.4,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.0833,
+              "table_context": 0.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.5042,
+            "selection_reason": "numeric_density=1.00, ocr_text_quality=1.00, uniqueness=1.00",
+            "rank": 135,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 135 below selection budget 30"
+          },
+          {
+            "chunk_id": "p006-page_render-001",
+            "page_number": 6,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.4,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.0833,
+              "table_context": 0.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.5042,
+            "selection_reason": "numeric_density=1.00, ocr_text_quality=1.00, uniqueness=1.00",
+            "rank": 136,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 136 below selection budget 30"
+          },
+          {
+            "chunk_id": "p036-page_render-001",
+            "page_number": 36,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.4,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.0833,
+              "table_context": 0.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.5042,
+            "selection_reason": "numeric_density=1.00, ocr_text_quality=1.00, uniqueness=1.00",
+            "rank": 137,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 137 below selection budget 30"
+          },
+          {
+            "chunk_id": "p037-page_render-001",
+            "page_number": 37,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.4,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.0833,
+              "table_context": 0.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.5042,
+            "selection_reason": "numeric_density=1.00, ocr_text_quality=1.00, uniqueness=1.00",
+            "rank": 138,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 138 below selection budget 30"
+          },
+          {
+            "chunk_id": "p034-page_render-001",
+            "page_number": 34,
+            "individual_scores": {
+              "measurement_density": 0.3333,
+              "numeric_density": 1.0,
+              "normative_language": 0.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.0833,
+              "table_context": 0.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.4958,
+            "selection_reason": "numeric_density=1.00, ocr_text_quality=1.00, uniqueness=1.00",
+            "rank": 139,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 139 below selection budget 30"
+          },
+          {
+            "chunk_id": "p002-page_render-001",
+            "page_number": 2,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.0,
+              "table_context": 0.25,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.475,
+            "selection_reason": "numeric_density=1.00, ocr_text_quality=1.00, uniqueness=1.00",
+            "rank": 140,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 140 below selection budget 30"
+          },
+          {
+            "chunk_id": "p002-table_region-002",
+            "page_number": 2,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.0,
+              "table_context": 0.25,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.475,
+            "selection_reason": "numeric_density=1.00, ocr_text_quality=1.00, uniqueness=1.00",
+            "rank": 141,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 141 below selection budget 30"
+          },
+          {
+            "chunk_id": "p032-page_render-001",
+            "page_number": 32,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.0,
+              "table_context": 0.25,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.475,
+            "selection_reason": "numeric_density=1.00, ocr_text_quality=1.00, uniqueness=1.00",
+            "rank": 142,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 142 below selection budget 30"
+          },
+          {
+            "chunk_id": "p032-table_region-002",
+            "page_number": 32,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.0,
+              "table_context": 0.25,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.475,
+            "selection_reason": "numeric_density=1.00, ocr_text_quality=1.00, uniqueness=1.00",
+            "rank": 143,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 143 below selection budget 30"
+          },
+          {
+            "chunk_id": "p060-page_render-005",
+            "page_number": 60,
+            "individual_scores": {
+              "measurement_density": 0.1667,
+              "numeric_density": 1.0,
+              "normative_language": 0.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.0,
+              "table_context": 0.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.4646,
+            "selection_reason": "numeric_density=1.00, ocr_text_quality=1.00, uniqueness=1.00",
+            "rank": 144,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 144 below selection budget 30"
+          },
+          {
+            "chunk_id": "p049-image-007",
+            "page_number": 49,
+            "individual_scores": {
+              "measurement_density": 0.5,
+              "numeric_density": 1.0,
+              "normative_language": 0.2,
+              "ocr_text_quality": 0.0611,
+              "page_context_density": 0.3333,
+              "table_context": 0.5,
+              "visual_salience": 0.1202,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.4643,
+            "selection_reason": "numeric_density=1.00, uniqueness=1.00, measurement_density=0.50",
+            "rank": 145,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 145 below selection budget 30"
+          },
+          {
+            "chunk_id": "p018-image-007",
+            "page_number": 18,
+            "individual_scores": {
+              "measurement_density": 0.5,
+              "numeric_density": 1.0,
+              "normative_language": 0.2,
+              "ocr_text_quality": 0.0556,
+              "page_context_density": 0.3333,
+              "table_context": 0.5,
+              "visual_salience": 0.1202,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.4636,
+            "selection_reason": "numeric_density=1.00, uniqueness=1.00, measurement_density=0.50",
+            "rank": 146,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 146 below selection budget 30"
+          },
+          {
+            "chunk_id": "p018-image-005",
+            "page_number": 18,
+            "individual_scores": {
+              "measurement_density": 0.5,
+              "numeric_density": 1.0,
+              "normative_language": 0.2,
+              "ocr_text_quality": 0.05,
+              "page_context_density": 0.3333,
+              "table_context": 0.5,
+              "visual_salience": 0.1202,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.4629,
+            "selection_reason": "numeric_density=1.00, uniqueness=1.00, measurement_density=0.50",
+            "rank": 147,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 147 below selection budget 30"
+          },
+          {
+            "chunk_id": "p018-image-008",
+            "page_number": 18,
+            "individual_scores": {
+              "measurement_density": 0.5,
+              "numeric_density": 1.0,
+              "normative_language": 0.2,
+              "ocr_text_quality": 0.05,
+              "page_context_density": 0.3333,
+              "table_context": 0.5,
+              "visual_salience": 0.1196,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.4629,
+            "selection_reason": "numeric_density=1.00, uniqueness=1.00, measurement_density=0.50",
+            "rank": 148,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 148 below selection budget 30"
+          },
+          {
+            "chunk_id": "p049-image-008",
+            "page_number": 49,
+            "individual_scores": {
+              "measurement_density": 0.5,
+              "numeric_density": 1.0,
+              "normative_language": 0.2,
+              "ocr_text_quality": 0.05,
+              "page_context_density": 0.3333,
+              "table_context": 0.5,
+              "visual_salience": 0.1202,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.4629,
+            "selection_reason": "numeric_density=1.00, uniqueness=1.00, measurement_density=0.50",
+            "rank": 149,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 149 below selection budget 30"
+          },
+          {
+            "chunk_id": "p049-image-005",
+            "page_number": 49,
+            "individual_scores": {
+              "measurement_density": 0.5,
+              "numeric_density": 1.0,
+              "normative_language": 0.2,
+              "ocr_text_quality": 0.0389,
+              "page_context_density": 0.3333,
+              "table_context": 0.5,
+              "visual_salience": 0.1202,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.4616,
+            "selection_reason": "numeric_density=1.00, uniqueness=1.00, measurement_density=0.50",
+            "rank": 150,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 150 below selection budget 30"
+          },
+          {
+            "chunk_id": "p001-page_render-003",
+            "page_number": 1,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.0,
+              "table_context": 0.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.4437,
+            "selection_reason": "numeric_density=1.00, ocr_text_quality=1.00, uniqueness=1.00",
+            "rank": 151,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 151 below selection budget 30"
+          },
+          {
+            "chunk_id": "p003-page_render-001",
+            "page_number": 3,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.0,
+              "table_context": 0.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.4437,
+            "selection_reason": "numeric_density=1.00, ocr_text_quality=1.00, uniqueness=1.00",
+            "rank": 152,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 152 below selection budget 30"
+          },
+          {
+            "chunk_id": "p031-page_render-001",
+            "page_number": 31,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.0,
+              "table_context": 0.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.4437,
+            "selection_reason": "numeric_density=1.00, ocr_text_quality=1.00, uniqueness=1.00",
+            "rank": 153,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 153 below selection budget 30"
+          },
+          {
+            "chunk_id": "p033-page_render-001",
+            "page_number": 33,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.0,
+              "table_context": 0.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.4437,
+            "selection_reason": "numeric_density=1.00, ocr_text_quality=1.00, uniqueness=1.00",
+            "rank": 154,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 154 below selection budget 30"
+          },
+          {
+            "chunk_id": "p051-page_render-006",
+            "page_number": 51,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.0,
+              "table_context": 0.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.4437,
+            "selection_reason": "numeric_density=1.00, ocr_text_quality=1.00, uniqueness=1.00",
+            "rank": 155,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 155 below selection budget 30"
+          },
+          {
+            "chunk_id": "p059-page_render-005",
+            "page_number": 59,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.0,
+              "table_context": 0.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.4437,
+            "selection_reason": "numeric_density=1.00, ocr_text_quality=1.00, uniqueness=1.00",
+            "rank": 156,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 156 below selection budget 30"
+          },
+          {
+            "chunk_id": "p065-page_render-001",
+            "page_number": 65,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.0,
+              "ocr_text_quality": 1.0,
+              "page_context_density": 0.0,
+              "table_context": 0.0,
+              "visual_salience": 0.55,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.4437,
+            "selection_reason": "numeric_density=1.00, ocr_text_quality=1.00, uniqueness=1.00",
+            "rank": 157,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 157 below selection budget 30"
+          },
+          {
+            "chunk_id": "p018-image-004",
+            "page_number": 18,
+            "individual_scores": {
+              "measurement_density": 0.5,
+              "numeric_density": 1.0,
+              "normative_language": 0.2,
+              "ocr_text_quality": 0.1333,
+              "page_context_density": 0.3333,
+              "table_context": 0.5,
+              "visual_salience": 0.105,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.4348,
+            "selection_reason": "numeric_density=1.00, uniqueness=0.71, measurement_density=0.50",
+            "rank": 158,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 158 below selection budget 30"
+          },
+          {
+            "chunk_id": "p049-image-004",
+            "page_number": 49,
+            "individual_scores": {
+              "measurement_density": 0.5,
+              "numeric_density": 1.0,
+              "normative_language": 0.2,
+              "ocr_text_quality": 0.1333,
+              "page_context_density": 0.3333,
+              "table_context": 0.5,
+              "visual_salience": 0.105,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.4348,
+            "selection_reason": "numeric_density=1.00, uniqueness=0.71, measurement_density=0.50",
+            "rank": 159,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 159 below selection budget 30"
+          },
+          {
+            "chunk_id": "p018-image-003",
+            "page_number": 18,
+            "individual_scores": {
+              "measurement_density": 0.5,
+              "numeric_density": 1.0,
+              "normative_language": 0.2,
+              "ocr_text_quality": 0.0667,
+              "page_context_density": 0.3333,
+              "table_context": 0.5,
+              "visual_salience": 0.1054,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.4266,
+            "selection_reason": "numeric_density=1.00, uniqueness=0.71, measurement_density=0.50",
+            "rank": 160,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 160 below selection budget 30"
+          },
+          {
+            "chunk_id": "p049-image-003",
+            "page_number": 49,
+            "individual_scores": {
+              "measurement_density": 0.5,
+              "numeric_density": 1.0,
+              "normative_language": 0.2,
+              "ocr_text_quality": 0.0667,
+              "page_context_density": 0.3333,
+              "table_context": 0.5,
+              "visual_salience": 0.1054,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.4266,
+            "selection_reason": "numeric_density=1.00, uniqueness=0.71, measurement_density=0.50",
+            "rank": 161,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 161 below selection budget 30"
+          },
+          {
+            "chunk_id": "p018-image-002",
+            "page_number": 18,
+            "individual_scores": {
+              "measurement_density": 0.5,
+              "numeric_density": 1.0,
+              "normative_language": 0.2,
+              "ocr_text_quality": 0.0333,
+              "page_context_density": 0.3333,
+              "table_context": 0.5,
+              "visual_salience": 0.1054,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.4224,
+            "selection_reason": "numeric_density=1.00, uniqueness=0.71, measurement_density=0.50",
+            "rank": 162,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 162 below selection budget 30"
+          },
+          {
+            "chunk_id": "p049-image-002",
+            "page_number": 49,
+            "individual_scores": {
+              "measurement_density": 0.5,
+              "numeric_density": 1.0,
+              "normative_language": 0.2,
+              "ocr_text_quality": 0.0333,
+              "page_context_density": 0.3333,
+              "table_context": 0.5,
+              "visual_salience": 0.1054,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.4224,
+            "selection_reason": "numeric_density=1.00, uniqueness=0.71, measurement_density=0.50",
+            "rank": 163,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 163 below selection budget 30"
+          },
+          {
+            "chunk_id": "p018-image-006",
+            "page_number": 18,
+            "individual_scores": {
+              "measurement_density": 0.5,
+              "numeric_density": 1.0,
+              "normative_language": 0.2,
+              "ocr_text_quality": 0.0,
+              "page_context_density": 0.3333,
+              "table_context": 0.5,
+              "visual_salience": 0.1202,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.4201,
+            "selection_reason": "numeric_density=1.00, uniqueness=0.71, measurement_density=0.50",
+            "rank": 164,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 164 below selection budget 30"
+          },
+          {
+            "chunk_id": "p049-image-006",
+            "page_number": 49,
+            "individual_scores": {
+              "measurement_density": 0.5,
+              "numeric_density": 1.0,
+              "normative_language": 0.2,
+              "ocr_text_quality": 0.0,
+              "page_context_density": 0.3333,
+              "table_context": 0.5,
+              "visual_salience": 0.1202,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.4201,
+            "selection_reason": "numeric_density=1.00, uniqueness=0.71, measurement_density=0.50",
+            "rank": 165,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 165 below selection budget 30"
+          },
+          {
+            "chunk_id": "p018-image-001",
+            "page_number": 18,
+            "individual_scores": {
+              "measurement_density": 0.5,
+              "numeric_density": 1.0,
+              "normative_language": 0.2,
+              "ocr_text_quality": 0.0056,
+              "page_context_density": 0.3333,
+              "table_context": 0.5,
+              "visual_salience": 0.1054,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.4189,
+            "selection_reason": "numeric_density=1.00, uniqueness=0.71, measurement_density=0.50",
+            "rank": 166,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 166 below selection budget 30"
+          },
+          {
+            "chunk_id": "p049-image-001",
+            "page_number": 49,
+            "individual_scores": {
+              "measurement_density": 0.5,
+              "numeric_density": 1.0,
+              "normative_language": 0.2,
+              "ocr_text_quality": 0.0056,
+              "page_context_density": 0.3333,
+              "table_context": 0.5,
+              "visual_salience": 0.1054,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.4189,
+            "selection_reason": "numeric_density=1.00, uniqueness=0.71, measurement_density=0.50",
+            "rank": 167,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 167 below selection budget 30"
+          },
+          {
+            "chunk_id": "p045-image-003",
+            "page_number": 45,
+            "individual_scores": {
+              "measurement_density": 0.1667,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0667,
+              "page_context_density": 0.3333,
+              "table_context": 0.0,
+              "visual_salience": 0.117,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.4105,
+            "selection_reason": "numeric_density=1.00, uniqueness=1.00, normative_language=0.60",
+            "rank": 168,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 168 below selection budget 30"
+          },
+          {
+            "chunk_id": "p045-image-001",
+            "page_number": 45,
+            "individual_scores": {
+              "measurement_density": 0.1667,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0611,
+              "page_context_density": 0.3333,
+              "table_context": 0.0,
+              "visual_salience": 0.117,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.4098,
+            "selection_reason": "numeric_density=1.00, uniqueness=1.00, normative_language=0.60",
+            "rank": 169,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 169 below selection budget 30"
+          },
+          {
+            "chunk_id": "p045-image-006",
+            "page_number": 45,
+            "individual_scores": {
+              "measurement_density": 0.1667,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0389,
+              "page_context_density": 0.3333,
+              "table_context": 0.0,
+              "visual_salience": 0.1019,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.4051,
+            "selection_reason": "numeric_density=1.00, uniqueness=1.00, normative_language=0.60",
+            "rank": 170,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 170 below selection budget 30"
+          },
+          {
+            "chunk_id": "p026-image-001",
+            "page_number": 26,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0611,
+              "page_context_density": 0.25,
+              "table_context": 0.0,
+              "visual_salience": 0.1057,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.3771,
+            "selection_reason": "numeric_density=1.00, uniqueness=1.00, normative_language=0.60",
+            "rank": 171,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 171 below selection budget 30"
+          },
+          {
+            "chunk_id": "p026-image-005",
+            "page_number": 26,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.05,
+              "page_context_density": 0.25,
+              "table_context": 0.0,
+              "visual_salience": 0.1124,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.3765,
+            "selection_reason": "numeric_density=1.00, uniqueness=1.00, normative_language=0.60",
+            "rank": 172,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 172 below selection budget 30"
+          },
+          {
+            "chunk_id": "p026-image-006",
+            "page_number": 26,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0389,
+              "page_context_density": 0.25,
+              "table_context": 0.0,
+              "visual_salience": 0.1124,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.3752,
+            "selection_reason": "numeric_density=1.00, uniqueness=1.00, normative_language=0.60",
+            "rank": 173,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 173 below selection budget 30"
+          },
+          {
+            "chunk_id": "p026-image-002",
+            "page_number": 26,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0444,
+              "page_context_density": 0.25,
+              "table_context": 0.0,
+              "visual_salience": 0.1057,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.375,
+            "selection_reason": "numeric_density=1.00, uniqueness=1.00, normative_language=0.60",
+            "rank": 174,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 174 below selection budget 30"
+          },
+          {
+            "chunk_id": "p045-image-002",
+            "page_number": 45,
+            "individual_scores": {
+              "measurement_density": 0.1667,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0667,
+              "page_context_density": 0.3333,
+              "table_context": 0.0,
+              "visual_salience": 0.117,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.3739,
+            "selection_reason": "numeric_density=1.00, uniqueness=0.71, normative_language=0.60",
+            "rank": 175,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 175 below selection budget 30"
+          },
+          {
+            "chunk_id": "p026-image-004",
+            "page_number": 26,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0167,
+              "page_context_density": 0.25,
+              "table_context": 0.0,
+              "visual_salience": 0.1124,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.3724,
+            "selection_reason": "numeric_density=1.00, uniqueness=1.00, normative_language=0.60",
+            "rank": 176,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 176 below selection budget 30"
+          },
+          {
+            "chunk_id": "p026-image-003",
+            "page_number": 26,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0222,
+              "page_context_density": 0.25,
+              "table_context": 0.0,
+              "visual_salience": 0.1057,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.3722,
+            "selection_reason": "numeric_density=1.00, uniqueness=1.00, normative_language=0.60",
+            "rank": 177,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 177 below selection budget 30"
+          },
+          {
+            "chunk_id": "p045-image-004",
+            "page_number": 45,
+            "individual_scores": {
+              "measurement_density": 0.1667,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0611,
+              "page_context_density": 0.3333,
+              "table_context": 0.0,
+              "visual_salience": 0.1019,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.3713,
+            "selection_reason": "numeric_density=1.00, uniqueness=0.71, normative_language=0.60",
+            "rank": 178,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 178 below selection budget 30"
+          },
+          {
+            "chunk_id": "p045-image-005",
+            "page_number": 45,
+            "individual_scores": {
+              "measurement_density": 0.1667,
+              "numeric_density": 1.0,
+              "normative_language": 0.6,
+              "ocr_text_quality": 0.0389,
+              "page_context_density": 0.3333,
+              "table_context": 0.0,
+              "visual_salience": 0.1019,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.3685,
+            "selection_reason": "numeric_density=1.00, uniqueness=0.71, normative_language=0.60",
+            "rank": 179,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 179 below selection budget 30"
+          },
+          {
+            "chunk_id": "p008-image-008",
+            "page_number": 8,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.8125,
+              "normative_language": 0.4,
+              "ocr_text_quality": 0.0611,
+              "page_context_density": 0.1667,
+              "table_context": 0.0,
+              "visual_salience": 0.1188,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.3199,
+            "selection_reason": "uniqueness=1.00, numeric_density=0.81, normative_language=0.40",
+            "rank": 180,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 180 below selection budget 30"
+          },
+          {
+            "chunk_id": "p039-image-002",
+            "page_number": 39,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.8125,
+              "normative_language": 0.4,
+              "ocr_text_quality": 0.0722,
+              "page_context_density": 0.1667,
+              "table_context": 0.0,
+              "visual_salience": 0.0939,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.3182,
+            "selection_reason": "uniqueness=1.00, numeric_density=0.81, normative_language=0.40",
+            "rank": 181,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 181 below selection budget 30"
+          },
+          {
+            "chunk_id": "p008-image-002",
+            "page_number": 8,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.8125,
+              "normative_language": 0.4,
+              "ocr_text_quality": 0.0611,
+              "page_context_density": 0.1667,
+              "table_context": 0.0,
+              "visual_salience": 0.0939,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.3168,
+            "selection_reason": "uniqueness=1.00, numeric_density=0.81, normative_language=0.40",
+            "rank": 182,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 182 below selection budget 30"
+          },
+          {
+            "chunk_id": "p039-image-008",
+            "page_number": 39,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.75,
+              "normative_language": 0.4,
+              "ocr_text_quality": 0.05,
+              "page_context_density": 0.1667,
+              "table_context": 0.0,
+              "visual_salience": 0.1188,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.3107,
+            "selection_reason": "uniqueness=1.00, numeric_density=0.75, normative_language=0.40",
+            "rank": 183,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 183 below selection budget 30"
+          },
+          {
+            "chunk_id": "p008-image-005",
+            "page_number": 8,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.6875,
+              "normative_language": 0.4,
+              "ocr_text_quality": 0.0333,
+              "page_context_density": 0.1667,
+              "table_context": 0.0,
+              "visual_salience": 0.1189,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.3008,
+            "selection_reason": "uniqueness=1.00, numeric_density=0.69, normative_language=0.40",
+            "rank": 184,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 184 below selection budget 30"
+          },
+          {
+            "chunk_id": "p039-image-005",
+            "page_number": 39,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.6875,
+              "normative_language": 0.4,
+              "ocr_text_quality": 0.0222,
+              "page_context_density": 0.1667,
+              "table_context": 0.0,
+              "visual_salience": 0.1189,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.2994,
+            "selection_reason": "uniqueness=1.00, numeric_density=0.69, normative_language=0.40",
+            "rank": 185,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 185 below selection budget 30"
+          },
+          {
+            "chunk_id": "p008-image-004",
+            "page_number": 8,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.625,
+              "normative_language": 0.4,
+              "ocr_text_quality": 0.0111,
+              "page_context_density": 0.1667,
+              "table_context": 0.0,
+              "visual_salience": 0.0938,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.2871,
+            "selection_reason": "uniqueness=1.00, numeric_density=0.62, normative_language=0.40",
+            "rank": 186,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 186 below selection budget 30"
+          },
+          {
+            "chunk_id": "p039-image-004",
+            "page_number": 39,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.625,
+              "normative_language": 0.4,
+              "ocr_text_quality": 0.0111,
+              "page_context_density": 0.1667,
+              "table_context": 0.0,
+              "visual_salience": 0.0937,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.2871,
+            "selection_reason": "uniqueness=1.00, numeric_density=0.62, normative_language=0.40",
+            "rank": 187,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 187 below selection budget 30"
+          },
+          {
+            "chunk_id": "p008-image-003",
+            "page_number": 8,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.625,
+              "normative_language": 0.4,
+              "ocr_text_quality": 0.0056,
+              "page_context_density": 0.1667,
+              "table_context": 0.0,
+              "visual_salience": 0.0939,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.2864,
+            "selection_reason": "uniqueness=1.00, numeric_density=0.62, normative_language=0.40",
+            "rank": 188,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 188 below selection budget 30"
+          },
+          {
+            "chunk_id": "p039-image-003",
+            "page_number": 39,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.625,
+              "normative_language": 0.4,
+              "ocr_text_quality": 0.0,
+              "page_context_density": 0.1667,
+              "table_context": 0.0,
+              "visual_salience": 0.0939,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.2857,
+            "selection_reason": "uniqueness=1.00, numeric_density=0.62, normative_language=0.40",
+            "rank": 189,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 189 below selection budget 30"
+          },
+          {
+            "chunk_id": "p059-image-001",
+            "page_number": 59,
+            "individual_scores": {
+              "measurement_density": 0.1667,
+              "numeric_density": 0.9375,
+              "normative_language": 0.0,
+              "ocr_text_quality": 0.0556,
+              "page_context_density": 0.0,
+              "table_context": 0.0,
+              "visual_salience": 0.0839,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.2805,
+            "selection_reason": "uniqueness=1.00, numeric_density=0.94, measurement_density=0.17",
+            "rank": 190,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 190 below selection budget 30"
+          },
+          {
+            "chunk_id": "p001-image-001",
+            "page_number": 1,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.0,
+              "ocr_text_quality": 0.1111,
+              "page_context_density": 0.0,
+              "table_context": 0.0,
+              "visual_salience": 0.0524,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.2704,
+            "selection_reason": "numeric_density=1.00, uniqueness=1.00, ocr_text_quality=0.11",
+            "rank": 191,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 191 below selection budget 30"
+          },
+          {
+            "chunk_id": "p059-image-003",
+            "page_number": 59,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.0,
+              "ocr_text_quality": 0.0833,
+              "page_context_density": 0.0,
+              "table_context": 0.0,
+              "visual_salience": 0.0767,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.27,
+            "selection_reason": "numeric_density=1.00, uniqueness=1.00, ocr_text_quality=0.08",
+            "rank": 192,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 192 below selection budget 30"
+          },
+          {
+            "chunk_id": "p008-image-001",
+            "page_number": 8,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.75,
+              "normative_language": 0.4,
+              "ocr_text_quality": 0.0389,
+              "page_context_density": 0.1667,
+              "table_context": 0.0,
+              "visual_salience": 0.0939,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.2696,
+            "selection_reason": "numeric_density=0.75, uniqueness=0.71, normative_language=0.40",
+            "rank": 193,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 193 below selection budget 30"
+          },
+          {
+            "chunk_id": "p039-image-001",
+            "page_number": 39,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.75,
+              "normative_language": 0.4,
+              "ocr_text_quality": 0.0389,
+              "page_context_density": 0.1667,
+              "table_context": 0.0,
+              "visual_salience": 0.0939,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.2696,
+            "selection_reason": "numeric_density=0.75, uniqueness=0.71, normative_language=0.40",
+            "rank": 194,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 194 below selection budget 30"
+          },
+          {
+            "chunk_id": "p008-image-007",
+            "page_number": 8,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.6875,
+              "normative_language": 0.4,
+              "ocr_text_quality": 0.0222,
+              "page_context_density": 0.1667,
+              "table_context": 0.0,
+              "visual_salience": 0.1189,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.2628,
+            "selection_reason": "uniqueness=0.71, numeric_density=0.69, normative_language=0.40",
+            "rank": 195,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 195 below selection budget 30"
+          },
+          {
+            "chunk_id": "p039-image-007",
+            "page_number": 39,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.6875,
+              "normative_language": 0.4,
+              "ocr_text_quality": 0.0222,
+              "page_context_density": 0.1667,
+              "table_context": 0.0,
+              "visual_salience": 0.1189,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.2628,
+            "selection_reason": "uniqueness=0.71, numeric_density=0.69, normative_language=0.40",
+            "rank": 196,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 196 below selection budget 30"
+          },
+          {
+            "chunk_id": "p051-image-002",
+            "page_number": 51,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.9375,
+              "normative_language": 0.0,
+              "ocr_text_quality": 0.05,
+              "page_context_density": 0.0,
+              "table_context": 0.0,
+              "visual_salience": 0.1003,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.261,
+            "selection_reason": "uniqueness=1.00, numeric_density=0.94, visual_salience=0.10",
+            "rank": 197,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 197 below selection budget 30"
+          },
+          {
+            "chunk_id": "p008-image-006",
+            "page_number": 8,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.625,
+              "normative_language": 0.4,
+              "ocr_text_quality": 0.0278,
+              "page_context_density": 0.1667,
+              "table_context": 0.0,
+              "visual_salience": 0.1189,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.2557,
+            "selection_reason": "uniqueness=0.71, numeric_density=0.62, normative_language=0.40",
+            "rank": 198,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 198 below selection budget 30"
+          },
+          {
+            "chunk_id": "p039-image-006",
+            "page_number": 39,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.625,
+              "normative_language": 0.4,
+              "ocr_text_quality": 0.0278,
+              "page_context_density": 0.1667,
+              "table_context": 0.0,
+              "visual_salience": 0.1189,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.2557,
+            "selection_reason": "uniqueness=0.71, numeric_density=0.62, normative_language=0.40",
+            "rank": 199,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 199 below selection budget 30"
+          },
+          {
+            "chunk_id": "p059-image-004",
+            "page_number": 59,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.9375,
+              "normative_language": 0.0,
+              "ocr_text_quality": 0.0222,
+              "page_context_density": 0.0,
+              "table_context": 0.0,
+              "visual_salience": 0.0766,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.2545,
+            "selection_reason": "uniqueness=1.00, numeric_density=0.94, visual_salience=0.08",
+            "rank": 200,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 200 below selection budget 30"
+          },
+          {
+            "chunk_id": "p001-image-002",
+            "page_number": 1,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 1.0,
+              "normative_language": 0.0,
+              "ocr_text_quality": 0.0,
+              "page_context_density": 0.0,
+              "table_context": 0.0,
+              "visual_salience": 0.0355,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.2544,
+            "selection_reason": "numeric_density=1.00, uniqueness=1.00, visual_salience=0.04",
+            "rank": 201,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 201 below selection budget 30"
+          },
+          {
+            "chunk_id": "p059-image-002",
+            "page_number": 59,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.875,
+              "normative_language": 0.0,
+              "ocr_text_quality": 0.0333,
+              "page_context_density": 0.0,
+              "table_context": 0.0,
+              "visual_salience": 0.0839,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.249,
+            "selection_reason": "uniqueness=1.00, numeric_density=0.88, visual_salience=0.08",
+            "rank": 202,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 202 below selection budget 30"
+          },
+          {
+            "chunk_id": "p060-image-004",
+            "page_number": 60,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.6875,
+              "normative_language": 0.0,
+              "ocr_text_quality": 0.05,
+              "page_context_density": 0.0,
+              "table_context": 0.0,
+              "visual_salience": 0.1011,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.2298,
+            "selection_reason": "uniqueness=1.00, numeric_density=0.69, visual_salience=0.10",
+            "rank": 203,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 203 below selection budget 30"
+          },
+          {
+            "chunk_id": "p060-image-003",
+            "page_number": 60,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.6875,
+              "normative_language": 0.0,
+              "ocr_text_quality": 0.0444,
+              "page_context_density": 0.0,
+              "table_context": 0.0,
+              "visual_salience": 0.1013,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.2291,
+            "selection_reason": "uniqueness=1.00, numeric_density=0.69, visual_salience=0.10",
+            "rank": 204,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 204 below selection budget 30"
+          },
+          {
+            "chunk_id": "p060-image-001",
+            "page_number": 60,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.6875,
+              "normative_language": 0.0,
+              "ocr_text_quality": 0.0333,
+              "page_context_density": 0.0,
+              "table_context": 0.0,
+              "visual_salience": 0.1013,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.2278,
+            "selection_reason": "uniqueness=1.00, numeric_density=0.69, visual_salience=0.10",
+            "rank": 205,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 205 below selection budget 30"
+          },
+          {
+            "chunk_id": "p060-image-002",
+            "page_number": 60,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.6875,
+              "normative_language": 0.0,
+              "ocr_text_quality": 0.0333,
+              "page_context_density": 0.0,
+              "table_context": 0.0,
+              "visual_salience": 0.1013,
+              "uniqueness": 1.0
+            },
+            "final_score": 0.2278,
+            "selection_reason": "uniqueness=1.00, numeric_density=0.69, visual_salience=0.10",
+            "rank": 206,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 206 below selection budget 30"
+          },
+          {
+            "chunk_id": "p051-image-004",
+            "page_number": 51,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.9375,
+              "normative_language": 0.0,
+              "ocr_text_quality": 0.0222,
+              "page_context_density": 0.0,
+              "table_context": 0.0,
+              "visual_salience": 0.1003,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.2209,
+            "selection_reason": "numeric_density=0.94, uniqueness=0.71, visual_salience=0.10",
+            "rank": 207,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 207 below selection budget 30"
+          },
+          {
+            "chunk_id": "p051-image-005",
+            "page_number": 51,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.9375,
+              "normative_language": 0.0,
+              "ocr_text_quality": 0.0222,
+              "page_context_density": 0.0,
+              "table_context": 0.0,
+              "visual_salience": 0.1001,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.2209,
+            "selection_reason": "numeric_density=0.94, uniqueness=0.71, visual_salience=0.10",
+            "rank": 208,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 208 below selection budget 30"
+          },
+          {
+            "chunk_id": "p051-image-003",
+            "page_number": 51,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.875,
+              "normative_language": 0.0,
+              "ocr_text_quality": 0.0056,
+              "page_context_density": 0.0,
+              "table_context": 0.0,
+              "visual_salience": 0.1003,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.211,
+            "selection_reason": "numeric_density=0.88, uniqueness=0.71, visual_salience=0.10",
+            "rank": 209,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 209 below selection budget 30"
+          },
+          {
+            "chunk_id": "p051-image-001",
+            "page_number": 51,
+            "individual_scores": {
+              "measurement_density": 0.0,
+              "numeric_density": 0.875,
+              "normative_language": 0.0,
+              "ocr_text_quality": 0.0,
+              "page_context_density": 0.0,
+              "table_context": 0.0,
+              "visual_salience": 0.1003,
+              "uniqueness": 0.7071
+            },
+            "final_score": 0.2103,
+            "selection_reason": "numeric_density=0.88, uniqueness=0.71, visual_salience=0.10",
+            "rank": 210,
+            "selected_for_vision": false,
+            "exclusion_reason": "rank 210 below selection budget 30"
+          }
+        ]
+      }
+    },
+    "rule_extraction_audit": "C:\\Users\\ganes\\Desktop\\Ubung - UniStuttgart\\Ubung - UniStuttgart\\LAB - Knowledge representations for Buildings\\Mid Term 1\\output\\app_package\\rule_extraction_audit.json"
+  },
+  "rules": [
+    {
+      "rule_id": "corridor_width",
+      "entity": "corridor",
+      "property": "clear_width",
+      "operator": ">=",
+      "value": 1.5,
+      "unit": "m",
+      "source_text": "Ausreichend ist eine nutzbare Breite von mindestens 150 cm",
+      "source_page": 11,
+      "confidence": 1.0,
+      "extraction_metadata": {
+        "extractor": "qwen_requirement_extraction_agent",
+        "llm_used": true,
+        "agent_generated": true,
+        "rule_source": "agent_decision",
+        "llm_provider": "ollama_qwen3.5:9b",
+        "candidate_id": "C0004",
+        "evidence_chunk_id": "p011-page_render-001",
+        "evidence_chunk_type": "image",
+        "evidence_text": "DIN 18040-1:2010-10 4.3.2 Flure und sonstige Verkehrsflächen Flure und sonstige Verkehrsflächen müssen ausreichend breit für die Nutzung mit dem Rollstuhl oder mit Gehhilfen, auch im Begegnungsfall, sein. Ausreichend ist eine nutzbare Breite von mindestens 150 cm; in Durchgängen von mindestens 90 cm; von mindestens 180 cm und mindestens 180 cm Länge nach höchstens 15 m Flurlänge zur Begegnung von Personen mit Rollstühlen oder Gehhilfen ; von mindestens 120 cm und höchstens 6 m Länge, wenn keine Richtungsänderung erforderlich ist und davor und danach eine Wendemöglichkeit gegeben ist, siehe Bild 1 und Bild 2. Glaswände oder großflächig verglaste Wände an Verkehrsflächen müssen deutlich erkennbar sein, z. B. durch visuell stark kontrastierende Sicherheitsmarkierungen, es sei denn die Erkennbarkeit dieser Wände ist auf andere Weise sichergestellt (z. B. Schaufenster mit Auslage und entsprechender Beleuchtung). Zu Sicherheitsmarkierungen siehe 4.3.3.5. 4.3.3 Türen 4.3.3.1 Allgemeines Türen müssen deutlich wahrnehmbar, leicht zu öffnen und schließen und sicher zu passieren sein. Karusselltüren und Pendeltüren sind kein barrierefreier Zugang und daher als einziger Zugang ungeeignet. Untere Türanschläge und -schwellen sind nicht zulässig. Sind sie technisch unabdingbar, dürfen sie nicht höher als 2 cm sein. 4.3.3.2 Maßliche Anforderungen Die geometrischen Anforderungen an Türen sind in Tabelle 1 dargestellt. 10 { \"sections\": [ \"4.3.2 Flure und sonstige Verkehrsflächen\", \"4.3.3 Türen",
+        "agent_batch_index": 12,
+        "raw_agent_rule": {
+          "rule_id": "corridor_width",
+          "entity": "Flure und sonstige Verkehrsflächen",
+          "property": "nutzbare Breite",
+          "operator": ">=",
+          "value": 150,
+          "unit": "cm",
+          "source_text": "Ausreichend ist eine nutzbare Breite von mindestens 150 cm",
+          "source_page": 11,
+          "confidence": 1.0,
+          "evidence_chunk_id": "[image p011-page_render-001]",
+          "evidence_chunk_type": "text"
+        },
+        "retrieval_rank": 23,
+        "selection_score": 0.739359,
+        "selection_scores": {
+          "semantic_relevance_score": 0.054348,
+          "measurement_specificity_score": 1.0,
+          "source_specificity_score": 0.57975,
+          "requirement_completeness_score": 1.0,
+          "ontology_consistency_score": 0.034211,
+          "retrieval_support_score": 0.885,
+          "evidence_density_score": 0.89875,
+          "contradiction_penalty": 0.0
+        },
+        "selection_explanation": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,evidence_density_score=0.899,retrieval_support_score=0.885",
+        "governance_strategy": "candidate_evaluation_framework",
+        "rejected_competing_candidates": [
+          "C0003"
+        ],
+        "duplicate_group_id": "dup-corridor_width"
+      }
+    },
+    {
+      "rule_id": "ramp_slope",
+      "entity": "ramp",
+      "property": "slope",
+      "operator": "<=",
+      "value": 6.0,
+      "unit": "%",
+      "source_text": "Die Neigung von Rampenläufen darf maximal 6 % betragen",
+      "source_page": 17,
+      "confidence": 1.0,
+      "extraction_metadata": {
+        "extractor": "qwen_requirement_extraction_agent",
+        "llm_used": true,
+        "agent_generated": true,
+        "rule_source": "agent_decision",
+        "llm_provider": "ollama_qwen3.5:9b",
+        "candidate_id": "C0001",
+        "evidence_chunk_id": "p017-page_render-005",
+        "evidence_chunk_type": "image",
+        "evidence_text": "DIN 18040-1:2010-10 4.3.7 Fahrtreppen und geneigte Fahrsteige Mit den nachfolgenden Eigenschaften sind Fahrtreppen und geneigte Fahrsteige für Menschen mit begrenzten motorischen Einschränkungen sowie für blinde und sehbehinderte Menschen barrierefrei nutzbar: Geschwindigkeit bis zu 0,5 m/s; Vorlauf bei Fahrtreppen mindestens drei Stufen; Steigungswinkel der Fahrtreppen vorzugsweise nicht mehr als 30° (entspricht 57,7 %); Steigungswinkel der Fahrsteige nicht mehr als 7° (entspricht 12,3 %). ANMERKUNG Zusätzlich zu den Anforderungen in DIN EN 115-1 zu Stufenmarkierungen wird empfohlen, eine Sicherheitsmarkierung der Trittstufe nach 4.3.6.4 anzubringen und die Kämme an Zu- und Abgang mit einem 8 cm breiten Streifen zu kennzeichnen. 4.3.8 Rampen 4.3.8.1 Allgemeines Rampen müssen leicht zu nutzen und verkehrssicher sein. Das gilt bei Einhaltung der nachfolgenden Anforderungen an Rampenläufe, Podeste, Radabweiser und Handläufe als erreicht. Die maßlichen Anforderungen sind in den Bildern 6 bis 8 dargestellt. Zur Erforderlichkeit von Rampen siehe 4.2.3 und 4.3.1. 4.3.8.2 Rampenläufe und Podeste Die Neigung von Rampenläufen darf maximal 6 % betragen; eine Querneigung ist unzulässig. Die Ent- wässerung der Podeste von im Freien liegenden Rampen ist sicherzustellen. Am Anfang und am Ende der Rampe ist eine Bewegungsfläche von mindestens 150 cm × 150 cm anzu- ordnen. Die nutzbare Laufbreite der Rampe muss mindestens 120 cm betragen. Die Länge der einzelnen Rampenläufe darf höchstens 60",
+        "agent_batch_index": 4,
+        "raw_agent_rule": {
+          "rule_id": "ramp_slope",
+          "entity": "Rampenläufe",
+          "property": "Neigung",
+          "operator": "<=",
+          "value": 6.0,
+          "unit": "%",
+          "source_text": "Die Neigung von Rampenläufen darf maximal 6 % betragen",
+          "source_page": 29,
+          "confidence": 1.0,
+          "evidence_chunk_id": "[image p029-page_render-005 page 29]",
+          "evidence_chunk_type": "text"
+        },
+        "retrieval_rank": 7,
+        "selection_score": 0.760095,
+        "selection_scores": {
+          "semantic_relevance_score": 0.022727,
+          "measurement_specificity_score": 1.0,
+          "source_specificity_score": 0.610327,
+          "requirement_completeness_score": 1.0,
+          "ontology_consistency_score": 0.014444,
+          "retrieval_support_score": 0.965,
+          "evidence_density_score": 0.956518,
+          "contradiction_penalty": 0.0
+        },
+        "selection_explanation": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,retrieval_support_score=0.965,evidence_density_score=0.957",
+        "governance_strategy": "candidate_evaluation_framework",
+        "rejected_competing_candidates": [
+          "C0008"
+        ],
+        "duplicate_group_id": "dup-ramp_slope"
+      }
+    },
+    {
+      "rule_id": "ramp_width",
+      "entity": "ramp",
+      "property": "usable_width",
+      "operator": ">=",
+      "value": 1.2,
+      "unit": "m",
+      "source_text": "Die nutzbare Laufbreite der Rampe muss mindestens 120 cm betragen",
+      "source_page": 17,
+      "confidence": 1.0,
+      "extraction_metadata": {
+        "extractor": "qwen_requirement_extraction_agent",
+        "llm_used": true,
+        "agent_generated": true,
+        "rule_source": "agent_decision",
+        "llm_provider": "ollama_qwen3.5:9b",
+        "candidate_id": "C0002",
+        "evidence_chunk_id": "p017-page_render-005",
+        "evidence_chunk_type": "image",
+        "evidence_text": "DIN 18040-1:2010-10 4.3.7 Fahrtreppen und geneigte Fahrsteige Mit den nachfolgenden Eigenschaften sind Fahrtreppen und geneigte Fahrsteige für Menschen mit begrenzten motorischen Einschränkungen sowie für blinde und sehbehinderte Menschen barrierefrei nutzbar: Geschwindigkeit bis zu 0,5 m/s; Vorlauf bei Fahrtreppen mindestens drei Stufen; Steigungswinkel der Fahrtreppen vorzugsweise nicht mehr als 30° (entspricht 57,7 %); Steigungswinkel der Fahrsteige nicht mehr als 7° (entspricht 12,3 %). ANMERKUNG Zusätzlich zu den Anforderungen in DIN EN 115-1 zu Stufenmarkierungen wird empfohlen, eine Sicherheitsmarkierung der Trittstufe nach 4.3.6.4 anzubringen und die Kämme an Zu- und Abgang mit einem 8 cm breiten Streifen zu kennzeichnen. 4.3.8 Rampen 4.3.8.1 Allgemeines Rampen müssen leicht zu nutzen und verkehrssicher sein. Das gilt bei Einhaltung der nachfolgenden Anforderungen an Rampenläufe, Podeste, Radabweiser und Handläufe als erreicht. Die maßlichen Anforderungen sind in den Bildern 6 bis 8 dargestellt. Zur Erforderlichkeit von Rampen siehe 4.2.3 und 4.3.1. 4.3.8.2 Rampenläufe und Podeste Die Neigung von Rampenläufen darf maximal 6 % betragen; eine Querneigung ist unzulässig. Die Ent- wässerung der Podeste von im Freien liegenden Rampen ist sicherzustellen. Am Anfang und am Ende der Rampe ist eine Bewegungsfläche von mindestens 150 cm × 150 cm anzu- ordnen. Die nutzbare Laufbreite der Rampe muss mindestens 120 cm betragen. Die Länge der einzelnen Rampenläufe darf höchstens 60",
+        "agent_batch_index": 4,
+        "raw_agent_rule": {
+          "rule_id": "ramp_width",
+          "entity": "Rampe",
+          "property": "nutzbare Laufbreite",
+          "operator": ">=",
+          "value": 1.2,
+          "unit": "m",
+          "source_text": "Die nutzbare Laufbreite der Rampe muss mindestens 120 cm betragen",
+          "source_page": 29,
+          "confidence": 1.0,
+          "evidence_chunk_id": "[image p029-page_render-005 page 29]",
+          "evidence_chunk_type": "text"
+        },
+        "retrieval_rank": 7,
+        "selection_score": 0.760733,
+        "selection_scores": {
+          "semantic_relevance_score": 0.034091,
+          "measurement_specificity_score": 1.0,
+          "source_specificity_score": 0.610327,
+          "requirement_completeness_score": 1.0,
+          "ontology_consistency_score": 0.021429,
+          "retrieval_support_score": 0.965,
+          "evidence_density_score": 0.956518,
+          "contradiction_penalty": 0.0
+        },
+        "selection_explanation": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,retrieval_support_score=0.965,evidence_density_score=0.957",
+        "governance_strategy": "candidate_evaluation_framework",
+        "rejected_competing_candidates": [
+          "C0007"
+        ],
+        "duplicate_group_id": "dup-ramp_width"
+      }
+    },
+    {
+      "rule_id": "turning_space",
+      "entity": "movement_area",
+      "property": "turning_width",
+      "operator": ">=",
+      "value": 1.5,
+      "unit": "m",
+      "source_text": "mindestens einmal eine Bewegungsfläche von mindestens 150 cm × 150 cm zum Wenden",
+      "source_page": 42,
+      "confidence": 1.0,
+      "extraction_metadata": {
+        "extractor": "qwen_requirement_extraction_agent",
+        "llm_used": true,
+        "agent_generated": true,
+        "rule_source": "agent_decision",
+        "llm_provider": "ollama_qwen3.5:9b",
+        "candidate_id": "C0005",
+        "evidence_chunk_id": "p042-page_render-001",
+        "evidence_chunk_type": "image",
+        "evidence_text": "DIN 18040-2:2011-09 4.3.2 Flure und sonstige Verkehrsflächen Flure und sonstige Verkehrsflächen müssen ausreichend breit für die Nutzung mit dem Rollstuhl oder mit Gehhilfen sein. Ausreichend ist eine nutzbare Breite von mindestens 150 cm; in Durchgängen von mindestens 90 cm. Es genügt eine Flurbreite von mindestens 120 cm, wenn mindestens einmal eine Bewegungsfläche von mindestens 150 cm × 150 cm zum Wenden vorhanden ist; bei langen Fluren muss diese Bewegungsfläche mindestens alle 15 m angeordnet werden. 4.3.3 Türen 4.3.3.1 Allgemeines Türen müssen deutlich wahrnehmbar, leicht zu öffnen und schließen und sicher zu passieren sein. Untere Türanschläge und Schwellen sind nicht zulässig. Sind sie technisch unabdingbar, dürfen sie nicht höher als 2 cm sein. ANMERKUNG Zu Wohnungseingangstüren und Wohnungstüren siehe 5.3.1. 4.3.3.2 Maßliche Anforderungen Die geometrischen Anforderungen an Türen sind in Tabelle 1 dargestellt. 11 { \"document_identifier\": \"DIN 18040-2:2011-09\", \"sections\": [ { \"section_number\": \"4.3.2\", \"section_title\": \"Flure und sonstige Verkehrsflächen\", \"requirements\": [ { \"requirement\": \"Flure und sonstige Verkehrsflächen müssen ausreichend breit für die Nutzung mit dem Rollstuhl oder mit Gehhilfen sein.\", \"measurements\": [ { \"min_width\": \"150 cm\", \"scope\": \"nutzbare Breite\" }, { \"min_width\": \"90 cm\", \"scope\": \"Durchgänge\" } ], \"exceptions\": [ { \"condition\": \"Flurbreite von mindestens 120 cm\", \"additional_requirement\": \"mindestens einmal Bewegungsfläche von mind",
+        "agent_batch_index": 12,
+        "raw_agent_rule": {
+          "rule_id": "turning_space",
+          "entity": "Bewegungsfläche",
+          "property": "Breite",
+          "operator": ">=",
+          "value": 150,
+          "unit": "cm",
+          "source_text": "mindestens einmal eine Bewegungsfläche von mindestens 150 cm × 150 cm zum Wenden",
+          "source_page": 42,
+          "confidence": 1.0,
+          "evidence_chunk_id": "[image p042-page_render-001]",
+          "evidence_chunk_type": "text"
+        },
+        "retrieval_rank": 24,
+        "selection_score": 0.751255,
+        "selection_scores": {
+          "semantic_relevance_score": 0.025641,
+          "measurement_specificity_score": 1.0,
+          "source_specificity_score": 0.59985,
+          "requirement_completeness_score": 1.0,
+          "ontology_consistency_score": 0.024074,
+          "retrieval_support_score": 0.88,
+          "evidence_density_score": 0.94,
+          "contradiction_penalty": 0.0
+        },
+        "selection_explanation": "selected_by_evidence_quality:measurement_specificity_score=1.000,requirement_completeness_score=1.000,evidence_density_score=0.940,retrieval_support_score=0.880",
+        "governance_strategy": "candidate_evaluation_framework",
+        "rejected_competing_candidates": [
+          "C0006"
+        ],
+        "duplicate_group_id": "dup-turning_space"
+      }
+    }
+  ]
+}

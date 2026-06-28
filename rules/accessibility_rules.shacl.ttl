@@ -1,6 +1,5 @@
 @prefix acc: <https://example.org/wheelchair-accessibility#> .
 @prefix props: <https://w3id.org/props#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
@@ -14,7 +13,8 @@ acc:DoorWidthShape
             PREFIX acc: <https://example.org/wheelchair-accessibility#>
             PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
             SELECT $this WHERE {
-                $this acc:derivedDoorWidthM ?width .
+                $this acc:isRouteRelevantDoor true ;
+                      acc:derivedDoorWidthM ?width .
                 FILTER(xsd:decimal(?width) < 0.90)
             }
         """ ;
@@ -25,6 +25,7 @@ acc:DoorWidthShape
         sh:select """
             PREFIX acc: <https://example.org/wheelchair-accessibility#>
             SELECT $this WHERE {
+                $this acc:isRouteRelevantDoor true .
                 FILTER NOT EXISTS { $this acc:derivedDoorWidthM ?width . }
             }
         """ ;
@@ -38,26 +39,11 @@ acc:CorridorWidthShape
         sh:message "corridor_width|Corridor clear width is below 1.50 m." ;
         sh:select """
             PREFIX acc: <https://example.org/wheelchair-accessibility#>
-            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
             PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
             SELECT $this WHERE {
-                $this acc:derivedClearSpaceWidthM ?width .
-                OPTIONAL { $this rdfs:label ?label . }
-                BIND(LCASE(STR(?label)) AS ?text)
-                FILTER(REGEX(?text, "corridor|flur|hall|gang"))
-                FILTER(!REGEX(?text, "chase|shaft|gfa|volume|vent|heating"))
-                FILTER(xsd:decimal(?width) < 1.50)
-            }
-        """ ;
-    ] ;
-    sh:sparql [
-        a sh:SPARQLConstraint ;
-        sh:message "turning_space|Turning space is below 1.50 m." ;
-        sh:select """
-            PREFIX acc: <https://example.org/wheelchair-accessibility#>
-            PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-            SELECT $this WHERE {
-                $this acc:turningSpaceM ?width .
+                $this acc:isCorridorLike true ;
+                      acc:derivedClearSpaceWidthM ?width .
+                FILTER NOT EXISTS { $this acc:isExcludedSpace true . }
                 FILTER(xsd:decimal(?width) < 1.50)
             }
         """ ;

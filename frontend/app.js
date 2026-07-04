@@ -297,11 +297,13 @@ function pickPlanTarget(event, fallback, elementsByGuid, edgesById, issueCounts)
   if (!candidates.length) return null;
   const x = Math.round(event.clientX);
   const y = Math.round(event.clientY);
-  const key = candidates.map(planTargetKey).join("|");
-  const samePick = planPick && planPick.key === key && Math.abs(planPick.x - x) <= 4 && Math.abs(planPick.y - y) <= 4;
-  const index = samePick ? (planPick.index + 1) % candidates.length : 0;
-  planPick = { x, y, key, index };
-  return candidates[index];
+  const samePick = planPick && Math.abs(planPick.x - x) <= 8 && Math.abs(planPick.y - y) <= 8;
+  let target = candidates[0];
+  if (samePick && planPick.key) {
+    target = nextPlanTarget(candidates, planPick.key, planPick.kind, elementsByGuid, edgesById);
+  }
+  planPick = { x, y, key: planTargetKey(target), kind: planTargetKind(target, elementsByGuid, edgesById) };
+  return target;
 }
 
 function planTargetCandidates(event, fallback, elementsByGuid, edgesById, issueCounts) {
@@ -325,6 +327,28 @@ function planTargetKey(target) {
   const edgeId = target.getAttribute("data-edge-id");
   if (edgeId) return `edge:${edgeId}`;
   return `guid:${target.getAttribute("data-guid") || ""}`;
+}
+
+function nextPlanTarget(candidates, key, kind, elementsByGuid, edgesById) {
+  const index = candidates.findIndex((candidate) => planTargetKey(candidate) === key);
+  if (index < 0) return candidates[0];
+  for (let offset = 1; offset < candidates.length; offset++) {
+    const candidate = candidates[(index + offset) % candidates.length];
+    if (planTargetKind(candidate, elementsByGuid, edgesById) !== kind) return candidate;
+  }
+  return candidates[(index + 1) % candidates.length];
+}
+
+function planTargetKind(target, elementsByGuid, edgesById) {
+  const edgeId = target.getAttribute("data-edge-id");
+  if (edgeId && edgesById.has(edgeId)) return "route";
+  const element = elementsByGuid.get(target.getAttribute("data-guid"));
+  if (!element) return "element";
+  if (element.ifcType === "IfcDoor") return "door";
+  if (isStairType(element.ifcType) || isRampType(element.ifcType)) return "blocker";
+  if (element.ifcType === "IfcSpace") return "space";
+  if (element.ifcType === "IfcWall" || element.ifcType === "IfcColumn") return "wall";
+  return "element";
 }
 
 function planTargetPriority(target, elementsByGuid, edgesById, issueCounts) {

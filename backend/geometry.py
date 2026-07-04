@@ -29,18 +29,6 @@ def _bbox_from_shape(shape) -> tuple[tuple[float, float, float], tuple[float, fl
     return (min(xs), min(ys), min(zs)), (max(xs), max(ys), max(zs))
 
 
-def _bbox_from_placement(obj, unit_scale: float = 1.0) -> tuple[tuple[float, float, float], tuple[float, float, float]] | None:
-    placement = getattr(obj, "ObjectPlacement", None)
-    try:
-        loc = placement.RelativePlacement.Location.Coordinates
-        x = float(loc[0]) * unit_scale
-        y = float(loc[1]) * unit_scale
-        z = float(loc[2] if len(loc) > 2 else 0) * unit_scale
-        return (x - 0.25, y - 0.25, z), (x + 0.25, y + 0.25, z + 2.1)
-    except Exception:
-        return None
-
-
 def _storey_name(obj) -> str | None:
     try:
         for rel in getattr(obj, "ContainedInStructure", []) or []:
@@ -234,7 +222,7 @@ def extract_elements(ifc_path: Path) -> tuple[list[Element], list[str]]:
             try:
                 bbox = _bbox_from_shape(ifcopenshell.geom.create_shape(settings, obj))
             except Exception:
-                bbox = _bbox_from_placement(obj, unit_scale)
+                pass
             if not bbox:
                 missing_geometry.append(guid)
                 extra = _semantic_extra(obj, ifc_type)

@@ -14,6 +14,7 @@
       </div>
       <nav>
         <button data-page="results" class="active">Check Results</button>
+        <button data-page="plan">Floor Plan 2D</button>
         <button data-page="model">Building Model</button>
         <button data-page="simulation">Wheelchair Simulation</button>
       </nav>
@@ -32,6 +33,44 @@
         <div class="tableWrap"><table id="elementTable"></table></div>
         <h2>Issues</h2>
         <div class="tableWrap"><table id="issueTable"></table></div>
+      </section>
+
+      <section id="plan" class="page">
+        <div class="planShell">
+          <div class="planToolbar">
+            <label class="floorSelectLabel">Floor <select id="planFloorSelect"></select></label>
+            <label class="floorSelectLabel">Routes
+              <select id="planRouteMode">
+                <option value="issues">Issues only</option>
+                <option value="fail">Failed routes</option>
+                <option value="all">All routes</option>
+              </select>
+            </label>
+            <div class="planZoom">
+              <button id="planResetView">Reset</button>
+            </div>
+            <div class="planLegend">
+              <span><i class="legendBox roomBox"></i>room</span>
+              <span><i class="legendBox corridorBox"></i>corridor</span>
+              <span><i class="legendBox wallBox"></i>wall</span>
+              <span><i class="legendBox doorBox"></i>door</span>
+              <span><i class="legendBox stairBox"></i>stair</span>
+              <span><i class="legendBox rampBox"></i>ramp</span>
+              <span><i class="legendLine passLine"></i>clear route</span>
+              <span><i class="legendLine failLine"></i>blocked route</span>
+              <span><i class="legendBox issueBox"></i>issue</span>
+            </div>
+          </div>
+          <div class="planLayout">
+            <div id="planViewer"></div>
+            <aside class="planPanel">
+              <h2 id="planTitle">Floor plan</h2>
+              <p id="planStatus">Choose a floor to inspect routes and issues.</p>
+              <div class="simMetrics" id="planMetrics"></div>
+              <div id="planDetails" class="planDetails"></div>
+            </aside>
+          </div>
+        </div>
       </section>
 
       <section id="model" class="page">

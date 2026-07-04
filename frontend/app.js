@@ -31,6 +31,13 @@ let simPath = [];
 let simScenarioData;
 let simRouteIndex = 0;
 let simBlockedHold = 0;
+let planFloorName = "";
+let planRouteMode = "issues";
+let planZoom = 1;
+let planDrag = null;
+let planSuppressClick = false;
+let planClickTarget = null;
+let planPick = null;
 
 const pages = document.querySelectorAll(".page");
 document.querySelectorAll("nav button").forEach((button) => {
@@ -66,6 +73,7 @@ async function init() {
   appData = await response.json();
   renderSummary();
   renderTables();
+  setupFloorPlan();
   setupAssistant();
 }
 
@@ -105,6 +113,400 @@ function renderTables() {
     displaySource(i.source),
   ]);
   fillTable("#issueTable", ["Type", "Element", "Issue", "Measured", "Required", "Source"], issueRows);
+}
+
+function setupFloorPlan() {
+  const select = document.querySelector("#planFloorSelect");
+  if (!select) return;
+  const routeMode = document.querySelector("#planRouteMode");
+  const floors = (appData.floors || []).filter((floor) => floor.elementGuids?.length);
+  select.innerHTML = floors
+    .map((floor) => `<option value="${escapeHtml(floor.name)}">${escapeHtml(floor.name)} (${floor.spaceGuids?.length || 0} spaces)</option>`)
+    .join("");
+  planFloorName = guessEntranceFloor() || floors.find((floor) => floor.routeEdgeIds?.length)?.name || floors[0]?.name || "";
+  select.value = planFloorName;
+  select.addEventListener("change", () => {
+    planFloorName = select.value;
+    renderFloorPlan();
+  });
+  routeMode?.addEventListener("change", () => {
+    planRouteMode = routeMode.value;
+    renderFloorPlan();
+  });
+  document.querySelector("#planResetView")?.addEventListener("click", resetPlanView);
+  setupPlanPanZoom();
+  renderFloorPlan();
+}
+
+function renderFloorPlan() {
+  const viewer = document.querySelector("#planViewer");
+  const title = document.querySelector("#planTitle");
+  const status = document.querySelector("#planStatus");
+  const metrics = document.querySelector("#planMetrics");
+  const details = document.querySelector("#planDetails");
+  if (!viewer || !title || !status || !metrics || !details) return;
+  const floors = appData.floors || [];
+  const floor = floors.find((item) => item.name === planFloorName) || floors.find((item) => item.elementGuids?.length);
+  if (!floor) {
+    viewer.innerHTML = "<p class=\"emptyPlan\">No floor data was generated.</p>";
+    title.textContent = "Floor plan";
+    status.textContent = "No floor data was generated.";
+    metrics.innerHTML = "";
+    details.innerHTML = "";
+    return;
+  }
+  planFloorName = floor.name;
+  const select = document.querySelector("#planFloorSelect");
+  if (select && select.value !== planFloorName) select.value = planFloorName;
+  const elementsByGuid = new Map(appData.elements.map((element) => [element.guid, element]));
+  const edgesById = new Map(appData.routeEdges.map((edge) => [edge.edgeId, edge]));
+  const issueCounts = planIssueCounts();
+  const elements = (floor.elementGuids || []).map((guid) => elementsByGuid.get(guid)).filter(Boolean);
+  const edges = (floor.routeEdgeIds || []).map((edgeId) => edgesById.get(edgeId)).filter(Boolean);
+  viewer.innerHTML = floorPlanSvg(floor, elements, edges, issueCounts);
+  planPick = null;
+  applyPlanZoom();
+  title.textContent = `${floor.name} floor plan`;
+  const failedRoutes = edges.filter((edge) => edge.status === "fail").length;
+  status.textContent = `${elements.length} elements, ${edges.length} route edges, ${failedRoutes} blocked route edges.`;
+  metrics.innerHTML = [
+    ["Spaces", String(floor.spaceGuids?.length || 0), floor.spaceGuids?.length ? "pass" : "fail"],
+    ["Doors", String(floor.doorGuids?.length || 0), floor.doorGuids?.length ? "pass" : "fail"],
+    ["Route edges", String(edges.length), edges.length ? "pass" : "fail"],
+    ["Issues", String(floor.issueCount || 0), floor.issueCount ? "fail" : "pass"],
+  ]
+    .map(([label, value, state]) => `<div class="simMetric ${state}"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)}</span></div>`)
+    .join("");
+  details.innerHTML = planRouteMode === "issues" ? "<p>Click a room, door, stair, or ramp to inspect it. Use the Routes control to overlay route lines.</p>" : "<p>Click a room, door, stair, ramp, or route line to inspect it.</p>";
+  viewer.onclick = (event) => {
+    if (planSuppressClick) {
+      planSuppressClick = false;
+      planClickTarget = null;
+      return;
+    }
+    const directTarget = event.target instanceof Element ? event.target.closest("[data-guid], [data-edge-id]") : null;
+    const target = pickPlanTarget(event, directTarget || planClickTarget, elementsByGuid, edgesById, issueCounts);
+    planClickTarget = null;
+    if (!target) return;
+    const guid = target.getAttribute("data-guid");
+    const edgeId = target.getAttribute("data-edge-id");
+    selectPlanTarget(target);
+    if (guid) showPlanElement(guid, elementsByGuid, issueCounts);
+    if (edgeId) showPlanRoute(edgeId, edgesById, elementsByGuid);
+  };
+}
+
+function setPlanZoom(value) {
+  planZoom = Math.max(0.7, Math.min(3.5, value));
+  applyPlanZoom();
+}
+
+function applyPlanZoom() {
+  const svg = document.querySelector("#planViewer svg");
+  if (!svg) return;
+  svg.style.width = `${100 * planZoom}%`;
+  svg.style.height = `${100 * planZoom}%`;
+  svg.style.minWidth = `${760 * planZoom}px`;
+  svg.style.minHeight = `${560 * planZoom}px`;
+}
+
+function resetPlanView() {
+  planZoom = 1;
+  applyPlanZoom();
+  const viewer = document.querySelector("#planViewer");
+  if (!viewer) return;
+  viewer.scrollLeft = 0;
+  viewer.scrollTop = 0;
+}
+
+function setupPlanPanZoom() {
+  const viewer = document.querySelector("#planViewer");
+  if (!viewer) return;
+  viewer.addEventListener("wheel", (event) => {
+    if (!viewer.querySelector("svg")) return;
+    event.preventDefault();
+    const rect = viewer.getBoundingClientRect();
+    const oldZoom = planZoom;
+    const nextZoom = planZoom * (event.deltaY < 0 ? 1.12 : 0.89);
+    setPlanZoom(nextZoom);
+    const ratio = planZoom / oldZoom;
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    viewer.scrollLeft = (viewer.scrollLeft + x) * ratio - x;
+    viewer.scrollTop = (viewer.scrollTop + y) * ratio - y;
+  }, { passive: false });
+  viewer.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0) return;
+    const target = event.target instanceof Element ? event.target.closest("[data-guid], [data-edge-id]") : null;
+    planDrag = {
+      x: event.clientX,
+      y: event.clientY,
+      left: viewer.scrollLeft,
+      top: viewer.scrollTop,
+      moved: false,
+      target,
+      pointerId: event.pointerId,
+    };
+    viewer.setPointerCapture(event.pointerId);
+  });
+  viewer.addEventListener("pointermove", (event) => {
+    if (!planDrag) return;
+    if ((event.buttons & 1) !== 1) {
+      planDrag = null;
+      return;
+    }
+    const dx = event.clientX - planDrag.x;
+    const dy = event.clientY - planDrag.y;
+    if (Math.abs(dx) + Math.abs(dy) > 4) {
+      planDrag.moved = true;
+    }
+    viewer.scrollLeft = planDrag.left - (event.clientX - planDrag.x);
+    viewer.scrollTop = planDrag.top - (event.clientY - planDrag.y);
+  });
+  viewer.addEventListener("pointerup", (event) => {
+    if (planDrag?.moved) {
+      planSuppressClick = true;
+    } else {
+      planClickTarget = planDrag?.target || null;
+    }
+    if (viewer.hasPointerCapture(event.pointerId)) {
+      viewer.releasePointerCapture(event.pointerId);
+    }
+    planDrag = null;
+  });
+  viewer.addEventListener("pointercancel", (event) => {
+    if (viewer.hasPointerCapture(event.pointerId)) {
+      viewer.releasePointerCapture(event.pointerId);
+    }
+    planDrag = null;
+  });
+}
+
+function selectPlanTarget(target) {
+  document.querySelectorAll("#planViewer .selectedPlanElement").forEach((item) => item.classList.remove("selectedPlanElement"));
+  document.querySelectorAll("#planViewer .selectedPlanRoute").forEach((item) => item.classList.remove("selectedPlanRoute"));
+  if (target.hasAttribute("data-edge-id")) {
+    target.classList.add("selectedPlanRoute");
+    return;
+  }
+  target.classList.add("selectedPlanElement");
+}
+
+function pickPlanTarget(event, fallback, elementsByGuid, edgesById, issueCounts) {
+  const candidates = planTargetCandidates(event, fallback, elementsByGuid, edgesById, issueCounts);
+  if (!candidates.length) return null;
+  const x = Math.round(event.clientX);
+  const y = Math.round(event.clientY);
+  const key = candidates.map(planTargetKey).join("|");
+  const samePick = planPick && planPick.key === key && Math.abs(planPick.x - x) <= 4 && Math.abs(planPick.y - y) <= 4;
+  const index = samePick ? (planPick.index + 1) % candidates.length : 0;
+  planPick = { x, y, key, index };
+  return candidates[index];
+}
+
+function planTargetCandidates(event, fallback, elementsByGuid, edgesById, issueCounts) {
+  const viewer = document.querySelector("#planViewer");
+  if (!viewer) return [];
+  const candidates = [];
+  for (const item of document.elementsFromPoint(event.clientX, event.clientY)) {
+    const target = item instanceof Element ? item.closest("[data-guid], [data-edge-id]") : null;
+    if (!target || !viewer.contains(target)) continue;
+    if (!candidates.some((candidate) => planTargetKey(candidate) === planTargetKey(target))) {
+      candidates.push(target);
+    }
+  }
+  if (fallback && viewer.contains(fallback) && !candidates.some((candidate) => planTargetKey(candidate) === planTargetKey(fallback))) {
+    candidates.push(fallback);
+  }
+  return candidates.sort((a, b) => planTargetPriority(a, elementsByGuid, edgesById, issueCounts) - planTargetPriority(b, elementsByGuid, edgesById, issueCounts));
+}
+
+function planTargetKey(target) {
+  const edgeId = target.getAttribute("data-edge-id");
+  if (edgeId) return `edge:${edgeId}`;
+  return `guid:${target.getAttribute("data-guid") || ""}`;
+}
+
+function planTargetPriority(target, elementsByGuid, edgesById, issueCounts) {
+  const edgeId = target.getAttribute("data-edge-id");
+  if (edgeId) {
+    const edge = edgesById.get(edgeId);
+    if (planRouteMode === "issues") return 80;
+    return edge?.status === "fail" ? 0 : 4;
+  }
+  const guid = target.getAttribute("data-guid");
+  const element = elementsByGuid.get(guid);
+  let priority = planElementPriority(element);
+  if (planRouteMode === "issues" && issueCounts.get(guid)) priority -= 100;
+  return priority;
+}
+
+function planElementPriority(element) {
+  if (!element) return 70;
+  if (element.ifcType === "IfcDoor") return 20;
+  if (isStairType(element.ifcType) || isRampType(element.ifcType)) return 30;
+  if (element.ifcType === "IfcSpace") return 40;
+  if (element.ifcType === "IfcWall" || element.ifcType === "IfcColumn") return 50;
+  return 60;
+}
+
+function floorPlanSvg(floor, elements, edges, issueCounts) {
+  const bounds = floorPlanBounds(elements, edges);
+  if (!bounds) return "<p class=\"emptyPlan\">No drawable geometry was generated for this floor.</p>";
+  const view = floorPlanView(bounds);
+  const spaces = elements.filter((element) => element.ifcType === "IfcSpace" && element.bboxMin && element.bboxMax);
+  const walls = elements.filter((element) => ["IfcWall", "IfcColumn"].includes(element.ifcType) && element.bboxMin && element.bboxMax);
+  const doors = elements.filter((element) => element.ifcType === "IfcDoor" && element.bboxMin && element.bboxMax);
+  const blockers = elements.filter((element) => ["IfcStair", "IfcStairFlight", "IfcRamp", "IfcRampFlight"].includes(element.ifcType) && element.bboxMin && element.bboxMax);
+  const visibleEdges = planRouteMode === "all" ? edges : planRouteMode === "fail" ? edges.filter((edge) => edge.status === "fail") : [];
+  const routeMarkup = visibleEdges
+    .filter((edge) => edge.path?.length > 1)
+    .sort((a, b) => (a.status === "fail" ? 1 : 0) - (b.status === "fail" ? 1 : 0))
+    .map((edge) => floorPlanRoute(edge, bounds, view))
+    .join("");
+  const wallMarkup = walls.map((element) => floorPlanRect(element, bounds, view, "planWall", issueCounts)).join("");
+  const spaceMarkup = spaces.map((element) => floorPlanRect(element, bounds, view, floorPlanSpaceClass(element, issueCounts), issueCounts)).join("");
+  const blockerMarkup = blockers.map((element) => floorPlanRect(element, bounds, view, isStairType(element.ifcType) ? "planBlocker" : "planRamp", issueCounts)).join("");
+  const doorMarkup = doors.map((element) => floorPlanRect(element, bounds, view, floorPlanDoorClass(element, issueCounts), issueCounts)).join("");
+  const labelMarkup = spaces.map((element, index) => index < 90 ? floorPlanLabel(element, bounds, view) : "").join("");
+  return `<svg class="floorSvg" viewBox="0 0 ${view.width} ${view.height}" role="img" aria-label="${escapeHtml(floor.name)} floor plan">
+    <rect class="planCanvas" x="0" y="0" width="${view.width}" height="${view.height}"></rect>
+    <g>${spaceMarkup}</g>
+    <g>${wallMarkup}</g>
+    <g>${routeMarkup}</g>
+    <g>${blockerMarkup}</g>
+    <g>${doorMarkup}</g>
+    <g>${labelMarkup}</g>
+  </svg>`;
+}
+
+function floorPlanBounds(elements, edges) {
+  const xs = [];
+  const ys = [];
+  const baseElements = elements.some((element) => element.ifcType === "IfcSpace" && element.bboxMin && element.bboxMax)
+    ? elements.filter((element) => element.ifcType === "IfcSpace")
+    : elements;
+  for (const element of baseElements) {
+    if (!element.bboxMin || !element.bboxMax) continue;
+    xs.push(element.bboxMin[0], element.bboxMax[0]);
+    ys.push(element.bboxMin[1], element.bboxMax[1]);
+  }
+  if (!xs.length || !ys.length) {
+    for (const edge of edges) {
+      for (const point of edge.path || []) {
+        xs.push(point[0]);
+        ys.push(point[1]);
+      }
+    }
+  }
+  if (!xs.length || !ys.length) return null;
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+  const pad = Math.max(1, Math.min(4, Math.max(maxX - minX, maxY - minY) * 0.04));
+  return { minX: minX - pad, maxX: maxX + pad, minY: minY - pad, maxY: maxY + pad };
+}
+
+function floorPlanView(bounds) {
+  const width = 1000;
+  const worldWidth = Math.max(bounds.maxX - bounds.minX, 1);
+  const worldHeight = Math.max(bounds.maxY - bounds.minY, 1);
+  return { width, height: Math.max(380, Math.min(760, Math.round(width * worldHeight / worldWidth))) };
+}
+
+function floorPlanPoint(point, bounds, view) {
+  const x = ((point[0] - bounds.minX) / Math.max(bounds.maxX - bounds.minX, 0.001)) * view.width;
+  const y = view.height - ((point[1] - bounds.minY) / Math.max(bounds.maxY - bounds.minY, 0.001)) * view.height;
+  return [x, y];
+}
+
+function floorPlanRect(element, bounds, view, className, issueCounts) {
+  const a = floorPlanPoint(element.bboxMin, bounds, view);
+  const b = floorPlanPoint(element.bboxMax, bounds, view);
+  const x = Math.min(a[0], b[0]);
+  const y = Math.min(a[1], b[1]);
+  const width = Math.max(Math.abs(a[0] - b[0]), element.ifcType === "IfcDoor" ? 4 : 1);
+  const height = Math.max(Math.abs(a[1] - b[1]), element.ifcType === "IfcDoor" ? 4 : 1);
+  const issueClass = issueCounts.get(element.guid) ? " hasIssue" : "";
+  return `<g data-guid="${escapeHtml(element.guid)}">
+    <rect class="${className}${issueClass}" x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${width.toFixed(2)}" height="${height.toFixed(2)}"></rect>
+  </g>`;
+}
+
+function floorPlanLabel(element, bounds, view) {
+  const a = floorPlanPoint(element.bboxMin, bounds, view);
+  const b = floorPlanPoint(element.bboxMax, bounds, view);
+  const x = Math.min(a[0], b[0]);
+  const y = Math.min(a[1], b[1]);
+  const width = Math.abs(a[0] - b[0]);
+  const height = Math.abs(a[1] - b[1]);
+  if (width <= 48 || height <= 18) return "";
+  return `<text class="planLabel" x="${(x + width / 2).toFixed(2)}" y="${(y + height / 2).toFixed(2)}">${escapeHtml(cleanElementName(element.name || element.label))}</text>`;
+}
+
+function floorPlanRoute(edge, bounds, view) {
+  const points = edge.path.map((point) => floorPlanPoint(point, bounds, view).map((value) => value.toFixed(2)).join(",")).join(" ");
+  const className = edge.status === "fail" ? "planRoute failRoute" : "planRoute passRoute";
+  return `<polyline class="${className}" points="${points}" data-edge-id="${escapeHtml(edge.edgeId)}"></polyline>`;
+}
+
+function floorPlanSpaceClass(element, issueCounts) {
+  if (issueCounts.get(element.guid)) return "planSpace issueSpace";
+  return element.extra?.isCorridorLike ? "planSpace corridorSpace" : "planSpace";
+}
+
+function floorPlanDoorClass(element, issueCounts) {
+  if (issueCounts.get(element.guid) || Number(element.extra?.derivedDoorWidthM || 0) < 0.9) return "planDoor issueDoor";
+  return "planDoor";
+}
+
+function planIssueCounts() {
+  const counts = new Map();
+  for (const issue of appData.issues || []) {
+    counts.set(issue.element_guid, (counts.get(issue.element_guid) || 0) + 1);
+  }
+  return counts;
+}
+
+function showPlanElement(guid, elementsByGuid, issueCounts) {
+  const element = elementsByGuid.get(guid);
+  if (!element) return;
+  const issues = (appData.issues || []).filter((issue) => issue.element_guid === guid);
+  const rows = [
+    ["Type", element.ifcType],
+    ["Name", cleanElementName(element.name || element.label)],
+    ["Width", valueWithUnit(element.width, "m")],
+    ["Depth", valueWithUnit(element.depth, "m")],
+    ["Height", valueWithUnit(element.height, "m")],
+    ["Issues", String(issueCounts.get(guid) || 0)],
+  ];
+  document.querySelector("#planDetails").innerHTML = `<h3>${escapeHtml(cleanElementName(element.name || element.label))}</h3>${planRows(rows)}${planIssueList(issues)}`;
+}
+
+function showPlanRoute(edgeId, edgesById, elementsByGuid) {
+  const edge = edgesById.get(edgeId);
+  if (!edge) return;
+  const start = elementsByGuid.get(edge.startGuid);
+  const end = elementsByGuid.get(edge.endGuid);
+  const rows = [
+    ["Route", edge.edgeId],
+    ["From", cleanElementName(start?.name || start?.label || edge.startGuid)],
+    ["To", cleanElementName(end?.name || end?.label || edge.endGuid)],
+    ["Distance", valueWithUnit(edge.distanceM, "m")],
+    ["Status", edge.status],
+    ["Reason", edge.reasons?.map(reasonText).join(", ") || "clear"],
+  ];
+  document.querySelector("#planDetails").innerHTML = `<h3>${escapeHtml(edge.edgeId)}</h3>${planRows(rows)}`;
+}
+
+function planRows(rows) {
+  return `<dl class="planRows">${rows.map(([label, value]) => `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value ?? "missing")}</dd>`).join("")}</dl>`;
+}
+
+function planIssueList(issues) {
+  if (!issues.length) return "";
+  return `<div class="planIssues">${issues.map((issue) => `<p><strong>${escapeHtml(issue.rule_id)}</strong><br>${escapeHtml(issue.short_text || issue.details)}</p>`).join("")}</div>`;
 }
 
 function setupAssistant() {

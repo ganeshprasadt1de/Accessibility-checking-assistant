@@ -9,15 +9,17 @@ from backend.geometry import extract_elements
 from backend.glb_export import export_box_glb
 from backend.ifc_tools import (
     add_geometry_to_graph,
+    bind_graph,
     element_uri,
     load_raw_graph,
     run_ifctolbd,
+    run_ifctolbd_exe,
 )
 from backend.package_writer import write_json_package
 from backend.routes import add_routes_to_graph, build_route_edges, save_route_binary
 from backend.shacl_runner import issues_from_shacl_report, run_shacl
 from backend.audit import write_audit_report
-from rdflib import Literal, Namespace, RDF
+from rdflib import Graph, Literal, Namespace, RDF
 from rdflib.namespace import XSD
 
 ACC = Namespace("https://example.org/wheelchair-accessibility#")
@@ -26,6 +28,7 @@ ACC = Namespace("https://example.org/wheelchair-accessibility#")
 def main() -> int:
     parser = argparse.ArgumentParser(description="Preprocess an IFC model for wheelchair route checking.")
     parser.add_argument("--ifc", type=Path, default=ROOT / "AC20-Institute-Var-2.ifc", help="Path to one IFC file.")
+    parser.add_argument("--ifctolbd-exe", type=Path, default=ROOT / "IFCtoLBDConverter_CLI.exe", help="Path to IFCtoLBDConverter_CLI.exe.")
     parser.add_argument("--ifctolbd-zip", type=Path, default=default_ifctolbd_zip(), help="Path to IFCtoLBD-master.zip.")
     parser.add_argument("--output", type=Path, default=ROOT / "output" / "app_package", help="Output app package folder.")
     parser.add_argument("--save-bin", action="store_true", help="Save route_graph.bin for fast route loading.")
@@ -41,10 +44,18 @@ def main() -> int:
     print(f"Extracted elements: {len(elements)}")
 
     raw_ttl = output / "raw_lbd_graph.ttl"
-    ifctolbd_note = run_ifctolbd(ifc_path, args.ifctolbd_zip.resolve(), raw_ttl, work)
+    ifctolbd_note = "raw graph created by IFCtoLBD"
+    try:
+        if args.ifctolbd_exe.exists():
+            ifctolbd_note = run_ifctolbd_exe(ifc_path, args.ifctolbd_exe.resolve(), raw_ttl)
+        else:
+            ifctolbd_note = run_ifctolbd(ifc_path, args.ifctolbd_zip.resolve(), raw_ttl, work)
+        graph = load_raw_graph(raw_ttl)
+    except Exception as exc:
+        ifctolbd_note = f"IFCtoLBD failed; continued with IFC geometry only: {exc}"
+        graph = Graph()
+        bind_graph(graph)
     print(ifctolbd_note)
-
-    graph = load_raw_graph(raw_ttl)
     add_geometry_to_graph(graph, elements)
     edges = build_route_edges(ifc_path, elements)
     add_routes_to_graph(graph, edges)

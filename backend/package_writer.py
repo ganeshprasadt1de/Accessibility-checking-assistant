@@ -21,6 +21,7 @@ def write_json_package(
     route_index = {door: routes_from_start(edges, door) for door in doors}
     accessible_route_index = {door: routes_from_start(edges, door, pass_only=True) for door in doors}
     floors = _floor_summaries(elements, issues, edges)
+    ifctolbd_failed = "ifctolbd failed" in ifctolbd_note.lower()
     data = {
         "summary": {
             "elementCount": len(elements),
@@ -30,7 +31,7 @@ def write_json_package(
             "missingGeometryCount": len(missing_geometry),
             "ifctolbd": ifctolbd_note,
             "shacl": shacl_summary,
-            "ruleSource": "SHACL rules over IFCtoLBD RDF plus IFC-derived geometry measurements",
+            "ruleSource": "SHACL rules over IFC-derived geometry measurements" if ifctolbd_failed else "SHACL rules over IFCtoLBD RDF plus IFC-derived geometry measurements",
         },
         "rules": RULE_LIMITS.__dict__,
         "elements": [_element_dict(e) for e in elements],
@@ -44,6 +45,7 @@ def write_json_package(
             "measurements": "IfcOpenShell geometry or explicit IFC properties",
             "rules": "SHACL validation report",
             "routes": "precomputed door graph from IFC space boundaries",
+            "ifctolbd": "failed; raw LBD RDF is not included" if ifctolbd_failed else "raw graph created by IFCtoLBD",
         },
     }
     output_dir.mkdir(parents=True, exist_ok=True)

@@ -97,6 +97,27 @@ def run_ifctolbd(ifc_path: Path, ifctolbd_zip: Path, output_ttl: Path, work_dir:
     raise RuntimeError("IFCtoLBD converter did not produce a Turtle graph. " + " | ".join(errors))
 
 
+def run_ifctolbd_exe(ifc_path: Path, executable: Path, output_ttl: Path) -> str:
+    if not executable.exists():
+        raise FileNotFoundError(f"IFCtoLBD executable was not found: {executable}")
+    base_uri = "https://example.org/building/"
+    command = [
+        str(executable),
+        "-u",
+        base_uri,
+        "-t",
+        str(output_ttl),
+        str(ifc_path),
+    ]
+    try:
+        subprocess.run(command, check=True, timeout=240)
+    except (subprocess.SubprocessError, OSError) as exc:
+        raise RuntimeError(f"IFCtoLBD executable failed: {exc}") from exc
+    if output_ttl.exists() and output_ttl.stat().st_size > 0:
+        return "raw graph created by IFCtoLBD"
+    raise RuntimeError("IFCtoLBD executable did not produce a Turtle graph.")
+
+
 def bind_graph(g: Graph) -> None:
     for prefix, ns in NS.items():
         g.bind(prefix, ns)

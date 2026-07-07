@@ -10,6 +10,7 @@ raw_lbd_graph.ttl
 property_mapping/
 .tools/
 IFCtoLBD-master.zip
+IFCtoLBDConverter_CLI.exe
 NBU_MedicalClinic_ifc.zip
 sample_models/
 *.pptx

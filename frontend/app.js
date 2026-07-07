@@ -38,57 +38,364 @@ let planDrag = null;
 let planSuppressClick = false;
 let planClickTarget = null;
 let planPick = null;
+let planControlsReady = false;
+let modelState = { models: [], activeModelId: null, defaultPackageAvailable: false };
+let pendingUploadFiles = [];
+let modelPollTimer;
+let viewerAnimationStarted = false;
+let simulationAnimationStarted = false;
+let viewerResizeReady = false;
+let simulationResizeReady = false;
 
 const pages = document.querySelectorAll(".page");
 document.querySelectorAll("nav button").forEach((button) => {
-  button.addEventListener("click", () => {
-    document.querySelectorAll("nav button").forEach((b) => b.classList.remove("active"));
-    button.classList.add("active");
-    pages.forEach((page) => page.classList.toggle("active", page.id === button.dataset.page));
-    if (button.dataset.page === "model") {
-      if (!viewerReady) {
-        setupViewer();
-        viewerReady = true;
-      }
-      requestAnimationFrame(resizeRenderer);
-    }
-    if (button.dataset.page === "simulation") {
-      if (!simulationReady) {
-        setupSimulation();
-        simulationReady = true;
-      }
-      requestAnimationFrame(resizeSimulationRenderer);
-    }
-  });
+  button.addEventListener("click", () => goToPage(button.dataset.page));
 });
+window.addEventListener("hashchange", () => showPage(currentPage()));
 
 init();
 
 async function init() {
+  setupModelLibrary();
+  await loadModels();
+  await loadAppData();
+  showPage(currentPage());
+}
+
+function currentPage() {
+  const pageId = location.hash ? location.hash.slice(1) : "models";
+  return document.getElementById(pageId) ? pageId : "models";
+}
+
+function goToPage(pageId) {
+  if (!document.getElementById(pageId)) return;
+  if (pageId !== "models" && !appData) {
+    setModelStatus("Generate and open a completed model before viewing results.");
+    pageId = "models";
+  }
+  if (currentPage() === pageId) {
+    showPage(pageId);
+    return;
+  }
+  location.hash = pageId;
+}
+
+function showPage(pageId) {
+  if (pageId !== "models" && !appData) {
+    setModelStatus("Generate and open a completed model before viewing results.");
+    pageId = "models";
+  }
+  document.body.classList.toggle("homePage", pageId === "models");
+  document.querySelectorAll("nav button").forEach((button) => button.classList.toggle("active", button.dataset.page === pageId));
+  pages.forEach((page) => page.classList.toggle("active", page.id === pageId));
+  if (pageId === "model" && appData) {
+    if (!viewerReady) {
+      setupViewer();
+      viewerReady = true;
+    }
+    requestAnimationFrame(resizeRenderer);
+  }
+  if (pageId === "simulation" && appData) {
+    if (!simulationReady) {
+      setupSimulation();
+      simulationReady = true;
+    }
+    requestAnimationFrame(resizeSimulationRenderer);
+  }
+}
+
+async function loadAppData() {
   const response = await fetch("/api/data");
   if (!response.ok) {
-    document.body.innerHTML = "<main><h1>Run preprocess.py first</h1><p>The app package is missing.</p></main>";
-    return;
+    appData = null;
+    return false;
   }
   appData = await response.json();
   renderSummary();
   renderTables();
   setupFloorPlan();
   setupAssistant();
+  return true;
+}
+
+function setupModelLibrary() {
+  const input = document.querySelector("#modelFile");
+  const dropZone = document.querySelector(".modelDropZone");
+  document.querySelector("#modelUploadButton")?.addEventListener("click", uploadSelectedModels);
+  document.querySelector("#modelRefresh")?.addEventListener("click", loadModels);
+  input?.addEventListener("change", () => {
+    pendingUploadFiles = Array.from(input.files || []);
+    setUploadSummary(pendingUploadFiles);
+  });
+  dropZone?.addEventListener("dragover", (event) => {
+    event.preventDefault();
+    dropZone.classList.add("dragging");
+  });
+  dropZone?.addEventListener("dragleave", () => dropZone.classList.remove("dragging"));
+  dropZone?.addEventListener("drop", async (event) => {
+    event.preventDefault();
+    dropZone.classList.remove("dragging");
+    pendingUploadFiles = Array.from(event.dataTransfer?.files || []);
+    setUploadSummary(pendingUploadFiles);
+    await uploadFiles(pendingUploadFiles);
+  });
+  document.querySelector("#modelTable")?.addEventListener("click", async (event) => {
+    const button = event.target instanceof Element ? event.target.closest("button[data-action]") : null;
+    if (!button) return;
+    const id = button.getAttribute("data-id");
+    const action = button.getAttribute("data-action");
+    if (!id || !action) return;
+    if (action === "generate") await generateModel(id);
+    if (action === "open") await openModel(id);
+    if (action === "rename") await renameModel(id);
+    if (action === "delete") await deleteModel(id);
+  });
+}
+
+async function loadModels() {
+  try {
+    const response = await fetch("/api/models");
+    if (!response.ok) return;
+    modelState = await response.json();
+    renderModelTable();
+    renderCurrentModel();
+    scheduleModelPolling();
+  } catch {
+    setModelStatus("Model library could not be loaded.");
+  }
+}
+
+function renderModelTable() {
+  const table = document.querySelector("#modelTable");
+  if (!table) return;
+  const models = sortedModels();
+  if (!models.length) {
+    table.innerHTML = "<tbody><tr><td>No uploaded models yet.</td></tr></tbody>";
+    return;
+  }
+  table.innerHTML = `<thead><tr>
+    <th>Model</th>
+    <th>Status</th>
+    <th>Progress</th>
+    <th>Package</th>
+    <th>Updated</th>
+    <th>Actions</th>
+  </tr></thead><tbody>${models.map(modelRow).join("")}</tbody>`;
+}
+
+function sortedModels() {
+  return [...(modelState.models || [])].sort((a, b) => Number(b.updatedAt || 0) - Number(a.updatedAt || 0));
+}
+
+function modelRow(model) {
+  const active = model.id === modelState.activeModelId ? " active" : "";
+  const summary = model.summary || {};
+  const fallback = String(summary.ifctolbd || "").toLowerCase().includes("ifctolbd failed");
+  const packageText = model.status === "complete"
+    ? `${summary.elementCount ?? 0} elements, ${summary.routeEdgeCount ?? 0} routes, ${summary.issueCount ?? 0} issues${fallback ? "; IFCtoLBD failed" : ""}`
+    : model.message || "";
+  return `<tr class="${active}">
+    <td class="modelNameCell"><strong>${escapeHtml(model.name || model.fileName || model.id)}</strong><span>${escapeHtml(model.fileName || "")}</span></td>
+    <td><span class="statusBadge ${escapeHtml(model.status || "")}">${escapeHtml(model.status || "uploaded")}</span></td>
+    <td>${progressMarkup(model)}</td>
+    <td>${escapeHtml(packageText)}</td>
+    <td>${escapeHtml(formatDate(model.updatedAt))}</td>
+    <td><div class="modelActions">${modelActions(model)}</div></td>
+  </tr>`;
+}
+
+function modelActions(model) {
+  const buttons = [];
+  if (model.status === "complete") buttons.push(modelButton(model.id, "open", "Open"));
+  if (model.status !== "running") buttons.push(modelButton(model.id, "generate", model.status === "complete" ? "Regenerate" : "Generate"));
+  buttons.push(modelButton(model.id, "rename", "Rename"));
+  if (model.status !== "running") buttons.push(modelButton(model.id, "delete", "Delete"));
+  return buttons.join("");
+}
+
+function modelButton(id, action, label) {
+  return `<button data-id="${escapeHtml(id)}" data-action="${escapeHtml(action)}">${escapeHtml(label)}</button>`;
+}
+
+function progressMarkup(model) {
+  const value = Math.max(0, Math.min(100, Number(model.progress || 0)));
+  const stage = model.stage || "Uploaded";
+  const message = model.message || "";
+  return `<div class="progressBar"><span style="width:${value}%"></span></div><div class="modelStage">${escapeHtml(stage)}${message ? `<br>${escapeHtml(shortText(message, 70))}` : ""}</div>`;
+}
+
+async function uploadSelectedModels() {
+  const input = document.querySelector("#modelFile");
+  const files = pendingUploadFiles.length ? pendingUploadFiles : Array.from(input?.files || []);
+  await uploadFiles(files);
+}
+
+async function uploadFiles(files) {
+  const input = document.querySelector("#modelFile");
+  const ifcFiles = files.filter((file) => file.name.toLowerCase().endsWith(".ifc"));
+  if (!ifcFiles.length) {
+    setModelStatus("Choose an IFC file first.");
+    return;
+  }
+  for (let index = 0; index < ifcFiles.length; index++) {
+    const file = ifcFiles[index];
+    setModelStatus(`Uploading ${index + 1}/${ifcFiles.length}: ${file.name}.`);
+    const response = await fetch("/api/models/upload", {
+      method: "POST",
+      headers: { "X-File-Name": encodeURIComponent(file.name) },
+      body: file,
+    });
+    const data = await response.json();
+    if (data.error) {
+      setModelStatus(data.error);
+      return;
+    }
+  }
+  if (input) input.value = "";
+  pendingUploadFiles = [];
+  setUploadSummary([]);
+  setModelStatus(`${ifcFiles.length} model(s) uploaded.`);
+  await loadModels();
+}
+
+async function generateModel(id) {
+  const model = modelState.models.find((item) => item.id === id);
+  setModelStatus(`Generating ${model?.name || "model"}.`);
+  const response = await fetch(`/api/models/${encodeURIComponent(id)}/generate`, { method: "POST" });
+  const data = await response.json();
+  if (data.error) {
+    setModelStatus(data.error);
+    return;
+  }
+  await loadModels();
+}
+
+async function openModel(id) {
+  const response = await fetch(`/api/models/${encodeURIComponent(id)}/select`, { method: "POST" });
+  const data = await response.json();
+  if (data.error) {
+    setModelStatus(data.error);
+    return;
+  }
+  await loadModels();
+  resetLoadedViews();
+  const loaded = await loadAppData();
+  if (!loaded) {
+    setModelStatus("Selected package could not be loaded.");
+    return;
+  }
+  goToPage("results");
+}
+
+function resetLoadedViews() {
+  renderer?.dispose();
+  simRenderer?.dispose();
+  viewerReady = false;
+  simulationReady = false;
+  scene = null;
+  camera = null;
+  renderer = null;
+  controls = null;
+  loadedModel = null;
+  routeGroup = null;
+  doorMarkerGroup = null;
+  edgeOverlayGroup = null;
+  doorMeshes = [];
+  simScene = null;
+  simCamera = null;
+  simRenderer = null;
+  simControls = null;
+  simWorld = null;
+  simChair = null;
+  simScenarioData = null;
+  document.querySelector("#viewer").innerHTML = "";
+  document.querySelector("#simulationViewer").innerHTML = "";
+  document.querySelector("#selectedDoor").textContent = "Click a door box in the model.";
+  document.querySelector("#routeList").innerHTML = "";
+}
+
+async function renameModel(id) {
+  const model = modelState.models.find((item) => item.id === id);
+  const name = prompt("Model name", model?.name || "");
+  if (!name) return;
+  const response = await fetch(`/api/models/${encodeURIComponent(id)}/rename`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
+  const data = await response.json();
+  if (data.error) {
+    setModelStatus(data.error);
+    return;
+  }
+  await loadModels();
+}
+
+async function deleteModel(id) {
+  const model = modelState.models.find((item) => item.id === id);
+  if (!confirm(`Delete ${model?.name || "this model"}?`)) return;
+  const response = await fetch(`/api/models/${encodeURIComponent(id)}`, { method: "DELETE" });
+  const data = await response.json();
+  if (data.error) {
+    setModelStatus(data.error);
+    return;
+  }
+  await loadModels();
+}
+
+function scheduleModelPolling() {
+  const running = (modelState.models || []).some((model) => model.status === "running");
+  if (running && !modelPollTimer) {
+    modelPollTimer = setInterval(loadModels, 1600);
+  } else if (!running && modelPollTimer) {
+    clearInterval(modelPollTimer);
+    modelPollTimer = null;
+  }
+}
+
+function setModelStatus(text) {
+  const status = document.querySelector("#modelStatus");
+  if (status) status.textContent = text;
+}
+
+function setUploadSummary(files) {
+  const summary = document.querySelector("#modelFileSummary");
+  if (!summary) return;
+  const ifcCount = files.filter((file) => file.name.toLowerCase().endsWith(".ifc")).length;
+  summary.textContent = ifcCount ? `${ifcCount} IFC file(s) selected.` : "No files selected.";
 }
 
 function renderSummary() {
+  renderCurrentModel();
   const items = [
     ["Elements", appData.summary.elementCount],
     ["Doors", appData.summary.doorCount],
     ["Route edges", appData.summary.routeEdgeCount],
     ["Issues", appData.summary.issueCount],
     ["Missing geometry", appData.summary.missingGeometryCount],
+    ["IFCtoLBD", String(appData.summary.ifctolbd || "").toLowerCase().includes("ifctolbd failed") ? "failed" : "ok"],
     ["SHACL conforms", appData.summary.shacl.conforms === true ? "yes" : appData.summary.shacl.conforms === false ? "no" : "unknown"],
   ];
   document.querySelector("#summary").innerHTML = items
     .map(([label, value]) => `<div class="metric"><strong>${value}</strong><span>${label}</span></div>`)
     .join("");
+}
+
+function renderCurrentModel() {
+  const bar = document.querySelector("#currentModelBar");
+  if (!bar) return;
+  const model = activeModel();
+  if (!model) {
+    bar.hidden = true;
+    bar.innerHTML = "";
+    return;
+  }
+  bar.hidden = false;
+  bar.innerHTML = `Current model: <strong>${escapeHtml(model.name || model.fileName || model.id)}</strong>`;
+}
+
+function activeModel() {
+  return (modelState.models || []).find((model) => model.id === modelState.activeModelId) || null;
 }
 
 function renderTables() {
@@ -125,16 +432,19 @@ function setupFloorPlan() {
     .join("");
   planFloorName = guessEntranceFloor() || floors.find((floor) => floor.routeEdgeIds?.length)?.name || floors[0]?.name || "";
   select.value = planFloorName;
-  select.addEventListener("change", () => {
-    planFloorName = select.value;
-    renderFloorPlan();
-  });
-  routeMode?.addEventListener("change", () => {
-    planRouteMode = routeMode.value;
-    renderFloorPlan();
-  });
-  document.querySelector("#planResetView")?.addEventListener("click", resetPlanView);
-  setupPlanPanZoom();
+  if (!planControlsReady) {
+    select.addEventListener("change", () => {
+      planFloorName = select.value;
+      renderFloorPlan();
+    });
+    routeMode?.addEventListener("change", () => {
+      planRouteMode = routeMode.value;
+      renderFloorPlan();
+    });
+    document.querySelector("#planResetView")?.addEventListener("click", resetPlanView);
+    setupPlanPanZoom();
+    planControlsReady = true;
+  }
   renderFloorPlan();
 }
 
@@ -559,10 +869,10 @@ function setupAssistant() {
     }
   };
 
-  button.addEventListener("click", ask);
-  input.addEventListener("keydown", (event) => {
+  button.onclick = ask;
+  input.onkeydown = (event) => {
     if (event.key === "Enter") ask();
-  });
+  };
 }
 
 function fillTable(selector, headers, rows) {
@@ -643,10 +953,16 @@ function setupViewer() {
     frameScene(gltf.scene);
   });
   renderer.domElement.addEventListener("click", onModelClick);
-  window.addEventListener("resize", resizeRenderer);
+  if (!viewerResizeReady) {
+    window.addEventListener("resize", resizeRenderer);
+    viewerResizeReady = true;
+  }
   setupViewerToolbar();
   resizeRenderer();
-  animate();
+  if (!viewerAnimationStarted) {
+    viewerAnimationStarted = true;
+    animate();
+  }
 }
 
 function setupViewerToolbar() {
@@ -656,19 +972,27 @@ function setupViewerToolbar() {
     ["modeSide", () => setControlMode("side")],
   ];
   for (const [id, handler] of modeButtons) {
-    document.querySelector(`#${id}`)?.addEventListener("click", () => {
+    const button = document.querySelector(`#${id}`);
+    if (!button) continue;
+    button.onclick = () => {
       document.querySelectorAll(".segmented button").forEach((button) => button.classList.remove("active"));
       document.querySelector(`#${id}`).classList.add("active");
       handler();
-    });
+    };
   }
-  document.querySelector("#viewFit")?.addEventListener("click", () => loadedModel && frameScene(loadedModel));
-  document.querySelector("#viewTop")?.addEventListener("click", setTopView);
-  document.querySelector("#viewDoors")?.addEventListener("click", () => {
-    doorMarkerGroup.visible = !doorMarkerGroup.visible;
-    document.querySelector("#viewDoors").textContent = doorMarkerGroup.visible ? "Hide Doors" : "Show Doors";
-  });
-  document.querySelector("#toggleRouteOnly")?.addEventListener("change", (event) => setRouteFocus(event.target.checked));
+  const fit = document.querySelector("#viewFit");
+  const top = document.querySelector("#viewTop");
+  const doors = document.querySelector("#viewDoors");
+  const routeOnly = document.querySelector("#toggleRouteOnly");
+  if (fit) fit.onclick = () => loadedModel && frameScene(loadedModel);
+  if (top) top.onclick = setTopView;
+  if (doors) {
+    doors.onclick = () => {
+      doorMarkerGroup.visible = !doorMarkerGroup.visible;
+      doors.textContent = doorMarkerGroup.visible ? "Hide Doors" : "Show Doors";
+    };
+  }
+  if (routeOnly) routeOnly.onchange = (event) => setRouteFocus(event.target.checked);
   setControlMode("orbit");
 }
 
@@ -905,24 +1229,40 @@ function setupSimulation() {
   simScene.add(simChair);
   simClock = new THREE.Clock();
   setupFloorSelect();
-  document.querySelector("#simRun")?.addEventListener("click", () => loadSimulationScenario("floor"));
-  document.querySelector("#simSpeed")?.addEventListener("input", (event) => {
-    simSpeed = Number(event.target.value) || 0.85;
-  });
-  document.querySelector("#simPlayPause")?.addEventListener("click", (event) => {
-    simPlaying = !simPlaying;
-    event.currentTarget.textContent = simPlaying ? "Pause" : "Play";
-  });
-  document.querySelector("#simReset")?.addEventListener("click", () => {
-    simProgress = 0;
-    simPlaying = true;
-    document.querySelector("#simPlayPause").textContent = "Pause";
-    updateSimulationStatus(false);
-  });
-  window.addEventListener("resize", resizeSimulationRenderer);
+  const runButton = document.querySelector("#simRun");
+  const speedInput = document.querySelector("#simSpeed");
+  const playButton = document.querySelector("#simPlayPause");
+  const resetButton = document.querySelector("#simReset");
+  if (runButton) runButton.onclick = () => loadSimulationScenario("floor");
+  if (speedInput) {
+    speedInput.oninput = (event) => {
+      simSpeed = Number(event.target.value) || 0.85;
+    };
+  }
+  if (playButton) {
+    playButton.onclick = (event) => {
+      simPlaying = !simPlaying;
+      event.currentTarget.textContent = simPlaying ? "Pause" : "Play";
+    };
+  }
+  if (resetButton) {
+    resetButton.onclick = () => {
+      simProgress = 0;
+      simPlaying = true;
+      document.querySelector("#simPlayPause").textContent = "Pause";
+      updateSimulationStatus(false);
+    };
+  }
+  if (!simulationResizeReady) {
+    window.addEventListener("resize", resizeSimulationRenderer);
+    simulationResizeReady = true;
+  }
   loadSimulationScenario("floor");
   resizeSimulationRenderer();
-  animateSimulation();
+  if (!simulationAnimationStarted) {
+    simulationAnimationStarted = true;
+    animateSimulation();
+  }
 }
 
 function loadSimulationScenario(name) {
@@ -1597,6 +1937,11 @@ function displaySource(value) {
     "IfcOpenShell geometry": "IFC model geometry",
     "IfcOpenShell": "IFC model data",
   }[value] || value;
+}
+
+function formatDate(value) {
+  const date = new Date(Number(value || 0) * 1000);
+  return Number.isFinite(date.getTime()) && Number(value) ? date.toLocaleString() : "";
 }
 
 function shortLabel(node) {

@@ -19,3 +19,4 @@ sample_models/
 .service_state.json
 output/app_package/_work/
 output/app_package/*.ifc
+output/model_library/

@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Wheelchair Route Checker</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=20260705-home-upload-3" />
   </head>
   <body>
     <header class="topbar">
@@ -13,7 +13,8 @@
         <p>IFC geometry, IFCtoLBD RDF, SHACL checks, and precomputed door routes.</p>
       </div>
       <nav>
-        <button data-page="results" class="active">Check Results</button>
+        <button data-page="models" class="active">Home</button>
+        <button data-page="results">Check Results</button>
         <button data-page="plan">Floor Plan 2D</button>
         <button data-page="model">Building Model</button>
         <button data-page="simulation">Wheelchair Simulation</button>
@@ -21,7 +22,37 @@
     </header>
 
     <main>
-      <section id="results" class="page active">
+      <section id="models" class="page active">
+        <div class="modelManager">
+          <div class="modelUpload">
+            <div class="modelUploadHeader">
+              <h2>Upload IFC Models</h2>
+              <p>Choose multiple IFC files or drag them into this upload area.</p>
+            </div>
+            <label class="modelDropZone" for="modelFile">
+              <strong>Drop IFC files here</strong>
+              <span>or choose multiple files from your computer</span>
+              <span class="modelDropAction">Choose files</span>
+              <input id="modelFile" class="modelFileInput" type="file" accept=".ifc" multiple />
+            </label>
+            <div class="modelUploadControls">
+              <span id="modelFileSummary">No files selected.</span>
+              <button id="modelUploadButton">Upload IFC</button>
+            </div>
+          </div>
+          <div class="modelListHeader">
+            <div>
+              <h2>Model Library</h2>
+              <p id="modelStatus">Upload an IFC model or open a completed package.</p>
+            </div>
+            <button id="modelRefresh">Refresh</button>
+          </div>
+          <div class="tableWrap"><table id="modelTable"></table></div>
+        </div>
+      </section>
+
+      <section id="results" class="page">
+        <div class="currentModelBar" id="currentModelBar"></div>
         <div class="summary" id="summary"></div>
         <h2>Assistant Explanation</h2>
         <div class="assistant">
@@ -130,6 +161,6 @@
         }
       }
     </script>
-    <script type="module" src="app.js?v=20260531-2"></script>
+    <script type="module" src="app.js?v=20260705-home-upload-3"></script>
   </body>
 </html>

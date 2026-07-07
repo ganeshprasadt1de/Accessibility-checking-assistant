@@ -51,6 +51,10 @@ nav {
   flex-wrap: wrap;
 }
 
+body.homePage nav button:not([data-page="models"]) {
+  display: none;
+}
+
 button,
 a {
   border: 1px solid #9aa7a3;
@@ -130,6 +134,177 @@ main {
   border: 1px solid #d9ded8;
   border-radius: 8px;
   padding: 12px;
+}
+
+.modelManager {
+  display: grid;
+  gap: 12px;
+}
+
+.modelUpload {
+  display: grid;
+  gap: 12px;
+  background: #ffffff;
+  border: 1px solid #d9ded8;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.modelUpload h2 {
+  margin: 0 0 6px;
+}
+
+.modelUpload p {
+  color: #5b6669;
+  font-size: 14px;
+}
+
+.modelUploadHeader {
+  display: grid;
+  gap: 4px;
+}
+
+.modelListHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: end;
+}
+
+.modelListHeader h2 {
+  margin: 6px 0 4px;
+}
+
+.modelListHeader p {
+  color: #5b6669;
+  font-size: 14px;
+}
+
+.modelUploadControls,
+.modelActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.modelUploadControls {
+  justify-content: space-between;
+  color: #5b6669;
+  font-size: 13px;
+}
+
+.currentModelBar {
+  background: #ffffff;
+  border: 1px solid #d9ded8;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  color: #3d494b;
+  font-size: 14px;
+}
+
+.currentModelBar strong {
+  color: #1f2628;
+}
+
+.modelDropZone {
+  display: grid;
+  gap: 4px;
+  border: 1px dashed #9aa7a3;
+  border-radius: 6px;
+  background: #fbfaf7;
+  padding: 18px;
+  color: #263134;
+  cursor: pointer;
+}
+
+.modelDropZone strong {
+  font-size: 15px;
+}
+
+.modelDropZone span {
+  color: #5b6669;
+  font-size: 13px;
+}
+
+.modelDropAction {
+  width: fit-content;
+  margin-top: 8px;
+  border: 1px solid #9aa7a3;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 7px 10px;
+  color: #1f2628 !important;
+}
+
+.modelFileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.modelDropZone.dragging {
+  border-color: #214e59;
+  background: #eef5f4;
+}
+
+.statusBadge {
+  display: inline-block;
+  border: 1px solid #d9ded8;
+  border-radius: 999px;
+  padding: 3px 8px;
+  background: #f9faf7;
+  color: #3d494b;
+  font-size: 12px;
+}
+
+.statusBadge.complete {
+  border-color: #b7d3bf;
+  color: #1f6f43;
+}
+
+.statusBadge.running {
+  border-color: #b9ccd1;
+  color: #214e59;
+}
+
+.statusBadge.failed {
+  border-color: #e5b9b5;
+  color: #b3261e;
+}
+
+.progressBar {
+  width: 170px;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e8ebe7;
+  margin-bottom: 6px;
+}
+
+.progressBar span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: #214e59;
+}
+
+.modelStage {
+  color: #5b6669;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.modelNameCell strong {
+  display: block;
+}
+
+.modelNameCell span {
+  color: #5b6669;
+  font-size: 12px;
 }
 
 .tableWrap {
@@ -610,6 +785,8 @@ aside {
 
 @media (max-width: 900px) {
   .topbar,
+  .modelUpload,
+  .modelListHeader,
   .modelLayout,
   .planLayout,
   .simLayout {

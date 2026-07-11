@@ -68,7 +68,7 @@ The 2D floor plan and wheelchair simulation use the same:
 - route coordinates and status colours
 - uniform X/Y proportions
 
-The simulation uses one metres-to-scene scale for the floor, route, wheelchair, doors, markers and labels. Routes are flattened to the selected floor-slice surface. The wheelchair is grounded from its calculated mesh bounds so its tire bottom remains on that surface.
+The simulation uses one metres-to-scene scale for the floor, route, wheelchair, doors, markers and labels. Routes are flattened to the selected floor-slice surface. The wheelchair is grounded from its calculated mesh bounds so its tire bottom remains on that surface. Drag with the right mouse button to pan the simulation view. Orbit and zoom continue to use the standard Three.js controls.
 
 ## Requirements
 
@@ -83,6 +83,13 @@ python -m pip install -r requirements.txt
 ```
 
 Ollama is optional. When it is unavailable, start the server with `--yes`; assistant requests then return the SHACL-backed report data.
+
+The Check Results page includes a `Restart Ollama` button. It stops only a process that Windows identifies as Ollama on port 11434, starts `ollama serve`, waits for the API and warms the assistant model before reporting that it is ready. Cross-site and simultaneous restart requests are rejected. The server uses `qwen3:8b` when it is installed, otherwise it uses another installed model. Set `OLLAMA_MODEL` before starting the server to select a specific installed model:
+
+```powershell
+$env:OLLAMA_MODEL = "qwen3:8b"
+python server.py --yes --port 8767
+```
 
 ## Prepare A Model
 
@@ -107,16 +114,24 @@ output/app_package/
 ## Start The Website
 
 ```powershell
-python server.py --yes --port 8766
+python server.py --yes --port 8767
 ```
 
 Open:
 
 ```text
-http://127.0.0.1:8766
+http://127.0.0.1:8767
 ```
 
 Keep the terminal open while using the website. Stop the server with `Ctrl+C`.
+
+To use the assistant, install the expected model once:
+
+```powershell
+ollama pull qwen3:8b
+```
+
+Open `Check Results` and use `Restart Ollama` if the Ollama service is stopped or did not load the model correctly. The button waits for startup and warmup; do not send an assistant question until its status reports that Ollama is ready.
 
 Uploaded Model Library entries have their own generated packages. Use `Regenerate` after changing preprocessing or route code, wait for `Complete`, and then use `Open`.
 

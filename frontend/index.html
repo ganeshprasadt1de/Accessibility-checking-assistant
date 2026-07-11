@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wheelchair Route Checker</title>
+    <link rel="stylesheet" href="styles.css?v=20260711-final-floor-parity-1" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>Wheelchair Route Checker</h1>
+        <p>IFC geometry, IFCtoLBD RDF, SHACL checks, and precomputed door routes.</p>
+      </div>
+      <nav>
+        <button data-page="models" class="active">Home</button>
+        <button data-page="results">Check Results</button>
+        <button data-page="plan">Floor Plan 2D</button>
+        <button data-page="model">Building Model</button>
+        <button data-page="simulation">Wheelchair Simulation</button>
+      </nav>
+    </header>
+
+    <main>
+      <section id="models" class="page active">
+        <div class="modelManager">
+          <div class="modelUpload">
+            <div class="modelUploadHeader">
+              <h2>Upload IFC Models</h2>
+              <p>Choose multiple IFC files or drag them into this upload area.</p>
+            </div>
+            <label class="modelDropZone" for="modelFile">
+              <strong>Drop IFC files here</strong>
+              <span>or choose multiple files from your computer</span>
+              <span class="modelDropAction">Choose files</span>
+              <input id="modelFile" class="modelFileInput" type="file" accept=".ifc" multiple />
+            </label>
+            <div class="modelUploadControls">
+              <span id="modelFileSummary">No files selected.</span>
+              <button id="modelUploadButton">Upload IFC</button>
+            </div>
+          </div>
+          <div class="modelListHeader">
+            <div>
+              <h2>Model Library</h2>
+              <p id="modelStatus">Upload an IFC model or open a completed package.</p>
+            </div>
+            <button id="modelRefresh">Refresh</button>
+          </div>
+          <div class="tableWrap"><table id="modelTable"></table></div>
+        </div>
+      </section>
+
+      <section id="results" class="page">
+        <div class="currentModelBar" id="currentModelBar"></div>
+        <div class="summary" id="summary"></div>
+        <h2>Assistant Explanation</h2>
+        <div class="assistant">
+          <input id="assistantQuestion" placeholder="Ask what the checker found" />
+          <button id="assistantAsk">Ask</button>
+          <p id="assistantAnswer">Ask a question to use Ollama, or view SHACL report data when Ollama is disabled.</p>
+        </div>
+        <h2>Extracted Building Data</h2>
+        <div class="tableWrap"><table id="elementTable"></table></div>
+        <h2>Issues</h2>
+        <div class="tableWrap"><table id="issueTable"></table></div>
+      </section>
+
+      <section id="plan" class="page">
+        <div class="planShell">
+          <div class="planToolbar">
+            <label class="floorSelectLabel">Floor <select id="planFloorSelect"></select></label>
+            <label class="floorSelectLabel">Routes
+              <select id="planRouteMode">
+                <option value="issues">Issues only</option>
+                <option value="fail">Failed routes</option>
+                <option value="all">All routes</option>
+              </select>
+            </label>
+            <div class="planZoom">
+              <button id="planResetView">Reset</button>
+            </div>
+            <div class="planLegend">
+              <span><i class="legendBox roomBox"></i>room</span>
+              <span><i class="legendBox corridorBox"></i>corridor</span>
+              <span><i class="legendBox wallBox"></i>wall</span>
+              <span><i class="legendBox doorBox"></i>door</span>
+              <span><i class="legendBox stairBox"></i>stair</span>
+              <span><i class="legendBox rampBox"></i>ramp</span>
+              <span><i class="legendLine passLine"></i>clear route</span>
+              <span><i class="legendLine failLine"></i>blocked route</span>
+              <span><i class="legendBox issueBox"></i>issue</span>
+            </div>
+          </div>
+          <div class="planLayout">
+            <div id="planViewer"></div>
+            <aside class="planPanel">
+              <h2 id="planTitle">Floor plan</h2>
+              <p id="planStatus">Choose a floor to inspect routes and issues.</p>
+              <div class="simMetrics" id="planMetrics"></div>
+              <div id="planDetails" class="planDetails"></div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section id="model" class="page">
+        <div class="viewerToolbar">
+          <div class="segmented" aria-label="3D control mode">
+            <button id="modeOrbit" class="active">Orbit</button>
+            <button id="modePan">Pan</button>
+            <button id="modeSide">Side Rotate</button>
+          </div>
+          <button id="viewFit">Fit Model</button>
+          <button id="viewTop">Top View</button>
+          <button id="viewDoors">Show Doors</button>
+          <label class="viewerToggle"><input id="toggleRouteOnly" type="checkbox" /> Route focus</label>
+        </div>
+        <div class="modelLayout">
+          <div id="viewer"></div>
+          <aside>
+            <h2>Door Routes</h2>
+            <p id="selectedDoor">Click a door box in the model.</p>
+            <div id="routeList"></div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="simulation" class="page">
+        <div class="simulationShell">
+          <div class="simToolbar">
+            <label class="floorSelectLabel">Floor <select id="floorSelect"></select></label>
+            <button id="simRun">Run Check</button>
+            <label class="speedControl">Speed <input id="simSpeed" type="range" min="0.35" max="2.4" step="0.05" value="0.85" /></label>
+            <button id="simPlayPause">Pause</button>
+            <button id="simReset">Reset</button>
+          </div>
+          <div class="simLayout">
+            <div id="simulationViewer"></div>
+            <aside class="simPanel">
+              <h2 id="simTitle">Floor indoor check</h2>
+              <p id="simStatus">Choose a floor and run the check.</p>
+              <div class="simMetrics" id="simMetrics"></div>
+              <div class="simLegend">
+                <span><i class="legendDot passDot"></i>clear</span>
+                <span><i class="legendDot warnDot"></i>watch</span>
+                <span><i class="legendDot failDot"></i>blocked</span>
+              </div>
+              <p class="simSource" id="simSource">The check uses the selected floor, its doors, spaces, routes, stairs, and ramps from the IFC file.</p>
+            </aside>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.165.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.165.0/examples/jsm/"
+        }
+      }
+    </script>
+    <script type="module" src="app.js?v=20260711-final-floor-parity-1"></script>
+  </body>
+</html>

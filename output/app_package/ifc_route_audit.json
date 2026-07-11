@@ -1,0 +1,78 @@
+{
+  "ifc_counts": {
+    "IfcSpace": 64,
+    "IfcDoor": 70,
+    "IfcWall": 178,
+    "IfcSlab": 24,
+    "IfcRamp": 0,
+    "IfcRampFlight": 0,
+    "IfcStair": 5,
+    "IfcStairFlight": 10,
+    "IfcRelSpaceBoundary": 1123,
+    "IfcRelConnectsPathElements": 292
+  },
+  "door_boundary_relation_count": 131,
+  "doors_total": 70,
+  "doors_with_space_boundary": 66,
+  "doors_without_space_boundary": [
+    {
+      "guid": "3LJODRGPbDdfXHXShFLBtQ",
+      "name": "TU Durchgang:DL - 1200 x 2100:2432935"
+    },
+    {
+      "guid": "3LJODRGPbDdfXHXShFLBtM",
+      "name": "TU Durchgang:DL - 1200 x 2100:2432939"
+    },
+    {
+      "guid": "0ehNcYPbH3JQicvZQLHOvk",
+      "name": "TU Fassade - 1-flg-Drehfl\u00fcgel:GG - T\u00fcre 10 mm:2543322"
+    },
+    {
+      "guid": "0ehNcYPbH3JQicvZQLHO$q",
+      "name": "TU Fassade - 1-flg-Drehfl\u00fcgel:GG - T\u00fcre 10 mm:2543424"
+    }
+  ],
+  "door_space_count_histogram": {
+    "2": 63,
+    "3": 1,
+    "1": 2
+  },
+  "spaces_total": 64,
+  "spaces_with_route_doors": 58,
+  "space_route_door_count_histogram": {
+    "13": 1,
+    "1": 40,
+    "3": 4,
+    "19": 1,
+    "2": 11,
+    "25": 1
+  },
+  "boundary_element_types": {
+    "IfcWall": 529,
+    "IfcSlab": 160,
+    "IfcDoor": 138,
+    "IfcColumn": 64,
+    "IfcWindow": 47,
+    "IfcCurtainWall": 1
+  },
+  "route_graph": {
+    "route_edges": 574,
+    "doors_with_route_edges": 62,
+    "doors_without_route_edges": 8,
+    "connected_component_sizes": [
+      31,
+      26,
+      15
+    ],
+    "status_counts": {
+      "pass": 406,
+      "fail": 168
+    },
+    "failure_reason_counts": {
+      "route_width": 2,
+      "door_width": 156,
+      "stair_block": 10
+    }
+  },
+  "shacl_route_rule_note": "Route geometry measurements are written to RDF first. SHACL then checks route door width, route clear width, turning space, stair intersection, and ramp measurements. The app route status is copied from the SHACL validation results."
+}

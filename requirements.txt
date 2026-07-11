@@ -1,0 +1,4 @@
+ifcopenshell
+rdflib
+pyshacl
+shapely

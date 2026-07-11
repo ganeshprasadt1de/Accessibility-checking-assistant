@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Wheelchair Route Checker</title>
-    <link rel="stylesheet" href="styles.css?v=20260705-home-upload-3" />
+    <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
+  <body class="homePage">
     <header class="topbar">
       <div>
         <h1>Wheelchair Route Checker</h1>
@@ -73,8 +73,8 @@
             <label class="floorSelectLabel">Routes
               <select id="planRouteMode">
                 <option value="issues">Issues only</option>
-                <option value="fail">Failed routes</option>
-                <option value="all">All routes</option>
+                <option value="accessible">Accessible network</option>
+                <option value="candidate">All routes</option>
               </select>
             </label>
             <div class="planZoom">
@@ -87,9 +87,9 @@
               <span><i class="legendBox doorBox"></i>door</span>
               <span><i class="legendBox stairBox"></i>stair</span>
               <span><i class="legendBox rampBox"></i>ramp</span>
-              <span><i class="legendLine passLine"></i>clear route</span>
-              <span><i class="legendLine failLine"></i>blocked route</span>
-              <span><i class="legendBox issueBox"></i>issue</span>
+              <span class="legendRoute"><i class="legendLine passLine"></i>route network</span>
+              <span class="legendBlockage"><i class="legendMarker failLine"></i>blocked route</span>
+              <span class="legendIssue"><i class="legendMarker issueMarker"></i>issue</span>
             </div>
           </div>
           <div class="planLayout">
@@ -161,6 +161,6 @@
         }
       }
     </script>
-    <script type="module" src="app.js?v=20260705-home-upload-3"></script>
+    <script type="module" src="app.js"></script>
   </body>
 </html>

@@ -84,7 +84,7 @@ python -m pip install -r requirements.txt
 
 Ollama is optional. When it is unavailable, start the server with `--yes`; assistant requests then return the SHACL-backed report data.
 
-The Check Results page includes a `Restart Ollama` button. It stops only a process that Windows identifies as Ollama on port 11434, starts `ollama serve`, waits for the API and warms the assistant model before reporting that it is ready. Cross-site and simultaneous restart requests are rejected. The server uses `qwen3:8b` when it is installed, otherwise it uses another installed model. Set `OLLAMA_MODEL` before starting the server to select a specific installed model:
+The Check Results page includes a `Restart Ollama` button. It first refuses to continue if a non-Ollama process owns port 11434, then stops every Windows process whose executable is the installed `ollama.exe`, including detached model runners. It starts one clean `ollama serve` process, waits for the API and warms the assistant model before reporting that it is ready. Cross-site and simultaneous restart requests are rejected. The server uses `qwen3:8b` when it is installed, otherwise it uses another installed model. Set `OLLAMA_MODEL` before starting the server to select a specific installed model:
 
 ```powershell
 $env:OLLAMA_MODEL = "qwen3:8b"

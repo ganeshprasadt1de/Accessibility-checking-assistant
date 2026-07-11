@@ -646,13 +646,38 @@ def ollama_listener_processes() -> list[dict]:
     return processes
 
 
-def stop_ollama_listener() -> None:
+def all_ollama_processes() -> list[dict]:
+    command = (
+        "Get-CimInstance Win32_Process | Where-Object { $_.Name -ieq 'ollama.exe' } | "
+        "ForEach-Object { Write-Output ($_.ProcessId.ToString() + '|' + $_.Name + '|' + $_.ExecutablePath + '|' + $_.CommandLine) }"
+    )
+    completed = subprocess.run(
+        ["powershell", "-NoProfile", "-Command", command],
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+    processes = []
+    for line in completed.stdout.splitlines():
+        parts = line.strip().split("|", 3)
+        if len(parts) != 4 or not parts[0].isdigit():
+            continue
+        processes.append({"pid": int(parts[0]), "name": parts[1], "path": parts[2], "command": parts[3]})
+    return processes
+
+
+def stop_ollama_processes() -> int:
     listeners = ollama_listener_processes()
     unsafe = [item for item in listeners if "ollama" not in f"{item['name']} {item['path']}".lower()]
     if unsafe:
         details = ", ".join(f"{item['name']} (PID {item['pid']})" for item in unsafe)
         raise RuntimeError(f"Port {OLLAMA_PORT} is owned by a non-Ollama process: {details}. Nothing was stopped.")
-    for item in listeners:
+    processes = all_ollama_processes()
+    unsafe_ollama = [item for item in processes if item["name"].lower() != "ollama.exe" or "ollama" not in item["path"].lower()]
+    if unsafe_ollama:
+        raise RuntimeError("An Ollama-named process has an unexpected executable path. Nothing was stopped.")
+    for item in sorted(processes, key=lambda process: " runner " in f" {process['command'].lower()} ", reverse=True):
         subprocess.run(
             ["powershell", "-NoProfile", "-Command", f"Stop-Process -Id {item['pid']} -Force -ErrorAction Stop"],
             capture_output=True,
@@ -660,6 +685,7 @@ def stop_ollama_listener() -> None:
             timeout=10,
             check=True,
         )
+    return len(processes)
 
 
 def ollama_executable() -> Path:
@@ -714,7 +740,7 @@ def restart_ollama() -> tuple[dict, int]:
         return {"error": "Ollama is already restarting and warming up."}, 409
     started_at = time.monotonic()
     try:
-        stop_ollama_listener()
+        stopped_processes = stop_ollama_processes()
         deadline = time.monotonic() + 12
         while ollama_available() and time.monotonic() < deadline:
             time.sleep(0.3)
@@ -736,6 +762,7 @@ def restart_ollama() -> tuple[dict, int]:
         return {
             "status": "ready",
             "model": model,
+            "stoppedProcesses": stopped_processes,
             "elapsedSeconds": round(time.monotonic() - started_at, 1),
             "message": "Ollama restarted and the assistant model is warm.",
         }, 200

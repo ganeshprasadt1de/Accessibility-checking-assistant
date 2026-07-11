@@ -905,7 +905,7 @@ function setupAssistant() {
       const response = await fetch("/api/ollama/restart", { method: "POST" });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Ollama restart failed.");
-      ollamaStatus.textContent = `${data.message} Model: ${data.model}. Time: ${data.elapsedSeconds} seconds.`;
+      ollamaStatus.textContent = `${data.message} Stopped ${data.stoppedProcesses} old Ollama process(es). Model: ${data.model}. Time: ${data.elapsedSeconds} seconds.`;
     } catch (error) {
       ollamaStatus.textContent = error.message || "Ollama restart failed.";
     } finally {

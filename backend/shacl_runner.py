@@ -47,8 +47,8 @@ def issues_from_shacl_report(report_ttl: Path, data_graph: Path, elements: list[
 
     elements_by_uri = {str(element_uri(element.guid)): element for element in elements}
     edges_by_uri = {str(ACC[f"route/{edge.edge_id}"]): edge for edge in edges}
-    element_by_guid = {element.guid: element for element in elements}
     issues: list[Issue] = []
+    issue_keys = set()
     failed_route_reasons: dict[str, set[str]] = {edge.edge_id: set() for edge in edges}
 
     for focus_text, message, _source_shape, _source_component in _validation_results(report):
@@ -60,9 +60,13 @@ def issues_from_shacl_report(report_ttl: Path, data_graph: Path, elements: list[
 
         if edge:
             failed_route_reasons[edge.edge_id].add(_route_reason(rule_id))
-            element = element_by_guid.get(edge.via_space_guid or edge.start_guid)
+            continue
         if not element:
             continue
+        issue_key = element.guid, rule_id
+        if issue_key in issue_keys:
+            continue
+        issue_keys.add(issue_key)
         issues.append(
             Issue(
                 issue_id=f"I{len(issues) + 1:04d}",
@@ -144,6 +148,8 @@ def _route_reason(rule_id: str) -> str:
         "route_door_width": "door_width",
         "route_width": "route_width",
         "route_turning_space": "turning_space",
+        "route_wall_block": "wall_block",
+        "route_unreachable": "unreachable",
         "route_ramp_slope": "ramp_slope",
         "route_ramp_width": "ramp_width",
     }.get(rule_id, rule_id)
@@ -160,6 +166,8 @@ def _short_text(rule_id: str) -> str:
         "route_door_width": "route uses narrow door",
         "route_width": "route too narrow",
         "route_turning_space": "route turn too small",
+        "route_wall_block": "route intersects wall",
+        "route_unreachable": "door not connected",
         "stair_block": "route intersects stair",
         "route_ramp_slope": "route ramp too steep",
         "route_ramp_width": "route ramp too narrow",
@@ -177,8 +185,10 @@ def _required(rule_id: str) -> tuple[float | None, str]:
         return RULE_LIMITS.ramp_slope_percent, "%"
     if "ramp_width" in rule_id:
         return RULE_LIMITS.ramp_width_m, "m"
-    if rule_id == "stair_block":
+    if rule_id in {"stair_block", "route_wall_block"}:
         return 0.0, "bool"
+    if rule_id == "route_unreachable":
+        return 1.0, "bool"
     return None, ""
 
 
@@ -192,11 +202,15 @@ def _measured_value(data: Graph, focus, rule_id: str) -> float | None:
         "route_door_width": ACC.routeDoorWidthMinM,
         "route_width": ACC.routeClearWidthM,
         "route_turning_space": ACC.routeTurningSpaceM,
+        "route_wall_block": ACC.routeHitsWall,
+        "route_unreachable": ACC.routeReachable,
         "route_ramp_slope": ACC.routeRampSlopePercent,
         "route_ramp_width": ACC.routeRampUsableWidthM,
     }.get(rule_id)
-    if rule_id == "stair_block":
+    if rule_id in {"stair_block", "route_wall_block"}:
         return 1.0
+    if rule_id == "route_unreachable":
+        return 0.0
     if predicate is None:
         return None
     value = data.value(focus, predicate)

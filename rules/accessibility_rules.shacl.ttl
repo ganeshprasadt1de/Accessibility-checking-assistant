@@ -129,6 +129,26 @@ acc:RouteShape
     ] ;
     sh:sparql [
         a sh:SPARQLConstraint ;
+        sh:message "route_wall_block|Route intersects a wall or column volume." ;
+        sh:select """
+            PREFIX acc: <https://example.org/wheelchair-accessibility#>
+            SELECT $this WHERE {
+                $this acc:routeHitsWall true .
+            }
+        """ ;
+    ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "route_unreachable|Door is not connected to the route network." ;
+        sh:select """
+            PREFIX acc: <https://example.org/wheelchair-accessibility#>
+            SELECT $this WHERE {
+                $this acc:routeReachable false .
+            }
+        """ ;
+    ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
         sh:message "route_ramp_slope|Route ramp slope is above 6 percent." ;
         sh:select """
             PREFIX acc: <https://example.org/wheelchair-accessibility#>

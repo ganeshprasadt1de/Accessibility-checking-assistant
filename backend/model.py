@@ -18,6 +18,7 @@ class Element:
     bbox_max: tuple[float, float, float] | None = None
     storey: str | None = None
     extra: dict[str, float | str | bool | None] = field(default_factory=dict)
+    issue_regions: list[dict] = field(default_factory=list)
 
 
 @dataclass

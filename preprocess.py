@@ -56,8 +56,8 @@ def main() -> int:
         graph = Graph()
         bind_graph(graph)
     print(ifctolbd_note)
-    add_geometry_to_graph(graph, elements)
     edges = build_route_edges(ifc_path, elements)
+    add_geometry_to_graph(graph, elements)
     add_routes_to_graph(graph, edges)
     lbd_ttl = output / "lbd_graph.ttl"
     graph.serialize(destination=lbd_ttl, format="turtle")

@@ -16,18 +16,21 @@ def write_json_package(
     missing_geometry: list[str],
     shacl_summary: dict,
     ifctolbd_note: str,
+    plan_edges: list[RouteEdge] | None = None,
 ) -> None:
+    plan_edges = plan_edges or []
     doors = [e.guid for e in elements if e.ifc_type == "IfcDoor"]
     door_set = set(doors)
     route_index = {door: routes_from_start(edges, door, target_guids=door_set) for door in doors}
     accessible_route_index = {door: routes_from_start(edges, door, pass_only=True, target_guids=door_set) for door in doors}
-    floors = _floor_summaries(elements, issues, edges)
+    floors = _floor_summaries(elements, issues, edges, plan_edges)
     ifctolbd_failed = "ifctolbd failed" in ifctolbd_note.lower()
     data = {
         "summary": {
             "elementCount": len(elements),
             "doorCount": len(doors),
             "routeEdgeCount": len(edges),
+            "planRouteEdgeCount": len(plan_edges),
             "issueCount": len(issues),
             "missingGeometryCount": len(missing_geometry),
             "ifctolbd": ifctolbd_note,
@@ -39,6 +42,7 @@ def write_json_package(
         "issues": [issue.__dict__ for issue in issues],
         "issueRegions": _issue_regions(elements, issues),
         "routeEdges": [_edge_dict(e) for e in edges],
+        "planRouteEdges": [_edge_dict(e) for e in plan_edges],
         "routesByDoor": route_index,
         "accessibleRoutesByDoor": accessible_route_index,
         "floors": floors,
@@ -99,7 +103,12 @@ def _issue_regions(elements: list[Element], issues: list[Issue]) -> list[dict]:
     return result
 
 
-def _floor_summaries(elements: list[Element], issues: list[Issue], edges: list[RouteEdge]) -> list[dict]:
+def _floor_summaries(
+    elements: list[Element],
+    issues: list[Issue],
+    edges: list[RouteEdge],
+    plan_edges: list[RouteEdge],
+) -> list[dict]:
     element_by_guid = {element.guid: element for element in elements}
     floor_refs = _floor_refs(elements)
     issue_count_by_guid: dict[str, int] = {}
@@ -123,6 +132,7 @@ def _floor_summaries(elements: list[Element], issues: list[Issue], edges: list[R
                 "rampGuids": [],
                 "issueCount": 0,
                 "routeEdgeIds": [],
+                "planRouteEdgeIds": [],
                 "routeStatusCounts": {},
                 "failureReasonCounts": {},
             },
@@ -158,6 +168,22 @@ def _floor_summaries(elements: list[Element], issues: list[Issue], edges: list[R
         floor["routeStatusCounts"][edge.status] = floor["routeStatusCounts"].get(edge.status, 0) + 1
         for reason in edge.reasons:
             floor["failureReasonCounts"][reason] = floor["failureReasonCounts"].get(reason, 0) + 1
+
+    for edge in plan_edges:
+        start = element_by_guid.get(edge.start_guid)
+        end = element_by_guid.get(edge.end_guid)
+        via = element_by_guid.get(edge.via_space_guid)
+        floor_name = _floor_name_for_element(start, floor_refs) if start else None
+        if not floor_name and end:
+            floor_name = _floor_name_for_element(end, floor_refs)
+        if not floor_name and via:
+            floor_name = _floor_name_for_element(via, floor_refs)
+        if not floor_name:
+            floor_name = _floor_name_for_route(edge, floor_refs)
+        if not floor_name or floor_name not in floors:
+            continue
+        floor = floors[floor_name]
+        floor["planRouteEdgeIds"].append(edge.edge_id)
 
     visible_floors = [
         floor

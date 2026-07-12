@@ -16,6 +16,7 @@ from backend.ifc_tools import (
     run_ifctolbd_exe,
 )
 from backend.package_writer import write_json_package
+from backend.plan_routes import build_plan_route_edges, prepare_plan_geometry
 from backend.routes import add_routes_to_graph, build_route_edges, save_route_binary
 from backend.shacl_runner import issues_from_shacl_report, run_shacl
 from backend.audit import write_audit_report
@@ -57,6 +58,11 @@ def main() -> int:
         bind_graph(graph)
     print(ifctolbd_note)
     edges = build_route_edges(ifc_path, elements)
+    try:
+        plan_geometry = prepare_plan_geometry(ifc_path, elements)
+    except Exception as exc:
+        print(f"2D geometry preparation failed: {exc}", file=sys.stderr)
+        plan_geometry = None
     add_geometry_to_graph(graph, elements)
     add_routes_to_graph(graph, edges)
     lbd_ttl = output / "lbd_graph.ttl"
@@ -64,6 +70,11 @@ def main() -> int:
 
     shacl_summary = run_shacl(lbd_ttl, ROOT / "rules" / "accessibility_rules.shacl.ttl", output / "shacl_report.ttl")
     issues = issues_from_shacl_report(output / "shacl_report.ttl", lbd_ttl, elements, edges)
+    try:
+        plan_edges = build_plan_route_edges(ifc_path, elements, edges, plan_geometry)
+    except Exception as exc:
+        print(f"2D route generation failed: {exc}", file=sys.stderr)
+        plan_edges = []
     for issue in issues:
         issue_uri = ACC[f"issue/{issue.issue_id}"]
         graph.add((issue_uri, RDF.type, ACC.AccessibilityIssue))
@@ -83,7 +94,7 @@ def main() -> int:
             graph.add((route_uri, ACC.routeFailureReason, Literal(reason)))
     graph.serialize(destination=lbd_ttl, format="turtle")
 
-    write_json_package(output, elements, issues, edges, missing_geometry, shacl_summary, ifctolbd_note)
+    write_json_package(output, elements, issues, edges, missing_geometry, shacl_summary, ifctolbd_note, plan_edges)
     write_audit_report(ifc_path, output, {"routeEdges": [
         {
             "startGuid": edge.start_guid,
@@ -97,7 +108,7 @@ def main() -> int:
     if args.save_bin:
         save_route_binary(edges, output / "route_graph.bin")
     print(f"Wrote package: {output}")
-    print(f"Routes: {len(edges)}, issues: {len(issues)}, missing geometry: {len(missing_geometry)}")
+    print(f"Routes: {len(edges)}, plan routes: {len(plan_edges)}, issues: {len(issues)}, missing geometry: {len(missing_geometry)}")
     return 0
 
 

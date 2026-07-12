@@ -73,10 +73,10 @@
             <label class="floorSelectLabel">Routes
               <select id="planRouteMode">
                 <option value="issues">Issues only</option>
-                <option value="accessible">Accessible network</option>
-                <option value="candidate">All routes</option>
+                <option value="candidate">Route network</option>
               </select>
             </label>
+            <label class="viewerToggle planAccessibleToggle"><input id="planAccessibleOnly" type="checkbox" /> Accessible only</label>
             <div class="planZoom">
               <button id="planResetView">Reset</button>
             </div>
@@ -88,7 +88,7 @@
               <span><i class="legendBox stairBox"></i>stair</span>
               <span><i class="legendBox rampBox"></i>ramp</span>
               <span class="legendRoute"><i class="legendLine passLine"></i>route network</span>
-              <span class="legendBlockage"><i class="legendMarker failLine"></i>blocked route</span>
+              <span class="legendBlockage"><i class="legendMarker failLine"></i>route issue</span>
               <span class="legendIssue"><i class="legendMarker issueMarker"></i>issue</span>
             </div>
           </div>

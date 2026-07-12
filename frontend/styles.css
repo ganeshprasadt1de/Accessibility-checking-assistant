@@ -480,6 +480,7 @@ th {
 
 .planShell[data-route-mode="issues"] .legendRoute,
 .planShell[data-route-mode="issues"] .legendBlockage,
+.planShell[data-route-mode="issues"] .planAccessibleToggle,
 .planShell[data-route-mode="accessible"] .legendBlockage,
 .planShell[data-route-mode="accessible"] .legendIssue,
 .planShell[data-route-mode="candidate"] .legendIssue {
@@ -609,21 +610,21 @@ th {
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 4.4;
-  stroke-opacity: 0.82;
+  stroke-opacity: 0.86;
   pointer-events: none;
 }
 
 .passRoute {
   stroke: #1f6699;
-  stroke-width: 1.8;
-  stroke-opacity: 0.64;
+  stroke-width: 1.9;
+  stroke-opacity: 0.78;
 }
 
 .planRouteDot {
   fill: #f8faf7;
   stroke: #1f6699;
   stroke-width: 1.9;
-  stroke-opacity: 0.82;
+  stroke-opacity: 0.92;
   pointer-events: none;
 }
 
@@ -641,43 +642,8 @@ th {
   pointer-events: none;
 }
 
-.routeMode-candidate .passRoute {
-  stroke-opacity: 0.58;
-}
-
-.routeMode-accessible .passRoute {
-  stroke-width: 2.4;
-  stroke-opacity: 0.95;
-}
-
-.routeMode-accessible .planRouteCasing {
-  stroke-width: 5;
-  stroke-opacity: 0.9;
-}
-
 .blockedRoute {
   stroke-opacity: 0.5;
-}
-
-.routeBundle .passRoute {
-  stroke-width: 2;
-}
-
-.routeMode-candidate .routeBundle .passRoute {
-  stroke-opacity: 0.68;
-}
-
-.routeMode-accessible .routeBundle .passRoute {
-  stroke-width: 2.4;
-  stroke-opacity: 0.95;
-}
-
-.routeMode-accessible .planRouteDot {
-  stroke-opacity: 0.92;
-}
-
-.routeMode-accessible .planRouteDoorMarker {
-  stroke-opacity: 1;
 }
 
 .routeIssueMarker {
@@ -823,8 +789,8 @@ th {
 }
 
 .planRouteItem:hover .passRoute {
-  stroke-width: 2.2;
-  stroke-opacity: 0.82;
+  stroke-width: 2.3;
+  stroke-opacity: 0.96;
   filter: drop-shadow(0 0 3px rgba(31, 102, 153, 0.34));
 }
 
@@ -869,8 +835,8 @@ th {
 }
 
 .selectedPlanRoute .passRoute {
-  stroke-width: 2.4;
-  stroke-opacity: 0.82;
+  stroke-width: 2.5;
+  stroke-opacity: 1;
   filter: drop-shadow(0 0 4px rgba(31, 102, 153, 0.42));
 }
 

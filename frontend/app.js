@@ -424,6 +424,7 @@ function setupFloorPlan() {
   const select = document.querySelector("#planFloorSelect");
   if (!select) return;
   const routeMode = document.querySelector("#planRouteMode");
+  const accessibleOnly = document.querySelector("#planAccessibleOnly");
   const floors = (appData.floors || []).filter((floor) => floor.elementGuids?.length);
   select.innerHTML = floors
     .map((floor) => `<option value="${escapeHtml(floor.name)}">${escapeHtml(floor.name)} (${floor.spaceGuids?.length || 0} spaces)</option>`)
@@ -436,7 +437,12 @@ function setupFloorPlan() {
       renderFloorPlan();
     });
     routeMode?.addEventListener("change", () => {
-      planRouteMode = routeMode.value;
+      planRouteMode = routeMode.value === "issues" ? "issues" : accessibleOnly?.checked ? "accessible" : "candidate";
+      renderFloorPlan();
+    });
+    accessibleOnly?.addEventListener("change", () => {
+      if (routeMode?.value !== "candidate") return;
+      planRouteMode = accessibleOnly.checked ? "accessible" : "candidate";
       renderFloorPlan();
     });
     document.querySelector("#planResetView")?.addEventListener("click", resetPlanView);
@@ -467,11 +473,17 @@ function renderFloorPlan() {
   planFloorName = floor.name;
   const select = document.querySelector("#planFloorSelect");
   if (select && select.value !== planFloorName) select.value = planFloorName;
+  const routeMode = document.querySelector("#planRouteMode");
+  if (routeMode) routeMode.value = planRouteMode === "issues" ? "issues" : "candidate";
+  const accessibleOnly = document.querySelector("#planAccessibleOnly");
+  if (accessibleOnly) accessibleOnly.checked = planRouteMode === "accessible";
   const elementsByGuid = new Map(appData.elements.map((element) => [element.guid, element]));
-  const edgesById = new Map(appData.routeEdges.map((edge) => [edge.edgeId, edge]));
+  const planEdges = appData.planRouteEdges?.length ? appData.planRouteEdges : appData.routeEdges;
+  const edgesById = new Map(planEdges.map((edge) => [edge.edgeId, edge]));
   const issueCounts = planIssueCounts();
   const elements = (floor.elementGuids || []).map((guid) => elementsByGuid.get(guid)).filter(Boolean);
-  const edges = (floor.routeEdgeIds || []).map((edgeId) => edgesById.get(edgeId)).filter(Boolean);
+  const edgeIds = appData.planRouteEdges?.length ? floor.planRouteEdgeIds : floor.routeEdgeIds;
+  const edges = (edgeIds || []).map((edgeId) => edgesById.get(edgeId)).filter(Boolean);
   viewer.innerHTML = floorPlanSvg(floor, elements, edges, issueCounts, elementsByGuid);
   planPick = null;
   applyPlanZoom();
@@ -752,12 +764,12 @@ function floorPlanSvg(floor, elements, edges, issueCounts, elementsByGuid) {
   const visibleEdges = planVisibleEdges(edges, elementsByGuid);
   const showRouteIssues = planRouteMode === "candidate";
   const showElementIssues = planRouteMode === "issues";
-  const issueEdges = showRouteIssues ? edges.filter((edge) => !planRouteVisible(edge, elementsByGuid) && pathBlockingRoute(edge)) : [];
+  const issueEdges = showRouteIssues ? edges.filter((edge) => !planRouteVisible(edge, elementsByGuid) && routeHasIssue(edge)) : [];
   const hiddenPassEdges = planRouteMode === "candidate"
     ? edges.filter((edge) => !planRouteVisible(edge, elementsByGuid) && edge.status === "pass")
     : [];
   const routeIssueEdges = showRouteIssues
-    ? [...new Map(visibleEdges.filter(pathBlockingRoute).concat(issueEdges).map((edge) => [edge.edgeId, edge])).values()]
+    ? [...new Map(visibleEdges.filter(routeHasIssue).concat(issueEdges).map((edge) => [edge.edgeId, edge])).values()]
     : [];
   const issueReserved = floorPlanIssueReservedAreas(elements, visibleEdges, bounds, view);
   const doorOpenings = doors.map((door) => floorPlanDoorOpening(door, bounds, view, walls)).filter(Boolean);
@@ -792,9 +804,19 @@ function floorPlanSvg(floor, elements, edges, issueCounts, elementsByGuid) {
 }
 
 function planVisibleEdges(edges, elementsByGuid) {
+  const hasPlanNetwork = edges.some((edge) => edge.measurements?.planNetworkRole);
   if (planRouteMode === "accessible") {
+    if (hasPlanNetwork) {
+      return edges.filter((edge) => String(edge.measurements?.planNetworkRole || "").split(" ").includes("accessible"));
+    }
     const passed = edges.filter((edge) => edge.status === "pass");
     return planAccessibleSpanningForest(passed, elementsByGuid);
+  }
+  if (planRouteMode === "candidate" && hasPlanNetwork) {
+    return edges.filter((edge) => {
+      const roles = String(edge.measurements?.planNetworkRole || "").split(" ");
+      return roles.includes("physical") || roles.includes("issue");
+    });
   }
   const visible = edges.filter((edge) => planRouteVisible(edge, elementsByGuid));
   if (planRouteMode === "candidate") return visible;
@@ -921,6 +943,8 @@ function planNetworkComponents(edges, elementsByGuid) {
 }
 
 function planRouteVisible(edge, elementsByGuid) {
+  const roles = String(edge.measurements?.planNetworkRole || "").split(" ");
+  if (roles.includes("physical") || roles.includes("issue")) return true;
   if (!isLocalDoorToDoorRoute(edge, elementsByGuid)) return true;
   return pathBlockingRoute(edge);
 }
@@ -1190,7 +1214,7 @@ function floorPlanRoute(edge, bounds, view, elementsByGuid) {
 
 function floorPlanRouteMarkup(edges, bounds, view, elementsByGuid) {
   const drawable = edges
-    .filter((edge) => edge.path?.length > 1)
+    .filter((edge) => edge.path?.length > 1 && !edge.measurements?.planMarkerOnly)
     .sort((a, b) => (pathBlockingRoute(a) ? 1 : 0) - (pathBlockingRoute(b) ? 1 : 0));
   if (planRouteMode === "accessible") {
     return drawable.map((edge) => floorPlanRoute(edge, bounds, view, elementsByGuid)).join("");
@@ -1642,7 +1666,7 @@ function routeIssueClusterCount(items, elementsByGuid) {
 }
 
 function routeIssueGroupCount(edges, elementsByGuid) {
-  return uniqueText(edges.filter(pathBlockingRoute).map((edge) => routeIssueGroupKey(edge, elementsByGuid))).length;
+  return uniqueText(edges.filter(routeHasIssue).map((edge) => routeIssueGroupKey(edge, elementsByGuid))).length;
 }
 
 function routeIssueTickMarkup(x, y) {
@@ -1652,7 +1676,7 @@ function routeIssueTickMarkup(x, y) {
 
 function routeIssueMarkers(edges, bounds, view, elementsByGuid) {
   const groups = new Map();
-  for (const edge of edges.filter(pathBlockingRoute)) {
+  for (const edge of edges.filter(routeHasIssue)) {
     for (const location of routeIssueLocations(edge, elementsByGuid)) {
       if (!groups.has(location.key)) groups.set(location.key, { ...location, edges: [] });
       const group = groups.get(location.key);
@@ -1796,6 +1820,10 @@ function pathBlockingRoute(edge) {
   return edge.status === "fail" && (edge.reasons || []).some((reason) => pathReasons.has(reason));
 }
 
+function routeHasIssue(edge) {
+  return edge.status === "fail" && Boolean(edge.reasons?.length);
+}
+
 function floorPlanSpaceFillClass(element) {
   return element.extra?.isCorridorLike ? "planSpace corridorSpace" : "planSpace";
 }
@@ -1881,7 +1909,8 @@ function planElementAffectedRoutes(element, issues, elementsByGuid) {
   };
   const reasons = new Set(issues.map((issue) => reasonByRule[issue.rule_id]).filter(Boolean));
   if (!reasons.size) return [];
-  return (appData.routeEdges || []).filter((edge) => {
+  const planEdges = appData.planRouteEdges?.length ? appData.planRouteEdges : appData.routeEdges;
+  return (planEdges || []).filter((edge) => {
     if (edge.status !== "fail" || !(edge.reasons || []).some((reason) => reasons.has(reason))) return false;
     if (element.ifcType === "IfcDoor") return edge.startGuid === element.guid || edge.endGuid === element.guid;
     if (element.ifcType === "IfcSpace") return edge.viaSpaceGuid === element.guid;
@@ -3222,9 +3251,17 @@ function comparisonText(ruleId, measured, required, unit) {
     return `missing; required ${operator} ${valueWithUnit(required, unit)}`;
   }
   if (unit === "bool") {
-    const measuredText = measured === true || Number(measured) === 1 ? "yes" : "no";
-    const requiredText = required === true || Number(required) === 1 ? "yes" : "no";
-    return `${measuredText} != ${requiredText}`;
+    const measuredValue = measured === true || Number(measured) === 1;
+    const requiredValue = required === true || Number(required) === 1;
+    const text = {
+      wall_block: measuredValue ? "route intersects wall" : "route is clear of walls",
+      route_wall_block: measuredValue ? "route intersects wall" : "route is clear of walls",
+      stair_block: measuredValue ? "route intersects stair" : "route is clear of stairs",
+      unreachable: measuredValue ? "route is connected" : "route is not connected",
+      route_unreachable: measuredValue ? "route is connected" : "route is not connected",
+    }[ruleId];
+    if (text) return text;
+    return `actual ${measuredValue ? "yes" : "no"}; required ${requiredValue ? "yes" : "no"}`;
   }
   if (required === null || required === "" || required === undefined) return valueWithUnit(measured, unit);
   const operator = String(ruleId).includes("ramp_slope") ? ">" : "<";

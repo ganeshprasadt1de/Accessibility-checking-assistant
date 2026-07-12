@@ -105,27 +105,76 @@ def _plan_candidates(
         if space is None or len(unique_doors) < 2:
             continue
         area = _space_walkable_area(space, unique_doors, obstacles, footprints)
+        path_area = _route_path_area(area) if area is not None and not area.is_empty else None
         grid = _area_grid(area) if area is not None and not area.is_empty else None
+        if grid:
+            grid["door_cells"] = _grid_door_cells(grid, _route_door_zone(unique_doors, footprints))
+            grid["target_cells"] = {
+                cell
+                for door in unique_doors
+                for cell in [_nearest_cell(grid, door.center)]
+                if cell is not None
+            }
+            grid["door_cells"].update(grid["target_cells"])
+        turning_cache = {}
+        width_cache = {}
         for first, second in combinations(unique_doors, 2):
             key = _pair_key(first.guid, second.guid, space_guid)
             matched = min(current.get(key, []), key=lambda edge: edge.distance_m, default=None)
-            path = None
-            if matched and area is not None and _path_inside_area(matched.path, area):
-                path = _compact_path(matched.path)
-            elif grid:
-                path = _path_in_area(first, second, space, area, grid)
-            elif matched:
-                path = _compact_path(matched.path)
-            if not path or len(path) < 2:
+            paths = []
+            if matched and (area is None or _path_inside_area(matched.path, area, path_area)):
+                _add_plan_path(paths, matched.path, area, path_area)
+            choices = _plan_path_choices(
+                paths, first, second, obstacles, space, area, footprints, turning_cache, width_cache, path_area
+            )
+            if grid and not any(not choice[2] for choice in choices):
+                previous_count = len(paths)
+                _add_plan_path(
+                    paths,
+                    _path_in_area(first, second, space, area, grid, path_area=path_area),
+                    area,
+                    path_area,
+                )
+                choices.extend(
+                    _plan_path_choices(
+                        paths[previous_count:],
+                        first,
+                        second,
+                        obstacles,
+                        space,
+                        area,
+                        footprints,
+                        turning_cache,
+                        width_cache,
+                        path_area,
+                    )
+                )
+            if grid and not any(not choice[2] for choice in choices) and _accessible_search_needed(choices):
+                previous_count = len(paths)
+                _add_plan_path(
+                    paths,
+                    _path_in_area(first, second, space, area, grid, accessible=True, path_area=path_area),
+                    area,
+                    path_area,
+                )
+                choices.extend(
+                    _plan_path_choices(
+                        paths[previous_count:],
+                        first,
+                        second,
+                        obstacles,
+                        space,
+                        area,
+                        footprints,
+                        turning_cache,
+                        width_cache,
+                        path_area,
+                    )
+                )
+            if not choices:
                 continue
-            measurements = dict(matched.measurements) if matched else route_measurements(first, second, path, obstacles, space)
-            reasons = list(matched.reasons) if matched else _measurement_reasons(measurements)
-            if area is not None and not area.is_empty:
-                _set_route_clear_width(measurements, path, area, [first, second], footprints)
-                reasons = [reason for reason in reasons if reason != "route_width"]
-                clear = _number(measurements.get("routeClearWidthM"))
-                if clear is not None and clear < RULE_LIMITS.corridor_width_m:
-                    reasons.append("route_width")
+            passing = [choice for choice in choices if not choice[2]]
+            path, measurements, reasons = min(passing or choices, key=_plan_choice_key)
             candidates.append(
                 RouteEdge(
                     edge_id=_plan_edge_id(first.guid, second.guid, space_guid),
@@ -142,6 +191,70 @@ def _plan_candidates(
                 )
             )
     return candidates
+
+
+def _add_plan_path(paths: list, path, area, path_area=None) -> None:
+    if not path or len(path) < 2:
+        return
+    compact = _compact_path(path)
+    candidates = [compact]
+    if area is not None and not area.is_empty:
+        candidates.insert(0, _simplify_path(compact, area, path_area))
+    existing = {_path_signature(value) for value in paths}
+    for candidate in candidates:
+        if len(candidate) < 2 or (area is not None and not _path_inside_area(candidate, area, path_area)):
+            continue
+        signature = _path_signature(candidate)
+        if signature not in existing:
+            paths.append(candidate)
+            existing.add(signature)
+
+
+def _path_signature(path) -> tuple:
+    return tuple(tuple(round(value, 4) for value in point) for point in path)
+
+
+def _plan_choice_key(choice) -> tuple:
+    path, measurements, reasons = choice
+    turns = int(_number(measurements.get("routeRequiredTurnCount")) or 0)
+    return len(reasons), turns, len(path), _path_length(path)
+
+
+def _plan_path_choices(
+    paths,
+    first,
+    second,
+    obstacles,
+    space,
+    area,
+    footprints,
+    turning_cache,
+    width_cache,
+    path_area,
+):
+    choices = []
+    for path in paths:
+        choice = _plan_path_choice(
+            path, first, second, obstacles, space, area, footprints, turning_cache, width_cache, path_area
+        )
+        choices.append(choice)
+        if not choice[2]:
+            break
+    return choices
+
+
+def _plan_path_choice(path, first, second, obstacles, space, area, footprints, turning_cache, width_cache, path_area):
+    measurements = route_measurements(first, second, path, obstacles, space)
+    measurements["routeGridStepM"] = PLAN_GRID_STEP
+    if area is not None and not area.is_empty:
+        _set_route_clear_width(measurements, path, area, [first, second], footprints, width_cache)
+        _set_route_turning_space(measurements, path, area, turning_cache, path_area)
+    return path, measurements, _measurement_reasons(measurements)
+
+
+def _accessible_search_needed(choices) -> bool:
+    fixable = {"route_width", "turning_space"}
+    return any(reasons and set(reasons).issubset(fixable) for _path, _measurements, reasons in choices)
 
 
 def _element_footprints(model, elements: list[Element]) -> dict[str, object]:
@@ -558,10 +671,11 @@ def _set_route_clear_width(
     area,
     route_doors: list[Element],
     footprints: dict[str, object],
+    cache: dict | None = None,
 ) -> None:
     for key in ["routeClearWidthM", "routeClearWidthPointX", "routeClearWidthPointY", "routeClearWidthPointZ"]:
         measurements.pop(key, None)
-    value = _route_clear_width_measurement(path, area, route_doors, footprints)
+    value = _route_clear_width_measurement(path, area, route_doors, footprints, cache)
     if value is None:
         return
     width, point = value
@@ -576,18 +690,11 @@ def _route_clear_width_measurement(
     area,
     route_doors: list[Element],
     footprints: dict[str, object],
+    cache: dict | None = None,
 ) -> tuple[float, tuple[float, float, float]] | None:
     from shapely.geometry import LineString, Point
-    from shapely.ops import unary_union
 
-    door_zones = []
-    for door in route_doors:
-        polygon = _element_polygon(door, footprints)
-        if polygon is not None and not polygon.is_empty:
-            door_zones.append(polygon.buffer(0.35, cap_style=2, join_style=2))
-        elif door.center:
-            door_zones.append(Point(door.center[0], door.center[1]).buffer(0.45))
-    door_zone = unary_union(door_zones) if door_zones else None
+    door_zone = _route_door_zone(route_doors, footprints)
     min_x, min_y, max_x, max_y = area.bounds
     span = math.hypot(max_x - min_x, max_y - min_y) + 2.0
     widths = []
@@ -608,14 +715,34 @@ def _route_clear_width_measurement(
             point = Point(x, y)
             if door_zone is not None and door_zone.covers(point):
                 continue
-            cross = LineString([(x - nx * span, y - ny * span), (x + nx * span, y + ny * span)]).intersection(area)
-            values = [part.length for part in _line_parts(cross) if part.distance(point) <= 0.03]
-            if values:
-                widths.append((max(values), (x, y, z)))
+            key = round(x, 4), round(y, 4), round(abs(nx), 4), round(abs(ny), 4)
+            width = cache.get(key) if cache is not None else None
+            if width is None:
+                cross = LineString([(x - nx * span, y - ny * span), (x + nx * span, y + ny * span)]).intersection(area)
+                values = [part.length for part in _line_parts(cross) if part.distance(point) <= 0.03]
+                width = max(values) if values else 0.0
+                if cache is not None:
+                    cache[key] = width
+            if width > 0:
+                widths.append((width, (x, y, z)))
     if not widths:
         return None
     width, point = min(widths, key=lambda value: value[0])
     return round(width, 4), point
+
+
+def _route_door_zone(route_doors: list[Element], footprints: dict[str, object]):
+    from shapely.geometry import Point
+    from shapely.ops import unary_union
+
+    zones = []
+    for door in route_doors:
+        polygon = _element_polygon(door, footprints)
+        if polygon is not None and not polygon.is_empty:
+            zones.append(polygon.buffer(0.35, cap_style=2, join_style=2))
+        elif door.center:
+            zones.append(Point(door.center[0], door.center[1]).buffer(0.45))
+    return unary_union(zones) if zones else None
 
 
 def _polygon_parts(geometry):
@@ -677,10 +804,26 @@ def _area_grid(area) -> dict | None:
         "allowed": allowed,
         "clearance": clearance,
         "target": target,
+        "area": area,
+        "span": math.hypot(width, depth) + 2.0,
+        "door_cells": set(),
+        "accessible_cells": {},
+        "accessible_paths": {},
+        "accessible_sources": set(),
+        "target_cells": set(),
+        "widths": {},
     }
 
 
-def _path_in_area(first: Element, second: Element, space: Element, area, grid: dict):
+def _path_in_area(
+    first: Element,
+    second: Element,
+    space: Element,
+    area,
+    grid: dict,
+    accessible: bool = False,
+    path_area=None,
+):
     z = _route_z(first, second, space)
     start = first.center[0], first.center[1], z
     end = second.center[0], second.center[1], z
@@ -688,19 +831,21 @@ def _path_in_area(first: Element, second: Element, space: Element, area, grid: d
     end_cell = _nearest_cell(grid, end)
     if start_cell is None or end_cell is None:
         return None
-    cells = _astar(grid, start_cell, end_cell)
+    cells = _astar(grid, start_cell, end_cell, accessible)
     if not cells:
         return None
     points = [_cell_point(grid, cell, z) for cell in cells]
-    start_path = _endpoint_path(start, points[0], area)
-    end_path = _endpoint_path(end, points[-1], area)
+    start_path = _endpoint_path(start, points[0], area, path_area)
+    end_path = _endpoint_path(end, points[-1], area, path_area)
     if not start_path or not end_path:
         return None
     path = _compact_path(start_path + points[1:-1] + list(reversed(end_path)))
-    return path if _path_inside_area(path, area) else None
+    return path if _path_inside_area(path, area, path_area) else None
 
 
-def _astar(grid: dict, start: tuple[int, int], end: tuple[int, int]):
+def _astar(grid: dict, start: tuple[int, int], end: tuple[int, int], accessible: bool = False):
+    if accessible:
+        return _accessible_grid_path(grid, start, end)
     directions = ((1, 0), (-1, 0), (0, 1), (0, -1))
     start_state = start, -1
     queue = [(_grid_heuristic(start, end, grid["step"]), 0.0, start, -1)]
@@ -741,6 +886,123 @@ def _astar(grid: dict, start: tuple[int, int], end: tuple[int, int]):
     return list(reversed(cells))
 
 
+def _accessible_grid_path(grid: dict, start: tuple[int, int], end: tuple[int, int]):
+    if start not in grid["accessible_sources"]:
+        _build_accessible_paths(grid, start)
+    return grid["accessible_paths"].get((start, end))
+
+
+def _build_accessible_paths(grid: dict, start: tuple[int, int]) -> None:
+    directions = ((1, 0), (-1, 0), (0, 1), (0, -1))
+    start_state = start, -1
+    queue = [(0.0, start, -1)]
+    costs = {start_state: 0.0}
+    parents = {}
+    remaining = set(grid["target_cells"])
+    while queue and remaining:
+        cost, cell, direction = heapq.heappop(queue)
+        state = cell, direction
+        if cost != costs.get(state):
+            continue
+        if cell in remaining:
+            path = [cell]
+            current = state
+            while current != start_state:
+                current = parents[current]
+                path.append(current[0])
+            path.reverse()
+            grid["accessible_paths"][(start, cell)] = path
+            grid["accessible_paths"][(cell, start)] = list(reversed(path))
+            remaining.remove(cell)
+        for next_direction, (dx, dy) in enumerate(directions):
+            neighbour = cell[0] + dx, cell[1] + dy
+            if neighbour not in grid["allowed"]:
+                continue
+            if not _accessible_grid_step(grid, cell, neighbour, direction, next_direction):
+                continue
+            turn_cost = 0.22 if direction >= 0 and direction != next_direction else 0.0
+            shortfall = max(0.0, grid["target"] - grid["clearance"].get(neighbour, 0.0)) / grid["target"]
+            next_cost = cost + grid["step"] * (1.0 + shortfall * shortfall * 2.4) + turn_cost
+            next_state = neighbour, next_direction
+            if next_cost >= costs.get(next_state, math.inf):
+                continue
+            costs[next_state] = next_cost
+            parents[next_state] = state
+            heapq.heappush(queue, (next_cost, neighbour, next_direction))
+    grid["accessible_sources"].add(start)
+
+
+def _accessible_grid_step(
+    grid: dict,
+    cell: tuple[int, int],
+    neighbour: tuple[int, int],
+    direction: int,
+    next_direction: int,
+) -> bool:
+    if not _grid_cell_in_door_zone(grid, neighbour):
+        if neighbour not in _grid_accessible_cells(grid, next_direction):
+            return False
+    if direction >= 0 and direction != next_direction and not _grid_cell_in_door_zone(grid, cell):
+        clearance = grid["clearance"].get(cell, 0.0) * 2
+        if clearance + grid["step"] < RULE_LIMITS.turning_space_m:
+            return False
+    return True
+
+
+def _grid_cell_in_door_zone(grid: dict, cell: tuple[int, int]) -> bool:
+    return cell in grid["door_cells"]
+
+
+def _grid_door_cells(grid: dict, zone) -> set[tuple[int, int]]:
+    from shapely.geometry import Point
+
+    if zone is None:
+        return set()
+    min_x, min_y, max_x, max_y = zone.bounds
+    low_x = math.floor((min_x - grid["origin_x"]) / grid["step"])
+    high_x = math.ceil((max_x - grid["origin_x"]) / grid["step"])
+    low_y = math.floor((min_y - grid["origin_y"]) / grid["step"])
+    high_y = math.ceil((max_y - grid["origin_y"]) / grid["step"])
+    result = set()
+    for ix in range(max(0, low_x), min(high_x, max(cell[0] for cell in grid["allowed"])) + 1):
+        for iy in range(max(0, low_y), min(high_y, max(cell[1] for cell in grid["allowed"])) + 1):
+            cell = ix, iy
+            if cell not in grid["allowed"]:
+                continue
+            x, y, _z = _cell_point(grid, cell, 0.0)
+            if zone.covers(Point(x, y)):
+                result.add(cell)
+    return result
+
+
+def _grid_accessible_cells(grid: dict, direction: int) -> set[tuple[int, int]]:
+    axis = 0 if direction in {0, 1} else 1
+    if axis not in grid["accessible_cells"]:
+        grid["accessible_cells"][axis] = {
+            cell
+            for cell in grid["allowed"]
+            if _grid_cross_width(grid, cell, direction) + 1e-6 >= RULE_LIMITS.corridor_width_m
+        }
+    return grid["accessible_cells"][axis]
+
+
+def _grid_cross_width(grid: dict, cell: tuple[int, int], direction: int) -> float:
+    from shapely.geometry import LineString, Point
+
+    axis = 0 if direction in {0, 1} else 1
+    key = cell, axis
+    if key in grid["widths"]:
+        return grid["widths"][key]
+    x, y, _z = _cell_point(grid, cell, 0.0)
+    span = grid["span"]
+    line = LineString([(x, y - span), (x, y + span)]) if axis == 0 else LineString([(x - span, y), (x + span, y)])
+    point = Point(x, y)
+    values = [part.length for part in _line_parts(line.intersection(grid["area"])) if part.distance(point) <= 0.03]
+    width = max(values, default=0.0)
+    grid["widths"][key] = width
+    return width
+
+
 def _nearest_cell(grid: dict, point) -> tuple[int, int] | None:
     cell = (
         round((point[0] - grid["origin_x"]) / grid["step"]),
@@ -755,24 +1017,173 @@ def _nearest_cell(grid: dict, point) -> tuple[int, int] | None:
     return candidates[0] if candidates and math.dist(candidates[0], cell) * grid["step"] <= 1.5 else None
 
 
-def _endpoint_path(endpoint, grid_point, area):
+def _endpoint_path(endpoint, grid_point, area, path_area=None):
     candidates = [
         [endpoint, (grid_point[0], endpoint[1], endpoint[2]), grid_point],
         [endpoint, (endpoint[0], grid_point[1], endpoint[2]), grid_point],
         [endpoint, grid_point],
     ]
-    valid = [_compact_path(candidate) for candidate in candidates if _path_inside_area(candidate, area)]
+    valid = [_compact_path(candidate) for candidate in candidates if _path_inside_area(candidate, area, path_area)]
     return min(valid, key=_path_length) if valid else None
 
 
-def _path_inside_area(path, area) -> bool:
+def _route_path_area(area):
+    value = area.buffer(0.02).buffer(-PLAN_ROUTE_HALF_WIDTH, join_style=2)
+    return value if not value.is_empty else area.buffer(0.02)
+
+
+def _path_inside_area(path, area, path_area=None) -> bool:
     from shapely.geometry import LineString
 
     if not path or len(path) < 2:
         return False
     line = LineString([(point[0], point[1]) for point in path])
+    if path_area is not None and path_area.covers(line):
+        return True
     outside = line.buffer(PLAN_ROUTE_HALF_WIDTH, cap_style=2, join_style=2).difference(area.buffer(0.02))
     return outside.is_empty or outside.area <= 0.002
+
+
+def _simplify_path(path, area, path_area=None):
+    points = _compact_path(path)
+    if len(points) <= 2:
+        return points
+    result = [points[0]]
+    index = 0
+    while index < len(points) - 1:
+        next_index = len(points) - 1
+        replacement = None
+        while next_index > index:
+            replacement = _rectilinear_shortcut(points[index : next_index + 1], area, path_area)
+            if replacement:
+                break
+            next_index -= 1
+        if not replacement:
+            next_index = index + 1
+            replacement = [points[index], points[next_index]]
+        if distance(result[-1], replacement[0]) <= 1e-8:
+            result.extend(replacement[1:])
+        else:
+            result.extend(replacement)
+        index = next_index
+    return _compact_path(result)
+
+
+def _rectilinear_shortcut(points, area, path_area=None):
+    if len(points) < 2:
+        return None
+    start = points[0]
+    end = points[-1]
+    z = (start[2] + end[2]) / 2
+    original_length = _path_length(points)
+    candidates = []
+
+    def add(values):
+        candidate = _compact_path(values)
+        length = _path_length(candidate)
+        if (
+            len(candidate) < 2
+            or length > original_length * 1.05 + 0.01
+            or not _path_inside_area(candidate, area, path_area)
+        ):
+            return
+        candidates.append((length + max(0, len(candidate) - 2) * 0.35, len(candidate), candidate))
+
+    if abs(start[0] - end[0]) <= 0.03 or abs(start[1] - end[1]) <= 0.03:
+        add([start, end])
+    add([start, (end[0], start[1], z), end])
+    add([start, (start[0], end[1], z), end])
+    for y in sorted({round(point[1], 6) for point in points}):
+        add([start, (start[0], y, z), (end[0], y, z), end])
+    for x in sorted({round(point[0], 6) for point in points}):
+        add([start, (x, start[1], z), (x, end[1], z), end])
+    return min(candidates, key=lambda value: (value[0], value[1]))[2] if candidates else None
+
+
+def _set_route_turning_space(measurements: dict, path, area, cache: dict | None = None, path_area=None) -> None:
+    for key in [
+        "routeTurningSpaceM",
+        "routeTurningPointX",
+        "routeTurningPointY",
+        "routeTurningPointZ",
+        "routeRequiredTurnCount",
+    ]:
+        measurements.pop(key, None)
+    required_path = _required_turn_path(path, area, path_area)
+    turn_points = _route_turn_points(required_path)
+    measurements["routeHasTurn"] = bool(turn_points)
+    measurements["routeRequiredTurnCount"] = len(turn_points)
+    turning_space = _route_turning_space_measurement(turn_points, area, cache)
+    if turning_space is None:
+        return
+    width, point = turning_space
+    measurements["routeTurningSpaceM"] = width
+    measurements["routeTurningPointX"] = round(point[0], 4)
+    measurements["routeTurningPointY"] = round(point[1], 4)
+    measurements["routeTurningPointZ"] = round(point[2], 4)
+
+
+def _required_turn_path(path, area, path_area=None):
+    points = _compact_path(path)
+    if len(points) <= 2:
+        return points
+    result = [points[0]]
+    index = 0
+    while index < len(points) - 1:
+        next_index = len(points) - 1
+        while next_index > index + 1 and not _path_inside_area(
+            [points[index], points[next_index]], area, path_area
+        ):
+            next_index -= 1
+        result.append(points[next_index])
+        index = next_index
+    return _compact_path(result)
+
+
+def _route_turn_points(path):
+    result = []
+    for first, middle, last in zip(path, path[1:], path[2:]):
+        a = middle[0] - first[0], middle[1] - first[1]
+        b = last[0] - middle[0], last[1] - middle[1]
+        first_length = math.hypot(*a)
+        second_length = math.hypot(*b)
+        scale = first_length * second_length
+        if min(first_length, second_length) < 0.35 or scale <= 1e-6:
+            continue
+        if abs(a[0] * b[1] - a[1] * b[0]) / scale > 0.15:
+            result.append(middle)
+    return result
+
+
+def _route_turning_space_measurement(turn_points, area, cache: dict | None = None):
+    from shapely.geometry import Point
+    from shapely.ops import polylabel
+
+    values = []
+    for middle in turn_points:
+        key = round(middle[0], 3), round(middle[1], 3)
+        if cache is not None and key in cache:
+            width = cache[key]
+            if width is not None:
+                values.append((width, middle))
+            continue
+        point = Point(middle[0], middle[1])
+        local = area.intersection(point.buffer(1.20))
+        polygons = [value for value in _polygon_parts(local) if not value.is_empty and value.buffer(0.03).covers(point)]
+        if not polygons:
+            if cache is not None:
+                cache[key] = None
+            continue
+        polygon = max(polygons, key=lambda value: value.area)
+        center = polylabel(polygon, tolerance=0.02)
+        width = center.distance(polygon.boundary) * 2
+        if cache is not None:
+            cache[key] = width
+        values.append((width, middle))
+    if not values:
+        return None
+    width, point = min(values, key=lambda value: value[0])
+    return round(width, 4), point
 
 
 def _compact_path(path):

@@ -1,7 +1,16 @@
 import unittest
 
 from backend.model import Element, RouteEdge
-from backend.plan_routes import _compact_path, _route_clear_width_measurement, _space_clearance_region, build_plan_network
+from backend.plan_routes import (
+    _compact_path,
+    _plan_candidates,
+    _required_turn_path,
+    _route_clear_width_measurement,
+    _set_route_turning_space,
+    _simplify_path,
+    _space_clearance_region,
+    build_plan_network,
+)
 
 
 def door(guid, x):
@@ -85,6 +94,65 @@ class PlanRouteTests(unittest.TestCase):
         value = _route_clear_width_measurement([(0.5, 1.0, 0.0), (5.5, 1.0, 0.0)], area, [], {})
         self.assertIsNotNone(value)
         self.assertAlmostEqual(value[0], 1.2, delta=0.05)
+
+    def test_plan_candidate_prefers_wider_accessible_detour(self):
+        from shapely.geometry import box
+        from shapely.ops import unary_union
+
+        first = door("A", 1.0)
+        first.center = (1.0, 2.0, 0.0)
+        first.extra["derivedDoorWidthM"] = 1.0
+        second = door("B", 7.0)
+        second.center = (7.0, 2.0, 0.0)
+        second.extra["derivedDoorWidthM"] = 1.0
+        space = Element("S", "IfcSpace", "S", "S", center=(4.0, 2.5, 0.0))
+        area = unary_union(
+            [
+                box(0.0, 0.0, 2.5, 4.0),
+                box(5.5, 0.0, 8.0, 4.0),
+                box(2.0, 1.5, 6.0, 2.5),
+                box(1.0, 3.0, 7.0, 5.0),
+            ]
+        )
+        candidates = _plan_candidates(
+            [first, second, space],
+            {space.guid: area},
+            {first.guid: [space.guid], second.guid: [space.guid]},
+            [],
+        )
+        self.assertEqual(len(candidates), 1)
+        self.assertEqual(candidates[0].status, "pass")
+        self.assertGreaterEqual(candidates[0].measurements["routeClearWidthM"], 1.5)
+        self.assertGreater(max(point[1] for point in candidates[0].path), 3.0)
+
+    def test_simplification_removes_avoidable_grid_bends(self):
+        from shapely.geometry import box
+
+        area = box(0.0, 0.0, 6.0, 4.0)
+        path = [(0.5, 1.0, 0.0), (0.5, 2.0, 0.0), (3.0, 2.0, 0.0), (3.0, 1.0, 0.0), (5.5, 1.0, 0.0)]
+        simplified = _simplify_path(path, area)
+        self.assertEqual(simplified, [path[0], path[-1]])
+        self.assertEqual(_required_turn_path(path, area), [path[0], path[-1]])
+        measurements = {"routeHasTurn": True, "routeTurningSpaceM": 0.8}
+        _set_route_turning_space(measurements, path, area)
+        self.assertFalse(measurements["routeHasTurn"])
+        self.assertEqual(measurements["routeRequiredTurnCount"], 0)
+        self.assertNotIn("routeTurningSpaceM", measurements)
+
+    def test_required_turn_remains_when_direct_path_leaves_area(self):
+        from shapely.geometry import box
+        from shapely.ops import unary_union
+
+        area = unary_union([box(0.0, 0.0, 1.2, 5.0), box(0.0, 3.8, 5.0, 5.0)])
+        path = [(0.6, 0.6, 0.0), (0.6, 4.4, 0.0), (4.4, 4.4, 0.0)]
+        self.assertEqual(_simplify_path(path, area), path)
+        required = _required_turn_path(path, area)
+        self.assertEqual(required, path)
+        measurements = {}
+        _set_route_turning_space(measurements, path, area)
+        self.assertTrue(measurements["routeHasTurn"])
+        self.assertEqual(measurements["routeRequiredTurnCount"], 1)
+        self.assertLess(measurements["routeTurningSpaceM"], 1.5)
 
 
 if __name__ == "__main__":

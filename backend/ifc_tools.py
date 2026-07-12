@@ -38,63 +38,68 @@ def extract_first_ifc(zip_path: Path, output_dir: Path, preferred_name: str | No
 
 
 def run_ifctolbd(ifc_path: Path, ifctolbd_zip: Path, output_ttl: Path, work_dir: Path) -> str:
-    """Run IFCtoLBD and fail loudly when the converter cannot produce RDF."""
+    """Run the pinned IFCtoLBD runtime and require a valid Turtle result.
+
+    The upstream 2.45 shaded JAR in IFCtoLBD-master.zip has incompatible Jena
+    service metadata and fails with ``NoReaderForLangException: TTL``.  The
+    project therefore ships the verified 2.43.4 runtime and its matching Jena
+    libraries as one inseparable classpath.
+    """
     java = shutil.which("java")
-    mvn = shutil.which("mvn") or shutil.which("mvn.cmd")
     if not java:
         raise RuntimeError("Java is not installed or is not available on PATH. IFCtoLBD cannot run.")
-    if not mvn:
-        raise RuntimeError("Maven is not installed or is not available on PATH. IFCtoLBD cannot be built.")
-    if not ifctolbd_zip.exists():
-        raise FileNotFoundError(f"IFCtoLBD ZIP was not found: {ifctolbd_zip}")
-    tool_dir = work_dir / "ifctolbd"
-    if not tool_dir.exists():
-        with zipfile.ZipFile(ifctolbd_zip) as archive:
-            archive.extractall(tool_dir)
-    project = tool_dir / "IFCtoLBD-master" / "IFCtoLBD"
-    if not project.exists():
-        raise FileNotFoundError(f"IFCtoLBD project folder was not found after extraction: {project}")
-    for module_name in ("IFCtoRDF", "IFCtoLBD_Geometry"):
-        module = tool_dir / "IFCtoLBD-master" / module_name
-        if not module.exists():
-            raise FileNotFoundError(f"Required IFCtoLBD module was not found: {module}")
-        try:
-            subprocess.run([mvn, "-q", "-DskipTests", "install"], cwd=module, check=True, timeout=300)
-        except (subprocess.SubprocessError, OSError) as exc:
-            raise RuntimeError(f"IFCtoLBD dependency module build failed for {module_name}: {exc}") from exc
-    try:
-        subprocess.run([mvn, "-q", "-DskipTests", "package"], cwd=project, check=True, timeout=300)
-    except (subprocess.SubprocessError, OSError) as exc:
-        raise RuntimeError(f"IFCtoLBD Maven build failed: {exc}") from exc
-    jars = sorted((project / "target").glob("*jar-with-dependencies*.jar")) or sorted(
-        (project / "target").glob("*.jar")
-    )
-    if not jars:
-        raise FileNotFoundError(f"IFCtoLBD jar was not found after Maven build: {project / 'target'}")
+    runtime = Path(__file__).resolve().parents[1] / "tools" / "ifctolbd" / "java_libraries"
+    main_jar = runtime / "ifc-to-lbd-2.43.4.jar"
+    jena_jar = runtime / "jena-arq-4.10.0.jar"
+    if not main_jar.exists() or not jena_jar.exists():
+        raise FileNotFoundError(
+            f"Pinned IFCtoLBD runtime is incomplete: {runtime}. "
+            "Expected ifc-to-lbd-2.43.4.jar and jena-arq-4.10.0.jar."
+        )
+    work_dir.mkdir(parents=True, exist_ok=True)
+    log_path = work_dir / "ifctolbd.log"
+    trig_sidecar = output_ttl.with_suffix(".trig")
+    if output_ttl.exists():
+        output_ttl.unlink()
+    if trig_sidecar.exists():
+        trig_sidecar.unlink()
     base_uri = "https://example.org/building/"
-    commands = [
-        [
-            java,
-            "-cp",
-            str(jars[0]),
-            "org.linkedbuildingdata.ifc2lbd.IFCtoLBDConverter_CLI",
-            "-u",
-            base_uri,
-            "-t",
-            str(output_ttl),
-            str(ifc_path),
-        ],
+    command = [
+        java,
+        "-cp",
+        str(runtime / "*"),
+        "org.linkedbuildingdata.ifc2lbd.IFCtoLBDConverter_CLI",
+        "-u",
+        base_uri,
+        "-t",
+        str(output_ttl),
+        str(ifc_path),
     ]
-    errors: list[str] = []
-    for command in commands:
-        try:
-            subprocess.run(command, cwd=project, check=True, timeout=180)
-            if output_ttl.exists() and output_ttl.stat().st_size > 0:
-                return "raw graph created by IFCtoLBD"
-        except (subprocess.SubprocessError, OSError) as exc:
-            errors.append(f"{' '.join(command)} -> {exc}")
-            continue
-    raise RuntimeError("IFCtoLBD converter did not produce a Turtle graph. " + " | ".join(errors))
+    try:
+        with log_path.open("w", encoding="utf-8") as log:
+            result = subprocess.run(
+                command,
+                cwd=runtime,
+                stdout=log,
+                stderr=subprocess.STDOUT,
+                timeout=300,
+                text=True,
+            )
+    except (subprocess.SubprocessError, OSError) as exc:
+        raise RuntimeError(f"Pinned IFCtoLBD runtime failed: {exc}. Log: {log_path}") from exc
+    if result.returncode != 0:
+        raise RuntimeError(f"Pinned IFCtoLBD runtime exited with code {result.returncode}. Log: {log_path}")
+    if not output_ttl.exists() or not output_ttl.stat().st_size:
+        raise RuntimeError(f"Pinned IFCtoLBD runtime produced no Turtle graph. Log: {log_path}")
+    try:
+        Graph().parse(output_ttl, format="turtle")
+    except Exception as exc:
+        output_ttl.unlink(missing_ok=True)
+        raise RuntimeError(f"IFCtoLBD produced invalid Turtle: {exc}. Log: {log_path}") from exc
+    # IFCtoLBD also writes a TriG geometry sidecar. The application uses its
+    # own IfcOpenShell geometry, so retaining this duplicate file is misleading.
+    trig_sidecar.unlink(missing_ok=True)
+    return "raw graph created by pinned IFCtoLBD 2.43.4 runtime"
 
 
 def run_ifctolbd_exe(ifc_path: Path, executable: Path, output_ttl: Path) -> str:

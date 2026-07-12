@@ -25,6 +25,10 @@ MODEL_HOME = Path(os.environ.get("WHEELCHAIR_MODEL_HOME", ROOT / "output" / "mod
 MODEL_FILE = MODEL_HOME / "models.json"
 ACTIVE_MODEL_FILE = MODEL_HOME / "active_model.txt"
 OLLAMA_AVAILABLE = False
+OLLAMA_HOST = "http://127.0.0.1:11434"
+OLLAMA_PORT = 11434
+OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "").strip()
+OLLAMA_LOCK = threading.Lock()
 MODEL_LOCK = threading.Lock()
 
 
@@ -68,6 +72,13 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_POST(self) -> None:
         parsed = urlparse(self.path)
+        if parsed.path == "/api/ollama/restart":
+            if not local_maintenance_request(self):
+                self._json({"error": "Ollama maintenance requires a same-origin request from this computer."}, 403)
+                return
+            result, status = restart_ollama()
+            self._json(result, status)
+            return
         if parsed.path == "/api/models/upload":
             self._json(upload_model(self))
             return
@@ -102,7 +113,7 @@ class Handler(SimpleHTTPRequestHandler):
                 self._json(shacl_report_response(data))
                 return
             try:
-                self._json(explain_question(question, assistant_context(data)))
+                self._json(explain_question(question, assistant_context(data), model=OLLAMA_MODEL, host=OLLAMA_HOST))
             except Exception as exc:
                 self._json({"error": f"Ollama request failed: {exc}"}, 503)
             return
@@ -158,6 +169,19 @@ def model_path_action(path: str) -> tuple[str, str] | None:
     if len(parts) == 4 and parts[:2] == ["api", "models"]:
         return parts[2], parts[3]
     return None
+
+
+def local_maintenance_request(handler: Handler) -> bool:
+    if handler.client_address[0] not in {"127.0.0.1", "::1"}:
+        return False
+    fetch_site = handler.headers.get("Sec-Fetch-Site", "").strip().lower()
+    if fetch_site and fetch_site not in {"same-origin", "none"}:
+        return False
+    origin = handler.headers.get("Origin", "").strip()
+    if not origin:
+        return True
+    parsed = urlparse(origin)
+    return parsed.scheme in {"http", "https"} and parsed.hostname in {"127.0.0.1", "localhost", "::1"} and parsed.port == handler.server.server_port
 
 
 def current_package() -> Path:
@@ -505,9 +529,10 @@ def ifctolbd_exe() -> Path | None:
 
 def assistant_context(data: dict) -> dict:
     elements_by_guid = {element.get("guid"): element for element in data.get("elements", [])}
-    issues = data.get("issues", [])[:20]
-    detected_rules = sorted({issue.get("rule_id") for issue in issues if issue.get("rule_id")})
-    issue_counts = Counter(issue.get("rule_id") for issue in issues if issue.get("rule_id"))
+    all_issues = data.get("issues", [])
+    issue_examples = all_issues[:40]
+    detected_rules = sorted({issue.get("rule_id") for issue in all_issues if issue.get("rule_id")})
+    issue_counts = Counter(issue.get("rule_id") for issue in all_issues if issue.get("rule_id"))
     failed_routes = []
     for edge in data.get("routeEdges", []):
         if edge.get("status") != "fail":
@@ -525,6 +550,19 @@ def assistant_context(data: dict) -> dict:
                 "reasons": edge.get("reasons", []),
             }
         )
+    failed_route_examples = []
+    represented_reasons = set()
+    for route in failed_routes:
+        new_reasons = set(route.get("reasons", [])) - represented_reasons
+        if not new_reasons:
+            continue
+        failed_route_examples.append(route)
+        represented_reasons.update(route.get("reasons", []))
+    for route in failed_routes:
+        if len(failed_route_examples) >= 40:
+            break
+        if route not in failed_route_examples:
+            failed_route_examples.append(route)
     floors = []
     for floor in data.get("floors", []):
         door_count = len(floor.get("doorGuids", []))
@@ -554,9 +592,9 @@ def assistant_context(data: dict) -> dict:
                 "rule": issue.get("rule_id"),
                 "details": issue.get("details"),
             }
-            for issue in issues
+            for issue in issue_examples
         ],
-        "failedRoutes": failed_routes[:20],
+        "failedRoutes": failed_route_examples[:40],
         "floorsWithFailures": floors,
     }
 
@@ -573,7 +611,7 @@ def shacl_report_response(data: dict) -> dict:
     }
 
 
-def ollama_available(host: str = "http://localhost:11434") -> bool:
+def ollama_available(host: str = OLLAMA_HOST) -> bool:
     try:
         with urllib.request.urlopen(f"{host}/api/tags", timeout=3) as response:
             return response.status == 200
@@ -581,8 +619,176 @@ def ollama_available(host: str = "http://localhost:11434") -> bool:
         return False
 
 
+def ollama_models(host: str = OLLAMA_HOST) -> list[str]:
+    with urllib.request.urlopen(f"{host}/api/tags", timeout=5) as response:
+        payload = json.loads(response.read().decode("utf-8"))
+    return [str(item.get("name", "")).strip() for item in payload.get("models", []) if item.get("name")]
+
+
+def select_ollama_model(models: list[str]) -> str:
+    if not models:
+        raise RuntimeError("Ollama is running but no local model is installed.")
+    if OLLAMA_MODEL and OLLAMA_MODEL in models:
+        return OLLAMA_MODEL
+    for preferred in ("qwen3:8b", "qwen3.5:9b"):
+        if preferred in models:
+            return preferred
+    return models[0]
+
+
+def ollama_listener_processes() -> list[dict]:
+    command = (
+        "$owners = Get-NetTCPConnection -LocalPort 11434 -State Listen -ErrorAction SilentlyContinue "
+        "| Select-Object -ExpandProperty OwningProcess -Unique; "
+        "foreach ($ownerId in $owners) { "
+        "$process = Get-Process -Id $ownerId -ErrorAction SilentlyContinue; "
+        "if ($process) { Write-Output ($process.Id.ToString() + '|' + $process.ProcessName + '|' + $process.Path) } }"
+    )
+    completed = subprocess.run(
+        ["powershell", "-NoProfile", "-Command", command],
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+    processes = []
+    for line in completed.stdout.splitlines():
+        parts = line.strip().split("|", 2)
+        if len(parts) != 3 or not parts[0].isdigit():
+            continue
+        processes.append({"pid": int(parts[0]), "name": parts[1], "path": parts[2]})
+    return processes
+
+
+def all_ollama_processes() -> list[dict]:
+    command = (
+        "Get-CimInstance Win32_Process | Where-Object { $_.Name -ieq 'ollama.exe' } | "
+        "ForEach-Object { Write-Output ($_.ProcessId.ToString() + '|' + $_.Name + '|' + $_.ExecutablePath + '|' + $_.CommandLine) }"
+    )
+    completed = subprocess.run(
+        ["powershell", "-NoProfile", "-Command", command],
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+    processes = []
+    for line in completed.stdout.splitlines():
+        parts = line.strip().split("|", 3)
+        if len(parts) != 4 or not parts[0].isdigit():
+            continue
+        processes.append({"pid": int(parts[0]), "name": parts[1], "path": parts[2], "command": parts[3]})
+    return processes
+
+
+def stop_ollama_processes() -> int:
+    listeners = ollama_listener_processes()
+    unsafe = [item for item in listeners if "ollama" not in f"{item['name']} {item['path']}".lower()]
+    if unsafe:
+        details = ", ".join(f"{item['name']} (PID {item['pid']})" for item in unsafe)
+        raise RuntimeError(f"Port {OLLAMA_PORT} is owned by a non-Ollama process: {details}. Nothing was stopped.")
+    processes = all_ollama_processes()
+    unsafe_ollama = [item for item in processes if item["name"].lower() != "ollama.exe" or "ollama" not in item["path"].lower()]
+    if unsafe_ollama:
+        raise RuntimeError("An Ollama-named process has an unexpected executable path. Nothing was stopped.")
+    for item in sorted(processes, key=lambda process: " runner " in f" {process['command'].lower()} ", reverse=True):
+        subprocess.run(
+            ["powershell", "-NoProfile", "-Command", f"Stop-Process -Id {item['pid']} -Force -ErrorAction Stop"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=True,
+        )
+    return len(processes)
+
+
+def ollama_executable() -> Path:
+    located = shutil.which("ollama")
+    candidates = [Path(located)] if located else []
+    local_app_data = os.environ.get("LOCALAPPDATA")
+    program_files = os.environ.get("ProgramFiles")
+    if local_app_data:
+        candidates.append(Path(local_app_data) / "Programs" / "Ollama" / "ollama.exe")
+    if program_files:
+        candidates.append(Path(program_files) / "Ollama" / "ollama.exe")
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate.resolve()
+    raise RuntimeError("ollama.exe was not found. Install Ollama or add it to PATH.")
+
+
+def wait_for_ollama(timeout_seconds: float = 45) -> None:
+    deadline = time.monotonic() + timeout_seconds
+    while time.monotonic() < deadline:
+        if ollama_available():
+            return
+        time.sleep(0.4)
+    raise RuntimeError(f"Ollama did not start within {timeout_seconds:.0f} seconds.")
+
+
+def warm_ollama_model(model: str) -> None:
+    payload = json.dumps(
+        {
+            "model": model,
+            "prompt": "Reply with OK.",
+            "stream": False,
+            "keep_alive": "10m",
+            "options": {"temperature": 0, "num_predict": 1},
+        }
+    ).encode("utf-8")
+    request = urllib.request.Request(
+        f"{OLLAMA_HOST}/api/generate",
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(request, timeout=240) as response:
+        if response.status != 200:
+            raise RuntimeError(f"Ollama warmup returned HTTP {response.status}.")
+        json.loads(response.read().decode("utf-8"))
+
+
+def restart_ollama() -> tuple[dict, int]:
+    global OLLAMA_AVAILABLE, OLLAMA_MODEL
+    if not OLLAMA_LOCK.acquire(blocking=False):
+        return {"error": "Ollama is already restarting and warming up."}, 409
+    started_at = time.monotonic()
+    try:
+        stopped_processes = stop_ollama_processes()
+        deadline = time.monotonic() + 12
+        while ollama_available() and time.monotonic() < deadline:
+            time.sleep(0.3)
+        if not ollama_available():
+            executable = ollama_executable()
+            creation_flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+            subprocess.Popen(
+                [str(executable), "serve"],
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                creationflags=creation_flags,
+            )
+        wait_for_ollama()
+        model = select_ollama_model(ollama_models())
+        warm_ollama_model(model)
+        OLLAMA_MODEL = model
+        OLLAMA_AVAILABLE = True
+        return {
+            "status": "ready",
+            "model": model,
+            "stoppedProcesses": stopped_processes,
+            "elapsedSeconds": round(time.monotonic() - started_at, 1),
+            "message": "Ollama restarted and the assistant model is warm.",
+        }, 200
+    except Exception as exc:
+        OLLAMA_AVAILABLE = ollama_available()
+        return {"error": str(exc), "status": "available" if OLLAMA_AVAILABLE else "offline"}, 503
+    finally:
+        OLLAMA_LOCK.release()
+
+
 def main() -> None:
-    global MODEL_HOME, MODEL_FILE, ACTIVE_MODEL_FILE, OLLAMA_AVAILABLE
+    global MODEL_HOME, MODEL_FILE, ACTIVE_MODEL_FILE, OLLAMA_AVAILABLE, OLLAMA_MODEL
     parser = argparse.ArgumentParser(description="Start the wheelchair route checker website.")
     parser.add_argument("--yes", action="store_true", help="Continue without Ollama and use SHACL report output for assistant requests.")
     parser.add_argument("--port", type=int, default=8765, help="Local port for the website.")
@@ -592,6 +798,13 @@ def main() -> None:
     MODEL_FILE = MODEL_HOME / "models.json"
     ACTIVE_MODEL_FILE = MODEL_HOME / "active_model.txt"
     OLLAMA_AVAILABLE = ollama_available()
+    if OLLAMA_AVAILABLE:
+        try:
+            OLLAMA_MODEL = select_ollama_model(ollama_models())
+            print(f"Using Ollama model {OLLAMA_MODEL}.")
+        except Exception as exc:
+            OLLAMA_AVAILABLE = False
+            print(f"Ollama is not ready: {exc}")
     if not OLLAMA_AVAILABLE:
         print("Ollama is not running at http://localhost:11434.")
         if not args.yes:

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import re
+import urllib.error
 import urllib.request
 
 
@@ -14,8 +16,17 @@ RULE_LABELS = {
     "stair_block": "stair blocks route",
     "ramp_slope": "ramp too steep",
     "ramp_width": "ramp too narrow",
-    "missing": "data is missing",
+    "missing": "missing data",
     "unreachable": "route not connected",
+}
+
+SUPPORTED_RULES = frozenset(RULE_LABELS)
+RULE_ALIASES = {
+    "missing_door_width": "missing",
+    "route_door_width": "door_width",
+    "route_turning_space": "turning_space",
+    "route_ramp_slope": "ramp_slope",
+    "route_ramp_width": "ramp_width",
 }
 
 
@@ -27,36 +38,223 @@ def explain_short(facts: dict) -> str:
     return rule_label(str(facts.get("rule_id", "")))
 
 
+def _clean(value: object, fallback: str = "unnamed element") -> str:
+    text = re.sub(r"\s+", " ", str(value or "")).strip()
+    return text or fallback
+
+
+def _issue_types(context: dict) -> list[str]:
+    result = []
+    for item in context.get("detectedIssueTypes", []):
+        rule = RULE_ALIASES.get(str(item), str(item))
+        if rule in SUPPORTED_RULES and rule not in result:
+            result.append(rule)
+    return result
+
+
+def _names_for_rule(context: dict, rule: str, limit: int = 3) -> list[str]:
+    names = []
+    for item in context.get("affectedElements", []):
+        if RULE_ALIASES.get(str(item.get("rule")), str(item.get("rule"))) != rule:
+            continue
+        name = _clean(item.get("name"))
+        if name not in names:
+            names.append(name)
+    return names[:limit]
+
+
+def _failed_routes_for_rule(context: dict, rule: str, limit: int = 4) -> list[dict]:
+    result = []
+    for route in context.get("failedRoutes", []):
+        if rule not in route.get("reasons", []):
+            continue
+        result.append(route)
+    return result[:limit]
+
+
+def _allowed_actions(context: dict) -> list[dict]:
+    """Build recommendations from checked facts, not from model imagination."""
+    actions = []
+    for rule in _issue_types(context):
+        names = _names_for_rule(context, rule)
+        routes = _failed_routes_for_rule(context, rule)
+        name_text = ", ".join(names)
+        route = routes[0] if routes else {}
+        edge = _clean(route.get("edgeId"), "the failed route")
+        floor = _clean(route.get("floor"), "the affected floor")
+        start = _clean(route.get("from"), "its start door")
+        end = _clean(route.get("to"), "its end door")
+
+        if rule == "stair_block":
+            text = f"Reroute {edge} on {floor} from {start} to {end} so its polyline does not intersect the recorded stair geometry."
+        elif rule == "door_width":
+            target = name_text or start
+            text = f"Increase the clear opening at {target}, then regenerate the route measurements and rerun SHACL."
+        elif rule == "corridor_width":
+            target = name_text or floor
+            text = f"Increase the measured clear width at {target}, then regenerate the package and rerun SHACL."
+        elif rule == "route_width":
+            text = f"Increase the measured clear width available along {edge} on {floor}, then regenerate the route measurement and rerun SHACL."
+        elif rule == "turning_space":
+            text = f"Increase the clear turning area on {edge} on {floor}, then recompute the route before checking it again."
+        elif rule == "ramp_slope":
+            target = name_text or edge
+            text = f"Reduce the measured slope of {target}, then regenerate its ramp measurement and rerun SHACL."
+        elif rule == "ramp_width":
+            target = name_text or edge
+            text = f"Increase the measured usable width of {target}, then regenerate its ramp measurement and rerun SHACL."
+        elif rule == "missing":
+            target = name_text or "the affected IFC elements"
+            text = f"Add or repair the missing IFC geometry or property data for {target}, then preprocess the model again."
+        elif rule == "unreachable":
+            text = f"Check the IFC space-boundary and door relationships for {edge} on {floor}, then rebuild the door graph."
+        else:
+            continue
+        actions.append({"id": f"action_{len(actions) + 1}", "rule": rule, "text": text})
+    return actions
+
+
+def _summary(context: dict) -> str:
+    types = _issue_types(context)
+    if not types:
+        return "The supplied SHACL facts contain no detected accessibility issue type."
+    raw_counts = context.get("issueCountsByType", {})
+    counts = {rule: 0 for rule in types}
+    for raw_rule, value in raw_counts.items():
+        rule = RULE_ALIASES.get(str(raw_rule), str(raw_rule))
+        if rule in counts:
+            counts[rule] += int(value or 0)
+    parts = []
+    for rule in types:
+        count = int(counts.get(rule, 0) or 0)
+        label = rule_label(rule)
+        parts.append(f"{count} {label} issue" + ("s" if count != 1 else ""))
+    floors = [_clean(item.get("name"), "unnamed floor") for item in context.get("floorsWithFailures", [])]
+    floor_text = f" Affected floors: {', '.join(dict.fromkeys(floors))}." if floors else ""
+    return "The SHACL check found " + ", ".join(parts) + "." + floor_text
+
+
+def _response_schema(action_ids: list[str]) -> dict:
+    return {
+        "type": "object",
+        "properties": {
+            "evidenceReview": {
+                "type": "array",
+                "maxItems": 4,
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "issueType": {"type": "string"},
+                        "evidence": {"type": "string", "maxLength": 160},
+                        "selectedActionId": {"type": "string", "enum": action_ids},
+                    },
+                    "required": ["issueType", "evidence", "selectedActionId"],
+                },
+            },
+            "selectedActionIds": {
+                "type": "array",
+                "items": {"type": "string", "enum": action_ids},
+                "maxItems": 4,
+            },
+        },
+        "required": ["evidenceReview", "selectedActionIds"],
+    }
+
+
+def _select_actions(model_data: dict, actions: list[dict]) -> list[dict]:
+    allowed = {item["id"]: item for item in actions}
+    selected = []
+    for action_id in model_data.get("selectedActionIds", []):
+        item = allowed.get(str(action_id))
+        if item and item not in selected:
+            selected.append(item)
+    return selected[:4] or actions[:4]
+
+
+def _is_general_improvement_question(question: str) -> bool:
+    text = _clean(question, "").lower()
+    broad_terms = ("fix the building", "fix this building", "ways i can fix", "ways to fix", "all issues", "all problems", "improve the building")
+    return any(term in text for term in broad_terms)
+
+
+def _validate_evidence_review(model_data: dict, context: dict, actions: list[dict]) -> None:
+    rules = set(_issue_types(context))
+    actions_by_id = {item["id"]: item for item in actions}
+    reviews = model_data.get("evidenceReview")
+    if not isinstance(reviews, list) or not reviews:
+        raise ValueError("Ollama did not return an evidence review.")
+    for review in reviews:
+        if not isinstance(review, dict):
+            raise ValueError("Ollama returned an invalid evidence review item.")
+        rule = str(review.get("issueType", ""))
+        action = actions_by_id.get(str(review.get("selectedActionId", "")))
+        if rule not in rules or not action or action["rule"] != rule:
+            raise ValueError("Ollama selected an action that is not supported by the SHACL facts.")
+
+
 def explain_question(question: str, context: dict, model: str = "qwen3:8b", host: str = "http://localhost:11434") -> dict:
+    actions = _allowed_actions(context)
+    if not actions:
+        summary = _summary(context)
+        return {"answer": summary, "source": "SHACL validation report", "blocks": [{"type": "paragraph", "text": summary}]}
+
+    action_ids = [item["id"] for item in actions]
     prompt = (
-        "Explain this wheelchair route checker result in simple language for a 16 year old. "
-        "Use only the facts provided. Do not invent measurements. Do not claim legal approval. "
-        "First explain the SHACL accessibility result. Then give 2 to 4 short architect-focused improvement suggestions. "
-        "The suggestions must name the affected elements, floors, or failed routes from the facts when possible. "
-        "Do not give generic checklist advice. "
-        "Base suggestions only on detectedIssueTypes, affectedElements, failedRoutes, and floorsWithFailures. "
-        "Do not suggest door, corridor, ramp, or other fixes unless those issue types appear in detectedIssueTypes, except that ramps or lifts may be suggested as alternatives for stair blockers. "
-        "Do not mention unaffected issue types. "
-        "Keep the whole answer around 80 to 120 words.\n\n"
-        f"Question: {question}\n\n"
-        "Facts:\n"
-        + json.dumps(context, ensure_ascii=True)
+        "You are selecting grounded recommendations for a wheelchair route checker. "
+        "Reason through the supplied evidence before selecting actions. Return JSON only. "
+        "For every selected action, add an evidenceReview item that links one detected issueType to one allowed action ID. "
+        "Never create a new action, building element, floor, measurement, route, cause, or legal claim. "
+        "A stair blocker permits only rerouting around the recorded stair geometry. It does not permit suggestions about lifts, elevators, ramps, or slopes. "
+        "Ramp advice is allowed only for ramp_slope or ramp_width facts. Door advice is allowed only for door_width. "
+        "Select the actions that directly answer the question. Select no more than four.\n\n"
+        f"Question: {_clean(question, 'Explain the checker result.')}\n\n"
+        "Detected facts:\n" + json.dumps(context, ensure_ascii=True, separators=(",", ":")) + "\n\n"
+        "Allowed actions:\n" + json.dumps(actions, ensure_ascii=True, separators=(",", ":"))
     )
     payload = json.dumps(
-        {"model": model, "prompt": prompt, "stream": False, "options": {"temperature": 0}}
+        {
+            "model": model,
+            "prompt": prompt,
+            "stream": False,
+            "format": _response_schema(action_ids),
+            "keep_alive": "10m",
+            "options": {"temperature": 0, "num_predict": 700},
+        }
     ).encode("utf-8")
-    req = urllib.request.Request(
+    request = urllib.request.Request(
         f"{host}/api/generate",
         data=payload,
         headers={"Content-Type": "application/json"},
         method="POST",
     )
     try:
-        with urllib.request.urlopen(req, timeout=OLLAMA_GENERATE_TIMEOUT_SECONDS) as response:
+        with urllib.request.urlopen(request, timeout=OLLAMA_GENERATE_TIMEOUT_SECONDS) as response:
             data = json.loads(response.read().decode("utf-8"))
-    except TimeoutError as exc:
-        raise RuntimeError(f"Ollama request timed out after {OLLAMA_GENERATE_TIMEOUT_SECONDS} seconds.") from exc
-    text = str(data.get("response", "")).strip()
-    if not text:
-        raise RuntimeError("Ollama returned an empty response.")
-    return {"answer": text, "source": f"Ollama {model}"}
+    except (TimeoutError, urllib.error.URLError) as exc:
+        raise RuntimeError(f"Ollama request failed or timed out after {OLLAMA_GENERATE_TIMEOUT_SECONDS} seconds.") from exc
+
+    raw = str(data.get("response", "")).strip()
+    used_fallback = False
+    try:
+        model_data = json.loads(raw)
+        _validate_evidence_review(model_data, context, actions)
+    except (json.JSONDecodeError, ValueError, TypeError) as exc:
+        model_data = {"selectedActionIds": [item["id"] for item in actions[:4]]}
+        used_fallback = True
+
+    selected = _select_actions(model_data, actions)
+    if _is_general_improvement_question(question):
+        for item in actions:
+            if item not in selected:
+                selected.append(item)
+            if len(selected) >= 4:
+                break
+    summary = _summary(context)
+    blocks = [
+        {"type": "paragraph", "text": summary},
+        {"type": "heading", "text": "Recommended changes"},
+        {"type": "list", "items": [item["text"] for item in selected]},
+    ]
+    answer = summary + "\n\nRecommended changes\n\n" + "\n".join(f"- {item['text']}" for item in selected)
+    source = "SHACL-grounded fallback; incomplete Ollama output was rejected" if used_fallback else f"Ollama {model}, grounded by SHACL facts"
+    return {"answer": answer, "source": source, "blocks": blocks, "groundedFallback": used_fallback}

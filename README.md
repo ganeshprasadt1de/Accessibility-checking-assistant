@@ -1,179 +1,432 @@
 # Wheelchair Route Checker
 
-This repo contains an indoor wheelchair route checker for IFC building models.
+The Wheelchair Route Checker reads an IFC building model, calculates indoor door-to-door wheelchair routes, checks accessibility measurements with SHACL and shows the results in a browser.
 
-IFC is a building model file format. It stores things like doors, rooms, floors, stairs, ramps, and walls.
+The application contains:
 
-The app reads an IFC file, splits the building by floor, checks wheelchair routes between doors, and shows the result in a browser.
+- IFC geometry extraction with IfcOpenShell
+- IFC-to-RDF conversion with the included IFCtoLBD 2.43.4 Java runtime
+- four-direction A* routing on a 0.10 m occupancy grid
+- shortest door-graph routes calculated with Dijkstra's algorithm
+- SHACL validation with pySHACL
+- matching 2D floor plans and a 2.5D wheelchair simulation
+- a local Ollama assistant that explains checked facts without deciding compliance
 
-The final compliance decision is made by SHACL rules over RDF. Python prepares IFC geometry measurements and route geometry, but it does not create the pass or fail issue list.
+## Before You Start
 
-## What The App Checks
+The instructions below are for Windows 10 or Windows 11 and PowerShell.
 
-The app checks these indoor wheelchair route rules:
+You need:
 
-- door or opening clear width must be at least 0.90 m
-- main indoor route width should be at least 1.50 m
-- turning space should be at least 1.50 m by 1.50 m
-- stairs block a wheelchair route when the route path enters the stair area
-- ramps must be at least 1.20 m wide and at most 6 percent slope
+- Git
+- Python 3.12
+- Java 17
+- Ollama if you want generated explanations
 
-The app is only for indoor route checks. It does not check toilets, lifts, outdoor paths, fire safety, or full legal approval.
+The IFCtoLBD JAR files and Three.js 0.165.0 browser modules are already included in the repository. Maven, Node.js and npm are not required to run the project.
 
-Stairs are shown separately from door-to-door routes:
+Maven is not part of the runtime. The server does not call `mvn` and the repository does not need to resolve a `pom.xml`. Java executes the included IFCtoLBD classpath directly.
 
-- door and corridor routes stay green when their path does not enter the stair area
-- stair approaches are shown as blocked because stairs are not wheelchair routes
-- on upper floors and basement, the simulation starts from the stair landing before checking routes to doors
+## 1. Install Git
 
-## What You Can See In The Website
-
-Check Results:
-
-- building data found in the IFC file
-- route issues found by the checker
-- assistant box that explains the result in simple words
-
-Building Model:
-
-- 3D building view
-- stairs shown in red
-- clickable doors
-- routes connected to the selected door
-- blocked stair approach path for the selected door
-
-Wheelchair Simulation:
-
-- floor dropdown
-- isometric floor view
-- small wheelchair user
-- stair landing start on basement and upper floors
-- green route when it passes
-- red route when it fails
-
-## How The Checker Works
-
-The app uses these steps:
-
-```text
-IFC file
--> building elements and geometry
--> floor-by-floor route graph
--> wheelchair rule checks
--> stair approach issue checks
--> website data
--> browser view
-```
-
-The browser does not recalculate the IFC model. It only shows the data prepared by the Python scripts.
-
-## Install
-
-Install Python 3.12 first.
-
-Then open a terminal in the repo folder and install the Python packages:
+Open PowerShell as a normal user and run:
 
 ```powershell
+winget install --id Git.Git --version 2.55.0.2 -e --accept-source-agreements --accept-package-agreements
+```
+
+Close PowerShell, open it again and verify the installation:
+
+```powershell
+git --version
+```
+
+## 2. Install Python 3.12
+
+```powershell
+winget install --id Python.Python.3.12 --version 3.12.10 -e --accept-source-agreements --accept-package-agreements
+```
+
+Close PowerShell, open it again and verify that the Python 3.12 launcher is available:
+
+```powershell
+py -3.12 --version
+```
+
+The documented installer provides Python 3.12.10. The application is also tested with Python 3.12.13. Use Python 3.12 because the pinned IfcOpenShell wheel is available for this Python series.
+
+## 3. Install Java 17
+
+```powershell
+winget install --id Microsoft.OpenJDK.17 --version 17.0.19.10 -e --accept-source-agreements --accept-package-agreements
+```
+
+Close PowerShell, open it again and verify Java:
+
+```powershell
+java -version
+```
+
+The tested Java runtime is Microsoft OpenJDK 17.0.19. A Java 17 runtime must be on `PATH` before preprocessing an IFC file.
+
+## 4. Install Ollama
+
+Ollama is needed only for generated explanations. Route calculation, RDF conversion, SHACL checks, 2D plans and the wheelchair simulation work without it.
+
+```powershell
+winget install --id Ollama.Ollama --version 0.31.2 -e --accept-source-agreements --accept-package-agreements
+```
+
+Close PowerShell, open it again and verify Ollama:
+
+```powershell
+ollama --version
+```
+
+Install the expected local model once:
+
+```powershell
+ollama pull qwen3:8b
+```
+
+The model download is several gigabytes and can take time. It is stored by Ollama, not inside this repository.
+
+## 5. Clone The Repository
+
+Choose a folder where the project should be stored:
+
+```powershell
+cd "$HOME\Desktop"
+git clone https://github.com/ganeshprasadt1de/Accessibility-checking-assistant.git
+cd Accessibility-checking-assistant
+```
+
+Confirm that you are on the main branch:
+
+```powershell
+git branch --show-current
+```
+
+The result should be `main`.
+
+## 6. Create An Isolated Python Environment
+
+A virtual environment prevents this project's packages from changing other Python projects on the computer.
+
+```powershell
+py -3.12 -m venv .venv
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\.venv\Scripts\Activate.ps1
+```
+
+After activation, the PowerShell prompt begins with `(.venv)`.
+
+Install the exact tested package versions:
+
+```powershell
+python -m pip install --upgrade "pip==25.2"
 python -m pip install -r requirements.txt
 ```
 
-Optional tools:
+Verify the four direct libraries:
 
-- Ollama is only needed if you want the assistant to use a local LLM.
+```powershell
+python -c "import ifcopenshell, rdflib, pyshacl, shapely; print('Python dependencies are ready.')"
+```
 
-Required tools:
+The versions in `requirements.txt` are fixed with `==`. Direct and transitive packages are pinned so reinstalling the project does not silently select newer library behaviour.
 
-- Java is required for IFCtoLBD.
-- Maven is required to build IFCtoLBD from `IFCtoLBD-master.zip`.
-- `IFCtoLBD-master.zip` must be present in the repo folder.
+The browser uses the included Three.js 0.165.0 files from `frontend/vendor/three`. It does not download JavaScript from a CDN when the application starts.
 
-The preprocessing step stops with an error if Java, Maven, IFCtoLBD, or pySHACL is not available. It does not create a Python replacement LBD graph.
+## 7. Verify The Included IFCtoLBD Runtime
 
-The website checks Ollama when it starts. If Ollama is not running, start the website with `--yes` to continue and show SHACL report data instead of generated assistant text.
+The unzipped Java runtime is stored in:
 
-## Run With The Included IFC File
+```text
+tools/ifctolbd/java_libraries/
+```
 
-From the repo folder, prepare the data:
+It contains IFCtoLBD 2.43.4, Apache Jena 4.10.0 and their matching Java libraries. Do not download or unzip another IFCtoLBD package over this folder.
+
+Verify the two main JAR files:
+
+```powershell
+Test-Path ".\tools\ifctolbd\java_libraries\ifc-to-lbd-2.43.4.jar"
+Test-Path ".\tools\ifctolbd\java_libraries\jena-arq-4.10.0.jar"
+```
+
+Both commands must return `True`.
+
+Verify every included JAR against the repository checksum manifest:
+
+```powershell
+$root = Resolve-Path ".\tools\ifctolbd\java_libraries"
+$expected = @{}
+Get-Content "$root\SHA256SUMS.txt" | ForEach-Object {
+    if ($_ -match '^([0-9a-f]{64})  (.+)$') {
+        $expected[$matches[2]] = $matches[1]
+    }
+}
+$failed = @()
+Get-ChildItem $root -Filter "*.jar" | ForEach-Object {
+    $actual = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+    if (-not $expected.ContainsKey($_.Name) -or $expected[$_.Name] -ne $actual) {
+        $failed += $_.Name
+    }
+}
+if ($failed.Count -eq 0 -and $expected.Count -eq 170) {
+    "IFCtoLBD runtime verified: 170 JAR files."
+} else {
+    throw "IFCtoLBD verification failed: $($failed -join ', ')"
+}
+```
+
+## 8. Run The Automated Tests
+
+```powershell
+python -m unittest discover -s tests -v
+```
+
+The tests check assistant grounding, unsupported-recommendation rejection, structured answer formatting, complete SHACL issue aggregation and balanced failed-route evidence.
+
+## 9. Prepare An IFC Model
+
+The repository includes both project IFC files:
+
+- `AC20-Institute-Var-2.ifc`
+- `20201208DigitalHub_ARC.ifc`
+
+Generate the AC20 browser package with:
 
 ```powershell
 python preprocess.py --ifc ".\AC20-Institute-Var-2.ifc" --save-bin
 ```
 
-Start the website:
+Generate the DigitalHub browser package with:
 
 ```powershell
-python server.py
+python preprocess.py --ifc ".\20201208DigitalHub_ARC.ifc" --save-bin
 ```
 
-Open this link in your browser:
+`output/app_package` contains one active package at a time. Running either command replaces that generated package with the selected model's results. The original IFC files are not modified.
 
-```text
-http://127.0.0.1:8765
-```
-
-If Ollama is not running and you still want to open the website:
+To process another IFC model, use its full path:
 
 ```powershell
-python server.py --yes
+python preprocess.py --ifc "C:\path\to\building.ifc" --save-bin
 ```
 
-## Run With Your Own IFC File
+Preprocessing can take several minutes. A successful run ends with lines similar to:
 
-Use the same command, but replace the file path:
+```text
+Extracted elements: ...
+raw graph created by pinned IFCtoLBD 2.43.4 runtime
+Wrote package: ...\output\app_package
+Routes: ..., issues: ..., missing geometry: ...
+```
+
+If preprocessing reports that Java is missing, close PowerShell, open it again and rerun `java -version`.
+
+## 10. Start Ollama
+
+Check whether Ollama is already running:
 
 ```powershell
-python preprocess.py --ifc "path\to\your\model.ifc" --save-bin
-python server.py
+Invoke-RestMethod "http://127.0.0.1:11434/api/tags"
 ```
 
-Then open:
+If the command cannot connect, start Ollama in a separate PowerShell window:
 
-```text
-http://127.0.0.1:8765
+```powershell
+ollama serve
 ```
 
-## Assistant Explanation
+Keep that window open.
 
-The assistant explains the checker result in normal language.
+## 11. Start The Website
 
-If Ollama is running with `qwen3:8b`, the app asks Ollama to write the answer.
+Return to the project PowerShell window. Make sure the virtual environment is active, then run:
 
-If Ollama is not running, `python server.py` stops and prints a message. Use `python server.py --yes` to continue. In that mode, assistant requests return SHACL report data instead of generated explanation text.
-
-The assistant is only for explanation. The pass or fail result comes from SHACL validation.
-
-## Output Files
-
-Prepared website files are written here:
-
-```text
-output/app_package/
+```powershell
+python server.py --port 8767
 ```
 
-Important output files:
+Open this address in a browser:
 
 ```text
-app_data.json           data used by the website
-route_model.glb         simple 3D model for the browser
-route_graph.bin         saved route graph when --save-bin is used
-ifc_route_audit.json    route audit data
-ifc_route_audit.md      readable route audit summary
-shacl_report.ttl        SHACL validation report
+http://127.0.0.1:8767
 ```
 
-## Main Files
+Keep the server window open. Stop the server with `Ctrl+C`.
+
+If port 8767 is already occupied, stop the old local server:
+
+```powershell
+Get-NetTCPConnection -LocalPort 8767 -State Listen -ErrorAction SilentlyContinue |
+    ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }
+```
+
+Then run `python server.py --port 8767` again.
+
+## Running Without Ollama
+
+If you do not want generated explanations, start the website with:
+
+```powershell
+python server.py --yes --port 8767
+```
+
+The assistant area then returns SHACL report data. All building extraction, route generation, validation and visualisation features remain available.
+
+## Using The Website
+
+The website contains:
+
+- `Home`: upload IFC files and manage generated model packages
+- `Check Results`: inspect extracted elements, SHACL results and grounded explanations
+- `Floor Plan 2D`: inspect floor geometry and route overlays
+- `Building Model`: inspect the compact GLB model
+- `Wheelchair Simulation`: play clear and blocked routes on a 2.5D floor slice
+
+The Check Results page includes `Restart Ollama`. It stops verified Ollama processes, starts one clean Ollama service, waits for the API and warms the selected model. It refuses to stop an unrelated program if another executable owns port 11434.
+
+The server prefers `qwen3:8b`. To select another installed model before starting the server:
+
+```powershell
+$env:OLLAMA_MODEL = "qwen3:8b"
+python server.py --port 8767
+```
+
+## Accessibility Checks
+
+The supplied SHACL rules check:
+
+- door or opening clear width of at least 0.90 m
+- route clear width of at least 1.50 m
+- turning space of at least 1.50 m by 1.50 m
+- stair intersection along a wheelchair route
+- ramp usable width of at least 1.20 m
+- ramp slope of at most 6 percent
+
+These checks support model review. They do not replace professional accessibility approval, fire-safety review or requirements from the responsible local authority.
+
+## Route Construction
+
+Routes use `IfcRelSpaceBoundary` door-to-space relationships.
+
+For each usable space, the checker builds a 0.10 m occupancy grid from wall, column, stair and other obstacle bounding boxes. Obstacles are expanded by 0.38 m around the route centre. Door rectangles carve controlled portals through wall cells. A four-direction A* search connects exact door centres with horizontal and vertical movement.
+
+The generated route has these properties:
+
+- every plan segment uses 0, 90 or 180 degrees
+- consecutive dense route points are no more than 0.12 m apart
+- route endpoints match the selected door centres
+- a route is rejected when no collision-free grid connection exists
+- a route intersecting a blocked wall cell is never accepted
+
+Dijkstra's algorithm joins passing door-to-door edges into shortest routes across the door graph. Stair approaches are stored as blocked edges so the simulation can stop before the stair.
+
+## RDF, SHACL And Ollama
+
+IFCtoLBD converts IFC meaning into RDF Turtle. The application adds geometry measurements and route measurements to the RDF graph. pySHACL then runs the constraints in:
 
 ```text
-preprocess.py                    prepares checker data from the IFC file
-server.py                        starts the local website
-backend/geometry.py              reads IFC geometry
-backend/routes.py                builds floor routes and checks them
-backend/rules.py                 creates issue rows
-backend/shacl_runner.py          runs SHACL checks
-backend/glb_export.py            creates the browser 3D model
-backend/short_explainer.py       assistant and short issue text
-frontend/index.html              website layout
-frontend/app.js                  website logic, assistant, model view, and simulation
-frontend/styles.css              website styling
 rules/accessibility_rules.shacl.ttl
 ```
+
+SHACL produces the pass or fail result. Ollama does not decide compliance. It selects only recommendations supplied by the backend and linked to detected SHACL issue types. Unsupported or incomplete model output is rejected and replaced with SHACL-grounded text.
+
+## Matching 2D And 2.5D Views
+
+The 2D floor plan and wheelchair simulation use the same floor elements, route edges, door boxes, blocker boxes, route coordinates and status colours.
+
+The simulation uses one uniform metres-to-scene scale. Routes are placed on one selected floor-slice surface. The wheelchair is grounded from its calculated mesh bounds so the tyre bottom touches that surface. Orbit, pan and zoom change the camera only; they do not change route coordinates.
+
+## Generated Package Files
+
+```text
+output/app_package/app_data.json         browser data, elements, issues and routes
+output/app_package/raw_lbd_graph.ttl     IFCtoLBD RDF graph
+output/app_package/lbd_graph.ttl         RDF with derived measurements and routes
+output/app_package/shacl_report.ttl      complete SHACL report
+output/app_package/route_model.glb       compact browser model
+output/app_package/route_graph.bin       saved route graph when --save-bin is used
+output/app_package/ifc_route_audit.json  machine-readable route audit
+output/app_package/ifc_route_audit.md    readable route audit
+```
+
+Uploaded Model Library entries have separate generated packages. After changing preprocessing or route code, select `Regenerate`, wait for `Complete`, then select `Open`.
+
+## Main Project Files
+
+```text
+preprocess.py                              preprocessing entry point
+server.py                                  local server, Model Library and Ollama control
+requirements.txt                           exact Python dependency versions
+backend/geometry.py                        IFC geometry and bounding-box extraction
+backend/routes.py                          occupancy grid, A* and door graph
+backend/ifc_tools.py                       pinned IFCtoLBD execution
+backend/shacl_runner.py                    SHACL validation and issue extraction
+backend/package_writer.py                  browser package generation
+backend/glb_export.py                      compact GLB export
+backend/short_explainer.py                 grounded Ollama recommendation selection
+frontend/index.html                        website structure
+frontend/app.js                            2D, 3D and simulation behaviour
+frontend/styles.css                        website styling
+frontend/vendor/three/                     included Three.js 0.165.0 browser modules
+rules/accessibility_rules.shacl.ttl        accessibility constraints
+tests/                                     route, context and assistant regression tests
+tools/ifctolbd/java_libraries/             complete unzipped IFCtoLBD Java runtime
+```
+
+## Troubleshooting
+
+### PowerShell cannot run Activate.ps1
+
+Run:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\.venv\Scripts\Activate.ps1
+```
+
+This changes the policy only for the current PowerShell window.
+
+### `py -3.12` is not found
+
+Close PowerShell and open it again. If it is still missing, reinstall Python:
+
+```powershell
+winget install --id Python.Python.3.12 --version 3.12.10 -e --accept-source-agreements --accept-package-agreements
+```
+
+### `java` is not found
+
+Close PowerShell and open it again. Verify:
+
+```powershell
+java -version
+```
+
+If necessary, reinstall Java 17:
+
+```powershell
+winget install --id Microsoft.OpenJDK.17 --version 17.0.19.10 -e --accept-source-agreements --accept-package-agreements
+```
+
+### Ollama does not answer
+
+Verify the service and installed model:
+
+```powershell
+Invoke-RestMethod "http://127.0.0.1:11434/api/tags"
+ollama list
+```
+
+If `qwen3:8b` is missing:
+
+```powershell
+ollama pull qwen3:8b
+```
+
+Open Check Results and select `Restart Ollama`. Wait until the page reports that the model is warm before asking a question.

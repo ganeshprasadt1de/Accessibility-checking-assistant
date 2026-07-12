@@ -2113,12 +2113,14 @@ function planRows(rows) {
 function setupAssistant() {
   const input = document.querySelector("#assistantQuestion");
   const button = document.querySelector("#assistantAsk");
+  const restartButton = document.querySelector("#ollamaRestart");
+  const ollamaStatus = document.querySelector("#ollamaStatus");
   const answer = document.querySelector("#assistantAnswer");
-  if (!input || !button || !answer) return;
+  if (!input || !button || !restartButton || !ollamaStatus || !answer) return;
 
   const ask = async () => {
     const question = input.value.trim() || "Explain the checker result.";
-    answer.textContent = "Preparing explanation...";
+    answer.replaceChildren(Object.assign(document.createElement("p"), { textContent: "Preparing explanation..." }));
     button.disabled = true;
     try {
       const response = await fetch("/api/assistant", {
@@ -2128,7 +2130,7 @@ function setupAssistant() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Assistant request failed.");
-      answer.textContent = `${data.answer || "No generated answer was returned."} Source: ${data.source || "backend response"}.`;
+      renderAssistantAnswer(answer, data);
     } catch (error) {
       answer.textContent = error.message || "Assistant request failed.";
     } finally {
@@ -2137,9 +2139,54 @@ function setupAssistant() {
   };
 
   button.onclick = ask;
+  restartButton.onclick = async () => {
+    if (!confirm("Restart Ollama and warm the assistant model? Current Ollama requests will be interrupted.")) return;
+    restartButton.disabled = true;
+    button.disabled = true;
+    ollamaStatus.textContent = "Restarting Ollama and warming the assistant model. This can take several minutes...";
+    try {
+      const response = await fetch("/api/ollama/restart", { method: "POST" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Ollama restart failed.");
+      ollamaStatus.textContent = `${data.message} Stopped ${data.stoppedProcesses} old Ollama process(es). Model: ${data.model}. Time: ${data.elapsedSeconds} seconds.`;
+    } catch (error) {
+      ollamaStatus.textContent = error.message || "Ollama restart failed.";
+    } finally {
+      restartButton.disabled = false;
+      button.disabled = false;
+    }
+  };
   input.onkeydown = (event) => {
     if (event.key === "Enter") ask();
   };
+}
+
+function renderAssistantAnswer(container, data) {
+  container.replaceChildren();
+  const blocks = Array.isArray(data.blocks) ? data.blocks : [{ type: "paragraph", text: data.answer || "No generated answer was returned." }];
+  for (const block of blocks) {
+    if (block?.type === "heading") {
+      const heading = document.createElement("h3");
+      heading.textContent = block.text || "";
+      container.appendChild(heading);
+    } else if (block?.type === "list" && Array.isArray(block.items)) {
+      const list = document.createElement("ul");
+      for (const text of block.items) {
+        const item = document.createElement("li");
+        item.textContent = String(text || "");
+        list.appendChild(item);
+      }
+      container.appendChild(list);
+    } else {
+      const paragraph = document.createElement("p");
+      paragraph.textContent = String(block?.text || "");
+      container.appendChild(paragraph);
+    }
+  }
+  const source = document.createElement("p");
+  source.className = "assistantSource";
+  source.textContent = `Source: ${data.source || "backend response"}.`;
+  container.appendChild(source);
 }
 
 function fillTable(selector, headers, rows) {
@@ -2475,7 +2522,7 @@ function setupSimulation() {
   container.appendChild(simRenderer.domElement);
   simControls = new OrbitControls(simCamera, simRenderer.domElement);
   simControls.enableDamping = true;
-  simControls.enablePan = false;
+  simControls.enablePan = true;
   simControls.enableZoom = true;
   simControls.minZoom = 0.65;
   simControls.maxZoom = 2.4;

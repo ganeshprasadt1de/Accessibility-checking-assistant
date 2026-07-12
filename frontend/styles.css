@@ -111,7 +111,7 @@ main {
 
 .assistant {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   gap: 10px;
   max-width: 920px;
   margin-bottom: 8px;
@@ -1107,4 +1107,27 @@ aside {
   .planPanel {
     overflow: visible;
   }
+}
+#assistantAnswer p {
+  margin: 0 0 0.75rem;
+}
+
+#assistantAnswer h3 {
+  margin: 0.9rem 0 0.45rem;
+}
+
+#assistantAnswer ul {
+  margin: 0 0 0.8rem;
+  padding-left: 1.4rem;
+}
+
+#assistantAnswer li {
+  margin: 0 0 0.45rem;
+  line-height: 1.45;
+}
+
+#assistantAnswer .assistantSource {
+  color: #5c696c;
+  font-size: 0.9rem;
+  margin-bottom: 0;
 }

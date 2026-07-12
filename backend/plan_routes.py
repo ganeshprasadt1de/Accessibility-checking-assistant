@@ -11,7 +11,7 @@ from pathlib import Path
 from .config import RULE_LIMITS
 from .geometry import distance, obstacle_elements
 from .model import Element, RouteEdge
-from .routes import _route_measurements
+from .routes import route_measurements
 
 PLAN_GRID_STEP = 0.20
 PLAN_ROUTE_HALF_WIDTH = 0.04
@@ -118,7 +118,7 @@ def _plan_candidates(
                 path = _compact_path(matched.path)
             if not path or len(path) < 2:
                 continue
-            measurements = dict(matched.measurements) if matched else _route_measurements(first, second, path, obstacles, space)
+            measurements = dict(matched.measurements) if matched else route_measurements(first, second, path, obstacles, space)
             reasons = list(matched.reasons) if matched else _measurement_reasons(measurements)
             if area is not None and not area.is_empty:
                 _set_route_clear_width(measurements, path, area, [first, second], footprints)

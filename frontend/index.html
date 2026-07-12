@@ -60,7 +60,7 @@
           <button id="assistantAsk">Ask</button>
           <button id="ollamaRestart" type="button">Restart Ollama</button>
           <p id="ollamaStatus">Ollama maintenance is idle.</p>
-          <p id="assistantAnswer">Ask a question to use Ollama, or view SHACL report data when Ollama is disabled.</p>
+          <div id="assistantAnswer" class="assistantAnswer"><p>Ask a question to use Ollama, or view SHACL report data when Ollama is disabled.</p></div>
         </div>
         <h2>Extracted Building Data</h2>
         <div class="tableWrap"><table id="elementTable"></table></div>
@@ -158,8 +158,8 @@
     <script type="importmap">
       {
         "imports": {
-          "three": "https://unpkg.com/three@0.165.0/build/three.module.js",
-          "three/addons/": "https://unpkg.com/three@0.165.0/examples/jsm/"
+          "three": "/vendor/three/three.module.js",
+          "three/addons/": "/vendor/three/addons/"
         }
       }
     </script>

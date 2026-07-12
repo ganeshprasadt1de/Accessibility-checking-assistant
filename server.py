@@ -529,9 +529,10 @@ def ifctolbd_exe() -> Path | None:
 
 def assistant_context(data: dict) -> dict:
     elements_by_guid = {element.get("guid"): element for element in data.get("elements", [])}
-    issues = data.get("issues", [])[:20]
-    detected_rules = sorted({issue.get("rule_id") for issue in issues if issue.get("rule_id")})
-    issue_counts = Counter(issue.get("rule_id") for issue in issues if issue.get("rule_id"))
+    all_issues = data.get("issues", [])
+    issue_examples = all_issues[:40]
+    detected_rules = sorted({issue.get("rule_id") for issue in all_issues if issue.get("rule_id")})
+    issue_counts = Counter(issue.get("rule_id") for issue in all_issues if issue.get("rule_id"))
     failed_routes = []
     for edge in data.get("routeEdges", []):
         if edge.get("status") != "fail":
@@ -549,6 +550,19 @@ def assistant_context(data: dict) -> dict:
                 "reasons": edge.get("reasons", []),
             }
         )
+    failed_route_examples = []
+    represented_reasons = set()
+    for route in failed_routes:
+        new_reasons = set(route.get("reasons", [])) - represented_reasons
+        if not new_reasons:
+            continue
+        failed_route_examples.append(route)
+        represented_reasons.update(route.get("reasons", []))
+    for route in failed_routes:
+        if len(failed_route_examples) >= 40:
+            break
+        if route not in failed_route_examples:
+            failed_route_examples.append(route)
     floors = []
     for floor in data.get("floors", []):
         door_count = len(floor.get("doorGuids", []))
@@ -578,9 +592,9 @@ def assistant_context(data: dict) -> dict:
                 "rule": issue.get("rule_id"),
                 "details": issue.get("details"),
             }
-            for issue in issues
+            for issue in issue_examples
         ],
-        "failedRoutes": failed_routes[:20],
+        "failedRoutes": failed_route_examples[:40],
         "floorsWithFailures": floors,
     }
 

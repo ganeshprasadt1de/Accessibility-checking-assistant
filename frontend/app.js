@@ -877,7 +877,7 @@ function setupAssistant() {
 
   const ask = async () => {
     const question = input.value.trim() || "Explain the checker result.";
-    answer.textContent = "Preparing explanation...";
+    answer.replaceChildren(Object.assign(document.createElement("p"), { textContent: "Preparing explanation..." }));
     button.disabled = true;
     try {
       const response = await fetch("/api/assistant", {
@@ -887,7 +887,7 @@ function setupAssistant() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Assistant request failed.");
-      answer.textContent = `${data.answer || "No generated answer was returned."} Source: ${data.source || "backend response"}.`;
+      renderAssistantAnswer(answer, data);
     } catch (error) {
       answer.textContent = error.message || "Assistant request failed.";
     } finally {
@@ -916,6 +916,34 @@ function setupAssistant() {
   input.onkeydown = (event) => {
     if (event.key === "Enter") ask();
   };
+}
+
+function renderAssistantAnswer(container, data) {
+  container.replaceChildren();
+  const blocks = Array.isArray(data.blocks) ? data.blocks : [{ type: "paragraph", text: data.answer || "No generated answer was returned." }];
+  for (const block of blocks) {
+    if (block?.type === "heading") {
+      const heading = document.createElement("h3");
+      heading.textContent = block.text || "";
+      container.appendChild(heading);
+    } else if (block?.type === "list" && Array.isArray(block.items)) {
+      const list = document.createElement("ul");
+      for (const text of block.items) {
+        const item = document.createElement("li");
+        item.textContent = String(text || "");
+        list.appendChild(item);
+      }
+      container.appendChild(list);
+    } else {
+      const paragraph = document.createElement("p");
+      paragraph.textContent = String(block?.text || "");
+      container.appendChild(paragraph);
+    }
+  }
+  const source = document.createElement("p");
+  source.className = "assistantSource";
+  source.textContent = `Source: ${data.source || "backend response"}.`;
+  container.appendChild(source);
 }
 
 function fillTable(selector, headers, rows) {

@@ -14,6 +14,7 @@ def make_issue(
     unit: str,
     source: str,
     details: str,
+    evidence_id: str | None = None,
 ) -> None:
     issues.append(
         Issue(
@@ -29,6 +30,7 @@ def make_issue(
             source=source,
             short_text=rule_label(rule_id),
             details=details,
+            evidence_id=evidence_id,
         )
     )
 
@@ -38,10 +40,15 @@ def evaluate_value_rules(elements: list[Element]) -> list[Issue]:
     for element in elements:
         if element.ifc_type == "IfcDoor":
             width = _num(element.extra.get("derivedDoorWidthM"))
+            height = _num(element.extra.get("derivedDoorHeightM"))
             if width is None:
                 make_issue(issues, element, "missing", None, RULE_LIMITS.door_width_m, "m", "IFC model data", "Door width could not be calculated.")
             elif width < RULE_LIMITS.door_width_m:
                 make_issue(issues, element, "door_width", width, RULE_LIMITS.door_width_m, "m", "IFC model geometry", "Door clear width is below the rule target.")
+            if height is None:
+                make_issue(issues, element, "missing_door_height", None, RULE_LIMITS.door_height_m, "m", "IFC model data", "Door clear height could not be calculated.")
+            elif height < RULE_LIMITS.door_height_m:
+                make_issue(issues, element, "door_height", height, RULE_LIMITS.door_height_m, "m", "IFC model geometry", "Door clear height is below the rule target.")
         elif element.ifc_type == "IfcSpace":
             if _skip_space_rules(element):
                 continue
@@ -50,12 +57,38 @@ def evaluate_value_rules(elements: list[Element]) -> list[Issue]:
                 make_issue(issues, element, "missing", None, RULE_LIMITS.corridor_width_m, "m", "IFC model data", "Space clear width could not be calculated.")
             elif _looks_like_corridor(element) and clear < RULE_LIMITS.corridor_width_m:
                 make_issue(issues, element, "corridor_width", clear, RULE_LIMITS.corridor_width_m, "m", "IFC model geometry", "Corridor clear width is below the rule target.")
+            if _looks_like_corridor(element):
+                length = _num(element.extra.get("derivedCorridorLengthM"))
+                slope = _num(element.extra.get("derivedCorridorSlopePercent"))
+                slope_limit = (
+                    RULE_LIMITS.short_corridor_slope_percent
+                    if length is not None and length <= RULE_LIMITS.short_corridor_length_m
+                    else RULE_LIMITS.corridor_slope_percent
+                )
+                if slope is not None and slope > slope_limit:
+                    make_issue(issues, element, "corridor_slope", slope, slope_limit, "%", "IFC model geometry", "Corridor slope is above the rule target.")
+                for evidence in element.passing_area_gaps:
+                    gap = _num(evidence.get("measured"))
+                    if gap is None or gap <= RULE_LIMITS.corridor_movement_interval_m:
+                        continue
+                    make_issue(
+                        issues,
+                        element,
+                        "corridor_movement_area",
+                        gap,
+                        RULE_LIMITS.corridor_movement_interval_m,
+                        "m",
+                        "IFC model geometry",
+                        "Passing-area spacing exceeds the rule interval.",
+                        evidence.get("evidence_id"),
+                    )
             turn = _num(element.extra.get("turningSpaceM"))
             if turn is not None and turn + 0.005 < RULE_LIMITS.turning_space_m:
                 make_issue(issues, element, "turning_space", turn, RULE_LIMITS.turning_space_m, "m", "IFC model geometry", "Turning space is below the rule target.")
         elif element.ifc_type in {"IfcRamp", "IfcRampFlight"}:
             slope = _num(element.extra.get("rampSlopePercent"))
             width = _num(element.extra.get("rampUsableWidthM"))
+            run_length = _num(element.extra.get("rampRunLengthM"))
             if slope is None:
                 make_issue(issues, element, "missing", None, RULE_LIMITS.ramp_slope_percent, "%", "IFC model data", "Ramp slope could not be calculated.")
             elif slope > RULE_LIMITS.ramp_slope_percent:
@@ -64,6 +97,8 @@ def evaluate_value_rules(elements: list[Element]) -> list[Issue]:
                 make_issue(issues, element, "missing", None, RULE_LIMITS.ramp_width_m, "m", "IFC model data", "Ramp width could not be calculated.")
             elif width < RULE_LIMITS.ramp_width_m:
                 make_issue(issues, element, "ramp_width", width, RULE_LIMITS.ramp_width_m, "m", "IFC model geometry", "Ramp width is below the rule target.")
+            if run_length is not None and run_length > RULE_LIMITS.ramp_run_length_m:
+                make_issue(issues, element, "ramp_run_length", run_length, RULE_LIMITS.ramp_run_length_m, "m", "IFC model geometry", "Ramp flight length is above the rule target.")
     return issues
 
 

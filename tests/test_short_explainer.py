@@ -40,15 +40,17 @@ class ShortExplainerTests(unittest.TestCase):
 
     def test_route_rule_aliases_are_not_omitted(self):
         context = {
-            "detectedIssueTypes": ["route_door_width", "route_ramp_slope", "missing_door_width"],
-            "issueCountsByType": {"route_door_width": 2, "route_ramp_slope": 1, "missing_door_width": 3},
+            "detectedIssueTypes": ["route_door_width", "route_door_height", "route_ramp_slope", "route_ramp_run_length", "missing_door_width", "missing_door_height"],
+            "issueCountsByType": {"route_door_width": 2, "route_door_height": 4, "route_ramp_slope": 1, "route_ramp_run_length": 2, "missing_door_width": 3, "missing_door_height": 1},
             "affectedElements": [], "failedRoutes": [], "floorsWithFailures": [],
         }
         summary = _summary(context)
         self.assertIn("2 door too narrow issues", summary)
+        self.assertIn("4 door too low issues", summary)
         self.assertIn("1 ramp too steep issue", summary)
-        self.assertIn("3 missing data issues", summary)
-        self.assertEqual(len(_allowed_actions(context)), 3)
+        self.assertIn("2 ramp flight too long issues", summary)
+        self.assertIn("4 missing data issues", summary)
+        self.assertEqual(len(_allowed_actions(context)), 5)
 
     @patch("backend.short_explainer.urllib.request.urlopen")
     def test_general_repair_question_is_filled_with_distinct_grounded_actions(self, urlopen):

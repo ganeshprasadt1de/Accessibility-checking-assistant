@@ -6,10 +6,11 @@ The application contains:
 
 - IFC geometry extraction with IfcOpenShell
 - IFC-to-RDF conversion with the included IFCtoLBD 2.43.4 Java runtime
-- four-direction A* routing on a 0.10 m occupancy grid
+- four-direction A* routing for the base door graph
+- Shapely-based route generation for the 2D floor plan
 - shortest door-graph routes calculated with Dijkstra's algorithm
 - SHACL validation with pySHACL
-- matching 2D floor plans and a 2.5D wheelchair simulation
+- coordinated 2D floor plans and a 2.5D wheelchair simulation
 - a local Ollama assistant that explains checked facts without deciding compliance
 
 ## Before You Start
@@ -301,12 +302,16 @@ python server.py --port 8767
 
 The supplied SHACL rules check:
 
-- door or opening clear width of at least 0.90 m
-- route clear width of at least 1.50 m
+- route-relevant door or opening clear width of at least 0.90 m and clear height of at least 2.05 m
+- corridor and route clear width of at least 1.50 m
+- corridor slope of at most 3 percent, or 4 percent for sections no longer than 10.00 m
+- 1.80 m by 1.80 m passing areas at intervals no greater than 15.00 m
 - turning space of at least 1.50 m by 1.50 m
-- stair intersection along a wheelchair route
+- stair, wall or column intersection along a wheelchair route
+- disconnected doors in the route network
 - ramp usable width of at least 1.20 m
 - ramp slope of at most 6 percent
+- ramp flight length of at most 6.00 m
 
 These checks support model review. They do not replace professional accessibility approval, fire-safety review or requirements from the responsible local authority.
 
@@ -314,9 +319,9 @@ These checks support model review. They do not replace professional accessibilit
 
 Routes use `IfcRelSpaceBoundary` door-to-space relationships.
 
-For each usable space, the checker builds a 0.10 m occupancy grid from wall, column, stair and other obstacle bounding boxes. Obstacles are expanded by 0.38 m around the route centre. Door rectangles carve controlled portals through wall cells. A four-direction A* search connects exact door centres with horizontal and vertical movement.
+`backend/routes.py` builds the base door graph on a 0.10 m occupancy grid. Obstacles are expanded by 0.38 m around the route centre. Door rectangles carve controlled portals through wall cells. A four-direction A* search connects exact door centres with horizontal and vertical movement.
 
-The generated route has these properties:
+The base route graph has these properties:
 
 - every plan segment uses 0, 90 or 180 degrees
 - consecutive dense route points are no more than 0.12 m apart
@@ -325,6 +330,8 @@ The generated route has these properties:
 - a route intersecting a blocked wall cell is never accepted
 
 Dijkstra's algorithm joins passing door-to-door edges into shortest routes across the door graph. Stair approaches are stored as blocked edges so the simulation can stop before the stair.
+
+`backend/plan_routes.py` builds a separate 2D route network from Shapely walkable-space geometry. It removes wall, column and stair obstacles, restores controlled openings at valid doors and checks the buffered route footprint against the walkable area. A 0.20 m grid search is used when a direct candidate is not suitable.
 
 ## RDF, SHACL And Ollama
 
@@ -338,7 +345,7 @@ SHACL produces the pass or fail result. Ollama does not decide compliance. It se
 
 ## Matching 2D And 2.5D Views
 
-The 2D floor plan and wheelchair simulation use the same floor elements, route edges, door boxes, blocker boxes, route coordinates and status colours.
+The 2D floor plan and wheelchair simulation use the same IFC elements, floor assignments, door boxes, blocker boxes and rule results. The floor plan renders `planRouteEdges`, while the simulation uses the base `routeEdges` door graph.
 
 The simulation uses one uniform metres-to-scene scale. Routes are placed on one selected floor-slice surface. The wheelchair is grounded from its calculated mesh bounds so the tyre bottom touches that surface. Orbit, pan and zoom change the camera only; they do not change route coordinates.
 
@@ -365,6 +372,7 @@ server.py                                  local server, Model Library and Ollam
 requirements.txt                           exact Python dependency versions
 backend/geometry.py                        IFC geometry and bounding-box extraction
 backend/routes.py                          occupancy grid, A* and door graph
+backend/plan_routes.py                     Shapely-based 2D route network generation
 backend/ifc_tools.py                       pinned IFCtoLBD execution
 backend/shacl_runner.py                    SHACL validation and issue extraction
 backend/package_writer.py                  browser package generation

@@ -412,16 +412,6 @@ th {
   color: #3d494b;
 }
 
-.planZoom {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.planZoom button {
-  padding: 8px 10px;
-}
-
 .legendLine {
   display: inline-block;
   width: 26px;
@@ -900,6 +890,90 @@ th {
   line-height: 1.35;
   overflow-wrap: anywhere;
   white-space: normal;
+}
+
+.planElementIssues {
+  border-top: 1px solid #e8ebe7;
+  margin-top: 14px;
+  padding-top: 12px;
+}
+
+.planIssueCards {
+  display: grid;
+  gap: 9px;
+}
+
+.planIssueCard {
+  min-width: 0;
+  border: 1px solid #e5b9b5;
+  border-left: 3px solid #b3261e;
+  border-radius: 6px;
+  background: #fffaf8;
+  padding: 10px;
+}
+
+.planIssueCardHeader {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+}
+
+.planIssueCardIcon {
+  display: inline-grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border: 1px solid #b3261e;
+  border-radius: 50%;
+  color: #b3261e;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.planIssueCard h4 {
+  margin: 1px 0 0;
+  color: #1f2628;
+  font-size: 14px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.planIssueLocation {
+  margin-top: 9px;
+}
+
+.planIssueLocation span {
+  display: block;
+  color: #5b6669;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.planIssueLocation p {
+  margin-top: 3px;
+  color: #263134;
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.planPanel .planIssueComparison {
+  margin: 9px 0 0;
+  border-top: 1px solid #efd8d4;
+  padding-top: 8px;
+  color: #8e2f28;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.planIssueContext {
+  border-top: 1px solid #e8ebe7;
+  margin-top: 12px;
+  padding-top: 12px;
 }
 
 .planRows {

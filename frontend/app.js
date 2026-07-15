@@ -122,7 +122,6 @@ function setupModelLibrary() {
   const input = document.querySelector("#modelFile");
   const dropZone = document.querySelector(".modelDropZone");
   document.querySelector("#modelUploadButton")?.addEventListener("click", uploadSelectedModels);
-  document.querySelector("#modelRefresh")?.addEventListener("click", loadModels);
   input?.addEventListener("change", () => {
     pendingUploadFiles = Array.from(input.files || []);
     setUploadSummary(pendingUploadFiles);
@@ -445,7 +444,6 @@ function setupFloorPlan() {
       planRouteMode = accessibleOnly.checked ? "accessible" : "candidate";
       renderFloorPlan();
     });
-    document.querySelector("#planResetView")?.addEventListener("click", resetPlanView);
     setupPlanPanZoom();
     planControlsReady = true;
   }
@@ -481,14 +479,15 @@ function renderFloorPlan() {
   const planEdges = appData.planRouteEdges?.length ? appData.planRouteEdges : appData.routeEdges;
   const edgesById = new Map(planEdges.map((edge) => [edge.edgeId, edge]));
   const issueCounts = planIssueCounts();
-  const elements = (floor.elementGuids || []).map((guid) => elementsByGuid.get(guid)).filter(Boolean);
   const edgeIds = appData.planRouteEdges?.length ? floor.planRouteEdgeIds : floor.routeEdgeIds;
   const edges = (edgeIds || []).map((edgeId) => edgesById.get(edgeId)).filter(Boolean);
+  const floorElements = (floor.elementGuids || []).map((guid) => elementsByGuid.get(guid)).filter(Boolean);
+  const elements = uniqueElements(floorElements.concat(planRouteEvidenceElements(edges, elementsByGuid)));
   viewer.innerHTML = floorPlanSvg(floor, elements, edges, issueCounts, elementsByGuid);
   planPick = null;
   applyPlanZoom();
   title.textContent = `${floor.name} floor plan`;
-  const floorIssueCount = elements.reduce((sum, element) => sum + (issueCounts.get(element.guid) || 0), 0);
+  const floorIssueCount = floorElements.reduce((sum, element) => sum + (issueCounts.get(element.guid) || 0), 0);
   const routeIssueCount = routeIssueGroupCount(edges, elementsByGuid);
   status.textContent = planRouteMode === "accessible"
     ? `${floor.spaceGuids?.length || 0} rooms and ${floor.doorGuids?.length || 0} doors on this floor.`
@@ -519,9 +518,10 @@ function renderFloorPlan() {
     if (guid) showPlanElement(guid, elementsByGuid, regionId, areaId);
     if (edgeId) {
       const edgeIds = planTargetEdgeIds(target);
-      selectPlanRouteRegions(edgeIds, edgesById);
-      if (edgeIds.length > 1 && target.classList.contains("routeIssueMarker")) {
-        showPlanRouteGroup(edgeIds, edgesById, elementsByGuid);
+      const routeIssues = planTargetRouteIssues(target);
+      selectPlanRouteRegions(edgeIds, edgesById, routeIssues);
+      if (target.classList.contains("routeIssueMarker")) {
+        showPlanRouteGroup(edgeIds, edgesById, elementsByGuid, routeIssues);
       } else {
         showPlanRoute(edgeIds[0] || edgeId, edgesById, elementsByGuid);
       }
@@ -541,15 +541,6 @@ function applyPlanZoom() {
   svg.style.height = `${100 * planZoom}%`;
   svg.style.minWidth = `${760 * planZoom}px`;
   svg.style.minHeight = `${560 * planZoom}px`;
-}
-
-function resetPlanView() {
-  planZoom = 1;
-  applyPlanZoom();
-  const viewer = document.querySelector("#planViewer");
-  if (!viewer) return;
-  viewer.scrollLeft = 0;
-  viewer.scrollTop = 0;
 }
 
 function setupPlanPanZoom() {
@@ -642,9 +633,12 @@ function selectPlanTarget(target) {
   target.classList.add("selectedPlanElement");
 }
 
-function selectPlanRouteRegions(edgeIds, edgesById) {
+function selectPlanRouteRegions(edgeIds, edgesById, routeIssues = []) {
+  const selectedEdgeIds = routeIssues.length
+    ? new Set(routeIssues.filter((issue) => issue.reason === "route_width").flatMap((issue) => issue.edgeIds || []))
+    : new Set(edgeIds);
   const spaceGuids = new Set(
-    edgeIds
+    [...selectedEdgeIds]
       .map((edgeId) => edgesById.get(edgeId))
       .filter((edge) => edge?.reasons?.includes("route_width") && edge.viaSpaceGuid)
       .map((edge) => edge.viaSpaceGuid),
@@ -660,6 +654,17 @@ function planTargetEdgeIds(target) {
   if (edgeIds) return edgeIds.split(",").filter(Boolean);
   const edgeId = target.getAttribute("data-edge-id");
   return edgeId ? [edgeId] : [];
+}
+
+function planTargetRouteIssues(target) {
+  const value = target.getAttribute("data-route-issues");
+  if (!value) return [];
+  try {
+    const issues = JSON.parse(decodeURIComponent(value));
+    return Array.isArray(issues) ? issues : [];
+  } catch {
+    return [];
+  }
 }
 
 function pickPlanTarget(event, fallback, elementsByGuid, edgesById, issueCounts) {
@@ -695,6 +700,8 @@ function planTargetCandidates(event, fallback, elementsByGuid, edgesById, issueC
 
 function planTargetKey(target) {
   const edgeId = target.getAttribute("data-edge-id");
+  const routeIssues = target.getAttribute("data-route-issues");
+  if (edgeId && routeIssues) return `issue:${routeIssues}`;
   if (edgeId) return `edge:${edgeId}`;
   const regionId = target.getAttribute("data-region-id");
   if (regionId) return `region:${regionId}:${target.getAttribute("data-region-area-id") || ""}`;
@@ -1220,7 +1227,7 @@ function floorPlanRouteMarkup(edges, bounds, view, elementsByGuid) {
     return drawable.map((edge) => floorPlanRoute(edge, bounds, view, elementsByGuid)).join("");
   }
   if (planRouteMode === "candidate") {
-    return floorPlanMergedRoutes(drawable, bounds, view, elementsByGuid);
+    return drawable.map((edge) => floorPlanRoute(edge, bounds, view, elementsByGuid)).join("");
   }
   if (drawable.length <= 30) {
     return drawable.map((edge) => floorPlanRoute(edge, bounds, view, elementsByGuid)).join("");
@@ -1415,19 +1422,15 @@ function floorPlanIssueRegionPath(geometry, bounds, view) {
 function floorPlanElementIssueMarkup(elements, issueCounts, bounds, view, reserved = [], issueRegions = []) {
   const groups = new Map();
   const regionsByIssue = new Map(issueRegions.map((region) => [region.issue_id, region]));
-  for (const element of elements.filter((item) => issueCounts.get(item.guid) && (item.center || item.bboxMin))) {
-    const key = elementIssueGroupKey(element);
-    if (!groups.has(key)) groups.set(key, { elements: [], issues: [] });
-    groups.get(key).elements.push(element);
-  }
   for (const issue of buildingIssues()) {
     const element = elements.find((item) => item.guid === issue.element_guid);
-    if (!element) continue;
-    const group = groups.get(elementIssueGroupKey(element));
-    if (group) {
-      group.issues.push(issue);
-      if (regionsByIssue.has(issue.issue_id)) group.region = regionsByIssue.get(issue.issue_id);
-    }
+    if (!element || (!element.center && !element.bboxMin) || !issueCounts.get(element.guid)) continue;
+    const region = regionsByIssue.get(issue.issue_id);
+    const key = `${elementIssueGroupKey(element)}:${region ? issue.issue_id : "general"}`;
+    if (!groups.has(key)) groups.set(key, { elements: [], issues: [], region });
+    const group = groups.get(key);
+    if (!group.elements.some((item) => item.guid === element.guid)) group.elements.push(element);
+    group.issues.push(issue);
   }
   const markers = [...groups.values()].flatMap((group) => {
     const count = issueGroupCount(group);
@@ -1618,16 +1621,25 @@ function routeScreenLength(points) {
 function floorPlanRouteIssueMarkup(edges, bounds, view, elementsByGuid, reserved = []) {
   const markers = routeIssueMarkers(edges, bounds, view, elementsByGuid);
   const clusters = routeIssueClusters(markers).map((cluster) => {
-    const count = routeIssueClusterCount(cluster.items, elementsByGuid);
+    const count = cluster.items.length;
     return { cluster, count, anchor: cluster.screenPoint, radius: floorPlanIssueRadius(count, 5.6) };
   });
   return floorPlanIssueLayout(clusters, reserved, view).map((marker) => {
     const { cluster, count, anchor, point, radius } = marker;
     const [x, y] = point;
-    const edgeIds = uniqueText(cluster.items.map((item) => item.edge.edgeId));
-    const checks = routeCheckSummary(cluster.items.map((item) => item.edge));
+    const edgeIds = uniqueText(cluster.items.flatMap((item) => item.edges.map((edge) => edge.edgeId)));
+    const issues = cluster.items.map((item) => ({
+      reason: item.reason,
+      locationKey: item.locationKey,
+      edgeIds: item.edges.map((edge) => edge.edgeId),
+    }));
+    const checks = cluster.items
+      .map((item) => routeIssueChecks(item.edges, [item.reason])[0])
+      .filter(Boolean)
+      .map((check) => `${check.label}: ${check.comparison}`)
+      .join("; ");
     const title = count > 1 ? `${count} issues: ${checks}` : checks;
-    return `<g class="routeIssueMarker" data-edge-id="${escapeHtml(edgeIds[0])}" data-edge-ids="${escapeHtml(edgeIds.join(","))}">
+    return `<g class="routeIssueMarker" data-edge-id="${escapeHtml(edgeIds[0])}" data-edge-ids="${escapeHtml(edgeIds.join(","))}" data-route-issues="${escapeHtml(encodeURIComponent(JSON.stringify(issues)))}">
       <title>${escapeHtml(title)}</title>
       ${floorPlanIssueLeaderMarkup(anchor, point, radius)}
       <circle class="planIssueAnchorHalo" cx="${anchor[0].toFixed(2)}" cy="${anchor[1].toFixed(2)}" r="3.2"></circle>
@@ -1661,12 +1673,8 @@ function routeIssueClusters(markers) {
   return clusters;
 }
 
-function routeIssueClusterCount(items, elementsByGuid) {
-  return uniqueText(items.map((item) => routeIssueGroupKey(item.edge, elementsByGuid))).length;
-}
-
 function routeIssueGroupCount(edges, elementsByGuid) {
-  return uniqueText(edges.filter(routeHasIssue).map((edge) => routeIssueGroupKey(edge, elementsByGuid))).length;
+  return routeIssueGroups(edges, elementsByGuid).length;
 }
 
 function routeIssueTickMarkup(x, y) {
@@ -1675,24 +1683,31 @@ function routeIssueTickMarkup(x, y) {
 }
 
 function routeIssueMarkers(edges, bounds, view, elementsByGuid) {
+  return routeIssueGroups(edges, elementsByGuid).map((group) => ({
+    reason: group.reason,
+    locationKey: group.locationKey,
+    edges: group.edges,
+    point: group.point,
+    screenPoint: floorPlanPoint(group.point, bounds, view),
+    groupKey: group.locationKey,
+  }));
+}
+
+function routeIssueGroups(edges, elementsByGuid) {
   const groups = new Map();
   for (const edge of edges.filter(routeHasIssue)) {
     for (const location of routeIssueLocations(edge, elementsByGuid)) {
-      if (!groups.has(location.key)) groups.set(location.key, { ...location, edges: [] });
-      const group = groups.get(location.key);
-      group.edges.push(edge);
+      const issueKey = `${location.reason}:${location.key}`;
+      if (!groups.has(issueKey)) groups.set(issueKey, { ...location, locationKey: location.key, edges: [] });
+      const group = groups.get(issueKey);
+      if (!group.edges.some((item) => item.edgeId === edge.edgeId)) group.edges.push(edge);
       if (location.value != null && (group.value == null || location.value < group.value)) {
         group.value = location.value;
         group.point = location.point;
       }
     }
   }
-  return [...groups.values()].flatMap((group) => group.edges.map((edge) => ({
-    edge,
-    point: group.point,
-    screenPoint: floorPlanPoint(group.point, bounds, view),
-    groupKey: group.key,
-  })));
+  return [...groups.values()];
 }
 
 function routeIssueLocations(edge, elementsByGuid) {
@@ -1700,35 +1715,48 @@ function routeIssueLocations(edge, elementsByGuid) {
   const locations = [];
   if (reasons.includes("unreachable")) {
     const door = routeEndpointElements(edge, elementsByGuid).find((element) => element.ifcType === "IfcDoor");
-    if (door) locations.push({ key: `unreachable:${door.guid}`, point: elementPoint(door) });
+    if (door) locations.push({ reason: "unreachable", key: `unreachable:${door.guid}`, point: elementPoint(door), name: elementName(door) });
   }
   if (reasons.includes("door_width")) {
     for (const door of narrowRouteDoors(edge, elementsByGuid)) {
-      locations.push({ key: `door_width:${door.guid}`, point: elementPoint(door), value: doorAssessedWidth(door) });
+      locations.push({ reason: "door_width", key: `door:${door.guid}`, point: elementPoint(door), name: elementName(door) });
+    }
+  }
+  if (reasons.includes("door_height")) {
+    for (const door of lowRouteDoors(edge, elementsByGuid)) {
+      locations.push({ reason: "door_height", key: `door:${door.guid}`, point: elementPoint(door), name: elementName(door) });
     }
   }
   if (reasons.includes("wall_block")) {
     for (const wall of routeObstacleElements(edge, elementsByGuid, isWallType)) {
-      locations.push({ key: `wall_block:${wall.guid}`, point: routeIssuePointNearElement(edge, wall) });
+      locations.push({ reason: "wall_block", key: `wall_block:${wall.guid}`, point: routeIssuePointNearElement(edge, wall), name: elementName(wall) });
     }
   }
   if (reasons.includes("stair_block")) {
-    for (const stair of routeObstacleElements(edge, elementsByGuid, isStairType)) {
-      locations.push({ key: `stair_block:${stairGroupKey(stair)}`, point: routeIssuePointNearElement(edge, stair) });
+    for (const stair of routeIssueElements(edge, elementsByGuid, isStairType)) {
+      locations.push({
+        reason: "stair_block",
+        key: `stair_block:${stairGroupKey(stair)}:${routeLevelKey(edge)}`,
+        point: stairGroupPoint(edge, stair, elementsByGuid),
+        name: elementName(stair),
+      });
     }
   }
-  if (reasons.includes("ramp_slope") || reasons.includes("ramp_width")) {
+  for (const reason of ["ramp_slope", "ramp_width", "ramp_run_length"]) {
+    if (!reasons.includes(reason)) continue;
     for (const ramp of routeObstacleElements(edge, elementsByGuid, isRampType)) {
-      locations.push({ key: `ramp:${ramp.guid}`, point: routeIssuePointNearElement(edge, ramp) });
+      locations.push({ reason, key: `ramp:${ramp.guid}`, point: routeIssuePointNearElement(edge, ramp), name: elementName(ramp) });
     }
   }
   if (reasons.includes("turning_space")) {
     const point = routeMeasurementPoint(edge, "routeTurningPoint") || routeTurnPoint(edge) || routeMidpoint(edge);
     if (point) {
       locations.push({
+        reason: "turning_space",
         key: `turning_space:${edge.viaSpaceGuid || edge.edgeId}:${Math.round(point[0] * 2)}:${Math.round(point[1] * 2)}`,
         point,
         value: Number(edge.measurements?.routeTurningSpaceM),
+        name: edge.viaSpaceLabel ? planElementName(edge.viaSpaceLabel) : "Route",
       });
     }
   }
@@ -1736,14 +1764,22 @@ function routeIssueLocations(edge, elementsByGuid) {
     const point = routeMeasurementPoint(edge, "routeClearWidthPoint") || routeMidpoint(edge);
     if (point) {
       locations.push({
+        reason: "route_width",
         key: `route_width:${edge.viaSpaceGuid || edge.edgeId}`,
         point,
         value: Number(edge.measurements?.routeClearWidthM),
+        name: edge.viaSpaceLabel ? planElementName(edge.viaSpaceLabel) : "Route",
       });
     }
   }
-  if (!locations.length) {
-    locations.push({ key: `route:${edge.edgeId}`, point: routeMidpoint(edge) });
+  const locatedReasons = new Set(locations.map((location) => location.reason));
+  for (const reason of reasons.filter((item) => !locatedReasons.has(item))) {
+    locations.push({
+      reason,
+      key: `route:${edge.edgeId}`,
+      point: routeMidpoint(edge),
+      name: edge.viaSpaceLabel ? planElementName(edge.viaSpaceLabel) : "Route",
+    });
   }
   return locations.filter((location) => location.point);
 }
@@ -1816,7 +1852,7 @@ function uniqueRoutePoints(points) {
 }
 
 function pathBlockingRoute(edge) {
-  const pathReasons = new Set(["door_width", "route_width", "turning_space", "stair_block", "ramp_slope", "ramp_width", "unreachable"]);
+  const pathReasons = new Set(["door_width", "door_height", "route_width", "turning_space", "stair_block", "ramp_slope", "ramp_width", "ramp_run_length", "unreachable"]);
   return edge.status === "fail" && (edge.reasons || []).some((reason) => pathReasons.has(reason));
 }
 
@@ -1847,6 +1883,7 @@ function planIssueCounts() {
 function buildingIssues() {
   const routeRules = new Set([
     "route_door_width",
+    "route_door_height",
     "route_width",
     "route_turning_space",
     "route_wall_block",
@@ -1854,6 +1891,7 @@ function buildingIssues() {
     "stair_block",
     "route_ramp_slope",
     "route_ramp_width",
+    "route_ramp_run_length",
   ]);
   return (appData.issues || []).filter((issue) => !routeRules.has(issue.rule_id));
 }
@@ -1867,12 +1905,9 @@ function showPlanElement(guid, elementsByGuid, regionId = null, areaId = null) {
   const issues = planRouteMode === "issues"
     ? buildingIssues().filter((issue) => issue.element_guid === guid && (!region || issue.issue_id === region.issue_id))
     : [];
-  const affectedRoutes = planRouteMode === "issues" ? planElementAffectedRoutes(element, issues, elementsByGuid) : [];
+  const summary = `<h3>${escapeHtml(elementName(element))}</h3>${planRows(planElementRows(element))}`;
   if (!issues.length) {
-    const rows = [["Type", planElementType(element)]];
-    const width = element.ifcType === "IfcDoor" ? doorAssessedWidth(element) : 0;
-    if (width) rows.push(["Clear width", valueWithUnit(width, "m")]);
-    document.querySelector("#planDetails").innerHTML = `<h3>${escapeHtml(elementName(element))}</h3>${planRows(rows)}`;
+    document.querySelector("#planDetails").innerHTML = summary;
     return;
   }
   const checks = issues.map((issue) => ({
@@ -1881,10 +1916,29 @@ function showPlanElement(guid, elementsByGuid, regionId = null, areaId = null) {
       ? comparisonText(selectedRegion.rule_id, selectedRegion.measured, selectedRegion.required, selectedRegion.unit)
       : issueComparisonText(issue),
   }));
-  const rows = planIssueDetailRows([elementName(element)], checks);
+  const cards = checks.map((check) => ({ ...check, locations: [elementName(element)] }));
+  const rows = [];
   if (region?.area_count > 1) rows.push(["Affected areas", String(region.area_count)]);
-  if (affectedRoutes.length) rows.push(["Affected routes", String(affectedRoutes.length)]);
-  document.querySelector("#planDetails").innerHTML = `<h3>${checks.length === 1 ? "Accessibility issue" : "Accessibility issues"}</h3>${planRows(rows)}`;
+  document.querySelector("#planDetails").innerHTML = `${summary}<div class="planElementIssues">${planIssueCards(cards, rows)}</div>`;
+}
+
+function planElementRows(element) {
+  const rows = [["Type", element.ifcType || planElementType(element)], ["Name", elementName(element)]];
+  const floor = element.storey || planFloorName;
+  if (floor) rows.push(["Floor", floor]);
+  if (element.ifcType === "IfcDoor") {
+    const width = doorAssessedWidth(element);
+    const height = doorAssessedHeight(element);
+    if (width) rows.push(["Clear width", valueWithUnit(width, "m")]);
+    if (height) rows.push(["Clear height", valueWithUnit(height, "m")]);
+  } else {
+    if (element.width !== null && element.width !== undefined) rows.push(["Width", valueWithUnit(element.width, "m")]);
+    if (element.depth !== null && element.depth !== undefined) rows.push(["Depth", valueWithUnit(element.depth, "m")]);
+    if (element.height !== null && element.height !== undefined) rows.push(["Height", valueWithUnit(element.height, "m")]);
+  }
+  const issueCount = buildingIssues().filter((issue) => issue.element_guid === element.guid).length;
+  rows.push(["Building issues", String(issueCount)]);
+  return rows;
 }
 
 function planElementType(element) {
@@ -1898,25 +1952,6 @@ function planElementType(element) {
     IfcRamp: "Ramp",
     IfcRampFlight: "Ramp",
   }[element.ifcType] || String(element.ifcType || "Element").replace(/^Ifc/, "");
-}
-
-function planElementAffectedRoutes(element, issues, elementsByGuid) {
-  const reasonByRule = {
-    door_width: "door_width",
-    corridor_width: "route_width",
-    ramp_slope: "ramp_slope",
-    ramp_width: "ramp_width",
-  };
-  const reasons = new Set(issues.map((issue) => reasonByRule[issue.rule_id]).filter(Boolean));
-  if (!reasons.size) return [];
-  const planEdges = appData.planRouteEdges?.length ? appData.planRouteEdges : appData.routeEdges;
-  return (planEdges || []).filter((edge) => {
-    if (edge.status !== "fail" || !(edge.reasons || []).some((reason) => reasons.has(reason))) return false;
-    if (element.ifcType === "IfcDoor") return edge.startGuid === element.guid || edge.endGuid === element.guid;
-    if (element.ifcType === "IfcSpace") return edge.viaSpaceGuid === element.guid;
-    if (isRampType(element.ifcType)) return routeIntersectsElement(edge, element);
-    return edge.startGuid === element.guid || edge.endGuid === element.guid || edge.viaSpaceGuid === element.guid;
-  });
 }
 
 function showPlanRoute(edgeId, edgesById, elementsByGuid) {
@@ -1933,54 +1968,56 @@ function showPlanRoute(edgeId, edgesById, elementsByGuid) {
     return;
   }
   const checks = routeIssueChecks([edge]);
-  const rows = planIssueDetailRows(routeIssueLocationNames(edge, elementsByGuid), checks);
-  rows.push(["Connection", connection], ["Alternative", routeAlternativeText(edge)]);
-  document.querySelector("#planDetails").innerHTML = `<h3>${checks.length === 1 ? "Accessibility issue" : "Accessibility issues"}</h3>${planRows(rows)}`;
+  const cards = routeIssueCardData([edge], elementsByGuid, checks);
+  const rows = [["Connection", connection], ["Alternative", routeAlternativeText(edge)]];
+  document.querySelector("#planDetails").innerHTML = planIssueCards(cards, rows);
 }
 
-function showPlanRouteGroup(edgeIds, edgesById, elementsByGuid) {
+function showPlanRouteGroup(edgeIds, edgesById, elementsByGuid, routeIssues = []) {
   const edges = edgeIds.map((edgeId) => edgesById.get(edgeId)).filter(Boolean);
   if (!edges.length) return;
   const checks = routeIssueChecks(edges);
-  const rows = planIssueDetailRows(uniqueText(edges.flatMap((edge) => routeIssueLocationNames(edge, elementsByGuid))), checks);
-  rows.push(["Affected routes", String(edges.length)]);
-  document.querySelector("#planDetails").innerHTML = `<h3>${checks.length === 1 ? "Accessibility issue" : "Accessibility issues"}</h3>${planRows(rows)}`;
+  const cards = routeIssueCardData(edges, elementsByGuid, checks, routeIssues);
+  document.querySelector("#planDetails").innerHTML = planIssueCards(cards);
 }
 
-function planIssueDetailRows(locations, checks) {
-  return [
-    ["Location", uniqueText(locations).join("; ") || "Not identified"],
-    ["Issue", uniqueText(checks.map((check) => check.label)).join("; ")],
-    ["Check", uniqueText(checks.map((check) => check.comparison)).join("; ")],
-  ];
+function routeIssueCardData(edges, elementsByGuid, checks, routeIssues = []) {
+  if (routeIssues.length) {
+    const edgesById = new Map(edges.map((edge) => [edge.edgeId, edge]));
+    return routeIssues.map((issue) => {
+      const affected = uniqueText(issue.edgeIds || []).map((edgeId) => edgesById.get(edgeId)).filter(Boolean);
+      const check = routeIssueChecks(affected, [issue.reason])[0];
+      const locations = uniqueText(affected.flatMap((edge) => routeIssueLocations(edge, elementsByGuid)
+        .filter((location) => location.reason === issue.reason && location.key === issue.locationKey)
+        .map((location) => location.name)));
+      return {
+        ...check,
+        locations,
+      };
+    });
+  }
+  return checks.map((check) => {
+    const affected = edges.filter((edge) => edge.reasons?.includes(check.reason));
+    const locations = uniqueText(affected.flatMap((edge) => routeIssueLocationNames({ ...edge, reasons: [check.reason] }, elementsByGuid)));
+    return {
+      ...check,
+      locations,
+    };
+  });
 }
 
-function routeIssueGroupKey(edge, elementsByGuid) {
-  const reasons = edge.reasons || [];
-  if (reasons.includes("unreachable")) {
-    const door = routeEndpointElements(edge, elementsByGuid).find((element) => element.ifcType === "IfcDoor");
-    if (door) return `unreachable:${door.guid}`;
-  }
-  if (reasons.includes("stair_block")) {
-    const stair = routeEndpointElements(edge, elementsByGuid).find((element) => isStairType(element.ifcType)) || routeObstacleElements(edge, elementsByGuid, isStairType)[0];
-    if (stair) return `stair:${stairGroupKey(stair)}`;
-  }
-  if (reasons.includes("ramp_slope") || reasons.includes("ramp_width")) {
-    const ramp = routeEndpointElements(edge, elementsByGuid).find((element) => isRampType(element.ifcType)) || routeObstacleElements(edge, elementsByGuid, isRampType)[0];
-    if (ramp) return `ramp:${ramp.guid}`;
-  }
-  if (reasons.includes("wall_block")) {
-    const wall = routeObstacleElements(edge, elementsByGuid, isWallType)[0];
-    if (wall) return `wall:${wall.guid}`;
-  }
-  if (reasons.includes("door_width")) {
-    const doors = narrowRouteDoors(edge, elementsByGuid).map((door) => door.guid).join(",");
-    if (doors) return `door:${doors}`;
-  }
-  if (reasons.includes("route_width") || reasons.includes("turning_space")) {
-    return `space:${edge.viaSpaceGuid || edge.edgeId}`;
-  }
-  return edge.edgeId;
+function planIssueCards(cards, rows = []) {
+  const title = cards.length === 1 ? "Accessibility issue" : "Accessibility issues";
+  const cardMarkup = cards.map((card) => {
+    const locations = uniqueText(card.locations || []).join("; ") || "Not identified";
+    return `<article class="planIssueCard">
+      <div class="planIssueCardHeader"><span class="planIssueCardIcon" aria-hidden="true">!</span><h4>${escapeHtml(card.label)}</h4></div>
+      <div class="planIssueLocation"><span>Location</span><p>${escapeHtml(locations)}</p></div>
+      <p class="planIssueComparison">${escapeHtml(card.comparison)}</p>
+    </article>`;
+  }).join("");
+  const context = rows.length ? `<div class="planIssueContext">${planRows(rows)}</div>` : "";
+  return `<h3>${title}</h3><div class="planIssueCards">${cardMarkup}</div>${context}`;
 }
 
 function routeEndpointElements(edge, elementsByGuid) {
@@ -1994,8 +2031,10 @@ function routeIssueLocationNames(edge, elementsByGuid) {
     const door = routeEndpointElements(edge, elementsByGuid).find((element) => element.ifcType === "IfcDoor");
     if (door) locations.push(elementName(door));
   }
-  if (reasons.includes("door_width")) {
-    const doors = narrowRouteDoors(edge, elementsByGuid);
+  if (reasons.includes("door_width") || reasons.includes("door_height")) {
+    const narrow = reasons.includes("door_width") ? narrowRouteDoors(edge, elementsByGuid) : [];
+    const low = reasons.includes("door_height") ? lowRouteDoors(edge, elementsByGuid) : [];
+    const doors = uniqueElements(narrow.concat(low));
     locations.push(...(doors.length ? doors : routeEndpointElements(edge, elementsByGuid).filter((element) => element.ifcType === "IfcDoor")).map(elementName));
   }
   if (reasons.includes("route_width") || reasons.includes("turning_space")) {
@@ -2006,10 +2045,10 @@ function routeIssueLocationNames(edge, elementsByGuid) {
     locations.push(...walls.map(elementName));
   }
   if (reasons.includes("stair_block")) {
-    const stairs = routeObstacleElements(edge, elementsByGuid, isStairType);
+    const stairs = routeIssueElements(edge, elementsByGuid, isStairType);
     locations.push(...stairs.map(elementName));
   }
-  if (reasons.includes("ramp_slope") || reasons.includes("ramp_width")) {
+  if (reasons.includes("ramp_slope") || reasons.includes("ramp_width") || reasons.includes("ramp_run_length")) {
     const ramps = routeObstacleElements(edge, elementsByGuid, isRampType);
     locations.push(...ramps.map(elementName));
   }
@@ -2021,6 +2060,12 @@ function narrowRouteDoors(edge, elementsByGuid) {
   const limit = routeDoorWidthLimit();
   return [elementsByGuid.get(edge.startGuid), elementsByGuid.get(edge.endGuid)]
     .filter((element) => element?.ifcType === "IfcDoor" && doorAssessedWidth(element) && doorAssessedWidth(element) < limit);
+}
+
+function lowRouteDoors(edge, elementsByGuid) {
+  const limit = routeDoorHeightLimit();
+  return [elementsByGuid.get(edge.startGuid), elementsByGuid.get(edge.endGuid)]
+    .filter((element) => element?.ifcType === "IfcDoor" && doorAssessedHeight(element) && doorAssessedHeight(element) < limit);
 }
 
 function routeAlternativeText(edge) {
@@ -2040,6 +2085,23 @@ function routeObstacleElements(edge, elementsByGuid, predicate) {
     .sort((a, b) => elementName(a).localeCompare(elementName(b)));
 }
 
+function planRouteEvidenceElements(edges, elementsByGuid) {
+  const elements = [];
+  for (const edge of edges.filter(routeHasIssue)) {
+    if (edge.reasons?.includes("stair_block")) elements.push(...routeIssueElements(edge, elementsByGuid, isStairType));
+    if (edge.reasons?.includes("wall_block")) elements.push(...routeIssueElements(edge, elementsByGuid, isWallType));
+    if (edge.reasons?.some((reason) => ["ramp_slope", "ramp_width", "ramp_run_length"].includes(reason))) {
+      elements.push(...routeIssueElements(edge, elementsByGuid, isRampType));
+    }
+  }
+  return uniqueElements(elements);
+}
+
+function routeIssueElements(edge, elementsByGuid, predicate) {
+  const endpoints = routeEndpointElements(edge, elementsByGuid).filter((element) => predicate(element.ifcType));
+  return endpoints.length ? endpoints : routeObstacleElements(edge, elementsByGuid, predicate);
+}
+
 function isWallType(type) {
   return type === "IfcWall" || type === "IfcColumn";
 }
@@ -2051,12 +2113,23 @@ function routeIntersectsElement(edge, element) {
       point[0] >= element.bboxMin[0] - pad &&
       point[0] <= element.bboxMax[0] + pad &&
       point[1] >= element.bboxMin[1] - pad &&
-      point[1] <= element.bboxMax[1] + pad
+      point[1] <= element.bboxMax[1] + pad &&
+      routePointOverlapsElementLevel(point, element)
     ) {
       return true;
     }
   }
   return false;
+}
+
+function routePointOverlapsElementLevel(point, element) {
+  if (!Number.isFinite(Number(point[2]))) return true;
+  const clearanceHeight = Number(appData.rules?.clearance_height_m || 2.05);
+  return Number(point[2]) - 0.05 <= element.bboxMax[2] && Number(point[2]) + clearanceHeight >= element.bboxMin[2];
+}
+
+function routeOverlapsElementLevel(edge, element) {
+  return (edge.path || []).some((point) => routePointOverlapsElementLevel(point, element));
 }
 
 function routePathSamples(path) {
@@ -2082,8 +2155,16 @@ function doorAssessedWidth(door) {
   return Number(door?.extra?.derivedDoorWidthM || 0);
 }
 
+function doorAssessedHeight(door) {
+  return Number(door?.extra?.derivedDoorHeightM || 0);
+}
+
 function routeDoorWidthLimit() {
   return Number(appData.rules?.route_door_width_m || appData.rules?.door_width_m || 0.9);
+}
+
+function routeDoorHeightLimit() {
+  return Number(appData.rules?.route_door_height_m || appData.rules?.door_height_m || 2.05);
 }
 
 function elementName(element) {
@@ -2096,6 +2177,32 @@ function stairGroupKey(element) {
   return elementName(element).toLowerCase();
 }
 
+function stairGroupPoint(edge, stair, elementsByGuid) {
+  const group = [...elementsByGuid.values()].filter((element) =>
+    isStairType(element.ifcType) &&
+    element.bboxMin &&
+    element.bboxMax &&
+    stairGroupKey(element) === stairGroupKey(stair) &&
+    routeOverlapsElementLevel(edge, element));
+  const values = group.length ? group : [stair];
+  const boxes = values.filter((element) => element.bboxMin && element.bboxMax);
+  if (!boxes.length) return elementPoint(stair) || routeMidpoint(edge);
+  return [
+    (Math.min(...boxes.map((element) => element.bboxMin[0])) + Math.max(...boxes.map((element) => element.bboxMax[0]))) / 2,
+    (Math.min(...boxes.map((element) => element.bboxMin[1])) + Math.max(...boxes.map((element) => element.bboxMax[1]))) / 2,
+    routeMeanZ(edge),
+  ];
+}
+
+function routeMeanZ(edge) {
+  const values = (edge.path || []).map((point) => Number(point[2])).filter(Number.isFinite);
+  return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
+}
+
+function routeLevelKey(edge) {
+  return routeMeanZ(edge).toFixed(2);
+}
+
 function routeEndpointName(guid, element) {
   if (element) return elementName(element);
   if (String(guid || "").startsWith("route-node:")) return "Route network";
@@ -2104,6 +2211,10 @@ function routeEndpointName(guid, element) {
 
 function uniqueText(items) {
   return [...new Set(items.filter(Boolean))];
+}
+
+function uniqueElements(elements) {
+  return [...new Map(elements.filter(Boolean).map((element) => [element.guid, element])).values()];
 }
 
 function planRows(rows) {
@@ -3254,12 +3365,8 @@ function issueComparisonText(issue) {
   return comparisonText(issue.rule_id, issue.measured, issue.required, issue.unit);
 }
 
-function routeCheckSummary(edges) {
-  return routeIssueChecks(edges).map((check) => `${check.label}: ${check.comparison}`).join("; ") || "none";
-}
-
-function routeIssueChecks(edges) {
-  const reasons = uniqueText(edges.flatMap((edge) => edge.reasons || []));
+function routeIssueChecks(edges, selectedReasons = null) {
+  const reasons = selectedReasons ? uniqueText(selectedReasons) : uniqueText(edges.flatMap((edge) => edge.reasons || []));
   return reasons.map((reason) => {
     const values = edges
       .filter((edge) => edge.reasons?.includes(reason))
@@ -3267,10 +3374,11 @@ function routeIssueChecks(edges) {
     const measured = values.filter((value) => value[0] !== null && value[0] !== undefined && value[0] !== "" && Number.isFinite(Number(value[0])));
     const selected = measured.reduce((best, value) => {
       if (!best) return value;
-      if (reason === "ramp_slope") return Number(value[0]) > Number(best[0]) ? value : best;
+      if (reason === "ramp_slope" || reason === "ramp_run_length") return Number(value[0]) > Number(best[0]) ? value : best;
       return Number(value[0]) < Number(best[0]) ? value : best;
     }, null) || values[0] || [null, null, ""];
     return {
+      reason,
       label: sentenceText(planReasonText(reason)),
       comparison: comparisonText(reason, selected[0], selected[1], selected[2]),
     };
@@ -3281,20 +3389,24 @@ function routeCheckValues(edge, reason) {
   const rules = appData.rules || {};
   return {
     door_width: [edge.measurements?.routeDoorWidthMinM, rules.route_door_width_m ?? rules.door_width_m, "m"],
+    door_height: [edge.measurements?.routeDoorHeightMinM, rules.route_door_height_m ?? rules.door_height_m, "m"],
     route_width: [edge.measurements?.routeClearWidthM, rules.corridor_width_m, "m"],
     turning_space: [edge.measurements?.routeTurningSpaceM, rules.turning_space_m, "m"],
     wall_block: [edge.measurements?.routeHitsWall ?? true, false, "bool"],
     stair_block: [edge.measurements?.routeHitsStair ?? true, false, "bool"],
     ramp_slope: [edge.measurements?.routeRampSlopePercent, rules.ramp_slope_percent, "%"],
     ramp_width: [edge.measurements?.routeRampUsableWidthM, rules.ramp_width_m, "m"],
+    ramp_run_length: [edge.measurements?.routeRampRunLengthM, rules.ramp_run_length_m, "m"],
     unreachable: [edge.measurements?.routeReachable ?? false, true, "bool"],
   }[reason] || [null, null, ""];
 }
 
 function comparisonText(ruleId, measured, required, unit) {
+  const maximumRule = ["ramp_slope", "ramp_run_length", "corridor_slope", "corridor_movement_area"].some((code) => String(ruleId).includes(code));
   if (measured === null || measured === "" || measured === undefined) {
     if (required === null || required === "" || required === undefined) return "measurement missing";
-    const operator = String(ruleId).includes("ramp_slope") ? "<=" : ">=";
+    if (String(ruleId).includes("turning_space")) return `missing; required ${turningSpaceText(required)}`;
+    const operator = maximumRule ? "<=" : ">=";
     return `missing; required ${operator} ${valueWithUnit(required, unit)}`;
   }
   if (unit === "bool") {
@@ -3311,8 +3423,15 @@ function comparisonText(ruleId, measured, required, unit) {
     return `actual ${measuredValue ? "yes" : "no"}; required ${requiredValue ? "yes" : "no"}`;
   }
   if (required === null || required === "" || required === undefined) return valueWithUnit(measured, unit);
-  const operator = String(ruleId).includes("ramp_slope") ? ">" : "<";
+  if (String(ruleId).includes("turning_space")) return `${turningSpaceText(measured)} < ${turningSpaceText(required)}`;
+  const operator = maximumRule ? ">" : "<";
   return `${valueWithUnit(measured, unit)} ${operator} ${valueWithUnit(required, unit)}`;
+}
+
+function turningSpaceText(value) {
+  if (!Number.isFinite(Number(value))) return "missing";
+  const side = Number(value).toFixed(2);
+  return `${side} × ${side} m`;
 }
 
 function displaySource(value) {
@@ -3383,12 +3502,16 @@ function cssEscape(value) {
 function reasonText(code) {
   return {
     door_width: "door too narrow",
+    door_height: "door too low",
     corridor_width: "corridor too narrow",
+    corridor_slope: "corridor too steep",
+    corridor_movement_area: "passing areas spaced too far apart",
     route_width: "route too narrow",
     turning_space: "turning space too small",
     stair_block: "stair blocks route",
     ramp_slope: "ramp too steep",
     ramp_width: "ramp too narrow",
+    ramp_run_length: "ramp flight too long",
     missing: "data is missing",
     unreachable: "route not connected",
   }[code] || "access issue found";

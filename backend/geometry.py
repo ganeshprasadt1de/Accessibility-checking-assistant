@@ -87,6 +87,54 @@ def _shape_plan_axis(shape) -> tuple[float, float] | None:
     return longest[1], longest[2]
 
 
+def _shape_plan_size(shape) -> tuple[float, float] | None:
+    from shapely.geometry import MultiPoint
+
+    verts = getattr(shape.geometry, "verts", None)
+    if not verts:
+        return None
+    rectangle = MultiPoint([(verts[index], verts[index + 1]) for index in range(0, len(verts), 3)]).minimum_rotated_rectangle
+    if rectangle.is_empty or not hasattr(rectangle, "exterior"):
+        return None
+    coordinates = list(rectangle.exterior.coords)
+    lengths = [math.dist(first, second) for first, second in zip(coordinates, coordinates[1:])]
+    lengths = [value for value in lengths if value > 1e-6]
+    return (min(lengths), max(lengths)) if lengths else None
+
+
+def _shape_floor_slope_percent(shape) -> float | None:
+    verts = getattr(shape.geometry, "verts", None)
+    faces = getattr(shape.geometry, "faces", None)
+    if not verts or not faces:
+        return None
+    points = [(verts[index], verts[index + 1], verts[index + 2]) for index in range(0, len(verts), 3)]
+    min_z = min(point[2] for point in points)
+    max_z = max(point[2] for point in points)
+    limit = min_z + min(1.5, (max_z - min_z) * 0.45)
+    areas: dict[float, float] = {}
+    for index in range(0, len(faces), 3):
+        first, second, third = [points[int(value)] for value in faces[index : index + 3]]
+        if max(first[2], second[2], third[2]) > limit:
+            continue
+        a = tuple(second[value] - first[value] for value in range(3))
+        b = tuple(third[value] - first[value] for value in range(3))
+        normal = (
+            a[1] * b[2] - a[2] * b[1],
+            a[2] * b[0] - a[0] * b[2],
+            a[0] * b[1] - a[1] * b[0],
+        )
+        projected_area = abs(normal[2]) / 2
+        if projected_area <= 1e-6:
+            continue
+        slope = round(math.hypot(normal[0], normal[1]) / abs(normal[2]) * 100, 2)
+        areas[slope] = areas.get(slope, 0.0) + projected_area
+    if not areas:
+        return None
+    total = sum(areas.values())
+    significant = [slope for slope, area in areas.items() if area >= max(0.01, total * 0.005)]
+    return max(significant or areas)
+
+
 def _host_plan_axis(host, settings, cache: dict[int, tuple[float, float] | None]):
     key = host.id()
     if key in cache:
@@ -139,6 +187,7 @@ def _door_dimensions(obj, shape, settings, unit_scale: float, host_axis_cache):
         unit_scale,
     )
     clear_width = _length_property_number(obj, ["ClearWidth"], unit_scale)
+    clear_height = _length_property_number(obj, ["ClearHeight"], unit_scale)
     opening = _door_opening(obj)
     host = _door_host(opening)
     host_axis = _host_plan_axis(host, settings, host_axis_cache) if host is not None else None
@@ -190,6 +239,8 @@ def _door_dimensions(obj, shape, settings, unit_scale: float, host_axis_cache):
         extra["doorDeclaredHeightM"] = declared_height
     if clear_width is not None:
         extra["doorClearWidthM"] = clear_width
+    if clear_height is not None:
+        extra["doorClearHeightM"] = clear_height
 
     opening_width = opening_size[0] if opening_size else None
     opening_height = opening_size[2] if opening_size else None
@@ -236,6 +287,33 @@ def _door_dimensions(obj, shape, settings, unit_scale: float, host_axis_cache):
     extra["derivedDoorWidthM"] = width
     extra["doorWidthSource"] = source
     extra["doorWidthConfidence"] = confidence
+    if clear_height is not None:
+        height = clear_height
+        height_source = "ClearHeight property"
+        height_confidence = "reported clear height"
+    elif opening_height is not None and declared_height is not None:
+        height = opening_height if dimensions_swapped else min(opening_height, declared_height)
+        height_source = "IfcOpeningElement geometry and IfcDoor.OverallHeight"
+        height_confidence = "nominal opening"
+    elif opening_height is not None:
+        height = opening_height
+        height_source = "IfcOpeningElement geometry"
+        height_confidence = "nominal opening"
+    elif declared_height is not None:
+        height = declared_height
+        height_source = "IfcDoor.OverallHeight"
+        height_confidence = "nominal opening"
+    elif body_size:
+        height = body_size[2]
+        height_source = "IfcDoor geometry"
+        height_confidence = "estimated"
+    else:
+        height = None
+        height_source = "unavailable"
+        height_confidence = "unknown"
+    extra["derivedDoorHeightM"] = height
+    extra["doorHeightSource"] = height_source
+    extra["doorHeightConfidence"] = height_confidence
     return extra, opening_bbox
 
 
@@ -536,7 +614,14 @@ def extract_elements(ifc_path: Path) -> tuple[list[Element], list[str]]:
                 extra["derivedClearSpaceWidthM"] = min(width, depth)
                 extra["movementAreaWidthM"] = min(width, depth)
                 extra["movementAreaDepthM"] = max(width, depth)
-                extra["turningSpaceM"] = min(width, depth)
+                if extra.get("isCorridorLike"):
+                    plan_size = _shape_plan_size(shape)
+                    slope = _shape_floor_slope_percent(shape)
+                    if plan_size is not None:
+                        extra["derivedCorridorLengthM"] = plan_size[1]
+                    if slope is not None:
+                        extra["derivedCorridorSlopePercent"] = slope
+                        extra["corridorSlopeSource"] = "IfcSpace floor geometry"
             elements.append(
                 Element(
                     guid=guid,

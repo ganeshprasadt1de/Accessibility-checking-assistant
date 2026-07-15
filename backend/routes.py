@@ -18,14 +18,18 @@ from .model import Element, RouteEdge
 ACC = Namespace(NS["acc"])
 
 
-def build_route_edges(ifc_path: Path, elements: list[Element]) -> list[RouteEdge]:
-    space_edges = _space_boundary_route_edges(ifc_path, elements)
+def build_route_edges(ifc_path: Path, elements: list[Element], skipped_pairs: list[dict] | None = None) -> list[RouteEdge]:
+    space_edges = _space_boundary_route_edges(ifc_path, elements, skipped_pairs)
     if space_edges:
         return space_edges
     raise RuntimeError("No usable IfcRelSpaceBoundary door-to-space route graph was found in the IFC model.")
 
 
-def _space_boundary_route_edges(ifc_path: Path, elements: list[Element]) -> list[RouteEdge]:
+def _space_boundary_route_edges(
+    ifc_path: Path,
+    elements: list[Element],
+    skipped_pairs: list[dict] | None = None,
+) -> list[RouteEdge]:
     import ifcopenshell
 
     model = ifcopenshell.open(str(ifc_path))
@@ -55,7 +59,20 @@ def _space_boundary_route_edges(ifc_path: Path, elements: list[Element]) -> list
             if pair_key in seen_pairs:
                 continue
             seen_pairs.add(pair_key)
-            path = _path_through_space(door_a, door_b, space, grid)
+            try:
+                path = _path_through_space(door_a, door_b, space, grid)
+            except RuntimeError as exc:
+                if skipped_pairs is not None:
+                    skipped_pairs.append(
+                        {
+                            "startGuid": door_a.guid,
+                            "endGuid": door_b.guid,
+                            "spaceGuid": space.guid,
+                            "spaceLabel": space.label,
+                            "message": str(exc),
+                        }
+                    )
+                continue
             measurements = _route_measurements(door_a, door_b, path, obstacles, space)
             edge_id = f"E{len(edges) + 1:05d}"
             dist = sum(distance(path[i], path[i + 1]) for i in range(len(path) - 1))
@@ -99,6 +116,9 @@ def _stair_approach_route_edges(elements: list[Element], offset: int) -> list[Ro
         width = _num(start.extra.get("derivedDoorWidthM"))
         if width is not None:
             measurements["routeDoorWidthMinM"] = width
+        height = _num(start.extra.get("derivedDoorHeightM"))
+        if height is not None:
+            measurements["routeDoorHeightMinM"] = height
         edge_id = f"E{offset + len(edges) + 1:05d}"
         edges.append(
             RouteEdge(
@@ -150,13 +170,15 @@ def _route_measurements(
     widths = [float(width) for width in (width_a, width_b) if width is not None]
     if widths:
         measurements["routeDoorWidthMinM"] = min(widths)
+    height_a = door_a.extra.get("derivedDoorHeightM")
+    height_b = door_b.extra.get("derivedDoorHeightM")
+    heights = [float(height) for height in (height_a, height_b) if height is not None]
+    if heights:
+        measurements["routeDoorHeightMinM"] = min(heights)
     if space:
         clear = _num(space.extra.get("derivedClearSpaceWidthM"))
-        turn = _num(space.extra.get("turningSpaceM"))
         if clear is not None:
             measurements["routeClearWidthM"] = clear
-        if turn is not None:
-            measurements["routeTurningSpaceM"] = turn
         measurements["routeHasTurn"] = _path_has_turn(path)
     measurements["routeHitsStair"] = _route_hits_stair(path, obstacles, space)
     measurements.update(_ramp_measurements(obstacles, space, path))
@@ -243,11 +265,14 @@ def _ramp_measurements(obstacles: list[Element], space: Element | None, path: li
             continue
         slope = _num(ramp.extra.get("rampSlopePercent"))
         width = _num(ramp.extra.get("rampUsableWidthM"))
+        run_length = _num(ramp.extra.get("rampRunLengthM"))
         measurements["routeUsesRamp"] = True
         if slope is not None:
             measurements["routeRampSlopePercent"] = slope
         if width is not None:
             measurements["routeRampUsableWidthM"] = width
+        if run_length is not None:
+            measurements["routeRampRunLengthM"] = run_length
     return measurements
 
 

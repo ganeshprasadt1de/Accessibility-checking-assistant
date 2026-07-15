@@ -15,8 +15,10 @@ from .routes import route_measurements
 
 PLAN_GRID_STEP = 0.20
 PLAN_ROUTE_HALF_WIDTH = 0.04
+PLAN_GEOMETRY_TOLERANCE = 0.005
 CORRIDOR_BOUNDARY_STEP = 0.55
 CORRIDOR_SKELETON_CLEARANCE = 0.12
+CORRIDOR_MOVEMENT_STEP = 0.40
 
 
 def prepare_plan_geometry(
@@ -57,8 +59,6 @@ def build_plan_network(
         roles[edge.edge_id].add("physical")
     for edge in _select_forest(candidates, pass_only=True):
         roles[edge.edge_id].add("accessible")
-    for edge in _issue_witnesses(candidates, elements):
-        roles[edge.edge_id].add("issue")
 
     result = []
     for edge_id, edge_roles in roles.items():
@@ -107,12 +107,15 @@ def _plan_candidates(
         area = _space_walkable_area(space, unique_doors, obstacles, footprints)
         path_area = _route_path_area(area) if area is not None and not area.is_empty else None
         grid = _area_grid(area) if area is not None and not area.is_empty else None
+        approaches = {
+            door.guid: _door_space_approach(door, space, area, footprints, path_area) for door in unique_doors
+        }
         if grid:
             grid["door_cells"] = _grid_door_cells(grid, _route_door_zone(unique_doors, footprints))
             grid["target_cells"] = {
                 cell
                 for door in unique_doors
-                for cell in [_nearest_cell(grid, door.center)]
+                for cell in [_nearest_cell(grid, approaches.get(door.guid) or door.center)]
                 if cell is not None
             }
             grid["door_cells"].update(grid["target_cells"])
@@ -122,16 +125,39 @@ def _plan_candidates(
             key = _pair_key(first.guid, second.guid, space_guid)
             matched = min(current.get(key, []), key=lambda edge: edge.distance_m, default=None)
             paths = []
-            if matched and (area is None or _path_inside_area(matched.path, area, path_area)):
-                _add_plan_path(paths, matched.path, area, path_area)
+            first_approach = approaches.get(first.guid)
+            second_approach = approaches.get(second.guid)
+            matched_path = _oriented_path(matched.path, first, second) if matched else None
+            if matched_path and (area is None or _path_inside_area(matched_path, area, path_area)):
+                _add_plan_path(paths, matched_path, area, path_area)
             choices = _plan_path_choices(
-                paths, first, second, obstacles, space, area, footprints, turning_cache, width_cache, path_area
+                paths,
+                first,
+                second,
+                obstacles,
+                space,
+                area,
+                footprints,
+                turning_cache,
+                width_cache,
+                path_area,
+                first_approach,
+                second_approach,
             )
-            if grid and not any(not choice[2] for choice in choices):
+            if grid and not any(_preferred_plan_choice(choice) for choice in choices):
                 previous_count = len(paths)
                 _add_plan_path(
                     paths,
-                    _path_in_area(first, second, space, area, grid, path_area=path_area),
+                    _path_in_area(
+                        first,
+                        second,
+                        space,
+                        area,
+                        grid,
+                        path_area=path_area,
+                        first_approach=first_approach,
+                        second_approach=second_approach,
+                    ),
                     area,
                     path_area,
                 )
@@ -147,13 +173,25 @@ def _plan_candidates(
                         turning_cache,
                         width_cache,
                         path_area,
+                        first_approach,
+                        second_approach,
                     )
                 )
             if grid and not any(not choice[2] for choice in choices) and _accessible_search_needed(choices):
                 previous_count = len(paths)
                 _add_plan_path(
                     paths,
-                    _path_in_area(first, second, space, area, grid, accessible=True, path_area=path_area),
+                    _path_in_area(
+                        first,
+                        second,
+                        space,
+                        area,
+                        grid,
+                        accessible=True,
+                        path_area=path_area,
+                        first_approach=first_approach,
+                        second_approach=second_approach,
+                    ),
                     area,
                     path_area,
                 )
@@ -169,6 +207,8 @@ def _plan_candidates(
                         turning_cache,
                         width_cache,
                         path_area,
+                        first_approach,
+                        second_approach,
                     )
                 )
             if not choices:
@@ -217,7 +257,19 @@ def _path_signature(path) -> tuple:
 def _plan_choice_key(choice) -> tuple:
     path, measurements, reasons = choice
     turns = int(_number(measurements.get("routeRequiredTurnCount")) or 0)
-    return len(reasons), turns, len(path), _path_length(path)
+    return len(reasons), _route_clearance_shortfall(measurements), turns, len(path), _path_length(path)
+
+
+def _preferred_plan_choice(choice) -> bool:
+    return not choice[2] and _route_clearance_shortfall(choice[1]) <= 0.0
+
+
+def _route_clearance_shortfall(measurements: dict) -> float:
+    clearance = _number(measurements.get("routeWallClearanceMinM"))
+    target = _number(measurements.get("routeWallClearanceTargetM"))
+    if clearance is None or target is None:
+        return 0.0
+    return max(0.0, target - clearance - PLAN_GRID_STEP / 2)
 
 
 def _plan_path_choices(
@@ -231,9 +283,15 @@ def _plan_path_choices(
     turning_cache,
     width_cache,
     path_area,
+    first_approach=None,
+    second_approach=None,
 ):
     choices = []
     for path in paths:
+        if not _path_uses_door_approach(path, first, second, first_approach, second_approach):
+            continue
+        if not _route_avoids_walls(path, space, obstacles, [first, second], footprints):
+            continue
         choice = _plan_path_choice(
             path, first, second, obstacles, space, area, footprints, turning_cache, width_cache, path_area
         )
@@ -249,6 +307,10 @@ def _plan_path_choice(path, first, second, obstacles, space, area, footprints, t
     if area is not None and not area.is_empty:
         _set_route_clear_width(measurements, path, area, [first, second], footprints, width_cache)
         _set_route_turning_space(measurements, path, area, turning_cache, path_area)
+        clearance = _route_wall_clearance(path, area, [first, second], footprints)
+        if clearance is not None:
+            measurements["routeWallClearanceMinM"] = round(clearance, 4)
+            measurements["routeWallClearanceTargetM"] = round(_area_clearance_target(area), 4)
     return path, measurements, _measurement_reasons(measurements)
 
 
@@ -391,6 +453,187 @@ def _door_normals(model, elements: list[Element]) -> dict[str, tuple[float, floa
     return result
 
 
+def _door_axis(door: Element, name: str) -> tuple[float, float] | None:
+    x = _number(door.extra.get(f"{name}X"))
+    y = _number(door.extra.get(f"{name}Y"))
+    length = math.hypot(x or 0.0, y or 0.0)
+    if x is None or y is None or length <= 1e-6:
+        return None
+    return x / length, y / length
+
+
+def _door_axes(door: Element, polygon=None):
+    width_axis = _door_axis(door, "doorWidthAxis")
+    normal = _door_axis(door, "doorDepthAxis")
+    if width_axis is None and normal is not None:
+        width_axis = -normal[1], normal[0]
+    if normal is None and width_axis is not None:
+        normal = -width_axis[1], width_axis[0]
+    if width_axis is None and polygon is not None and not polygon.is_empty:
+        rectangle = polygon.minimum_rotated_rectangle
+        if rectangle.geom_type == "Polygon":
+            points = list(rectangle.exterior.coords)[:4]
+            sides = [
+                (math.hypot(second[0] - first[0], second[1] - first[1]), first, second)
+                for first, second in zip(points, points[1:] + points[:1])
+            ]
+            length, first, second = max(sides, default=(0.0, None, None))
+            if length > 1e-6:
+                width_axis = (second[0] - first[0]) / length, (second[1] - first[1]) / length
+                normal = -width_axis[1], width_axis[0]
+    if width_axis is None or normal is None:
+        return None
+    dot = width_axis[0] * normal[0] + width_axis[1] * normal[1]
+    normal = normal[0] - dot * width_axis[0], normal[1] - dot * width_axis[1]
+    length = math.hypot(normal[0], normal[1])
+    if length <= 1e-6:
+        normal = -width_axis[1], width_axis[0]
+    else:
+        normal = normal[0] / length, normal[1] / length
+    return width_axis, normal
+
+
+def _polygon_axis_size(polygon, center, width_axis) -> tuple[float, float] | None:
+    if polygon is None or polygon.is_empty:
+        return None
+    from shapely.affinity import rotate
+
+    angle = -math.degrees(math.atan2(width_axis[1], width_axis[0]))
+    value = rotate(polygon, angle, origin=center)
+    min_x, min_y, max_x, max_y = value.bounds
+    return max_x - min_x, max_y - min_y
+
+
+def _polygon_axis_bounds(polygon, width_axis, normal):
+    if polygon is None or polygon.is_empty:
+        return None
+    hull = polygon.convex_hull
+    if hull.geom_type == "Polygon":
+        points = list(hull.exterior.coords)
+    elif hasattr(hull, "coords"):
+        points = list(hull.coords)
+    else:
+        return None
+    along = [point[0] * width_axis[0] + point[1] * width_axis[1] for point in points]
+    across = [point[0] * normal[0] + point[1] * normal[1] for point in points]
+    return min(along), min(across), max(along), max(across)
+
+
+def _door_portal_polygon(
+    door: Element,
+    footprints: dict[str, object],
+    normal_extension: float = 0.22,
+    width_margin: float = 0.02,
+):
+    from shapely.geometry import Point, Polygon
+
+    polygon = _element_polygon(door, footprints)
+    axes = _door_axes(door, polygon)
+    if door.center:
+        center = float(door.center[0]), float(door.center[1])
+    elif polygon is not None and not polygon.is_empty:
+        center = polygon.centroid.x, polygon.centroid.y
+    else:
+        return None
+    if axes is None:
+        return polygon.buffer(width_margin, cap_style=2, join_style=2) if polygon is not None else Point(center).buffer(0.05)
+    width_axis, normal = axes
+    polygon_size = _polygon_axis_size(polygon, center, width_axis)
+    width = next(
+        (
+            value
+            for value in [
+                _number(door.extra.get("doorOpeningWidthM")),
+                _number(door.extra.get("doorLocalWidthM")),
+                _number(door.extra.get("derivedDoorWidthM")),
+                _number(door.extra.get("doorDeclaredWidthM")),
+                polygon_size[0] if polygon_size else None,
+            ]
+            if value is not None and value > 0.05
+        ),
+        0.90,
+    )
+    depth = next(
+        (
+            value
+            for value in [
+                _number(door.extra.get("doorOpeningDepthM")),
+                _number(door.extra.get("doorLocalDepthM")),
+                polygon_size[1] if polygon_size else None,
+            ]
+            if value is not None and value > 0.01
+        ),
+        0.20,
+    )
+    host_guid = door.extra.get("doorHostGuid")
+    host_polygon = footprints.get(str(host_guid)) if host_guid else None
+    if host_polygon is not None and not host_polygon.is_empty:
+        local = host_polygon.intersection(Point(center).buffer(max(1.25, width)))
+        bounds = _polygon_axis_bounds(local, width_axis, normal)
+        if bounds is not None and 0.01 < bounds[3] - bounds[1] <= 1.0:
+            along = center[0] * width_axis[0] + center[1] * width_axis[1]
+            across = (bounds[1] + bounds[3]) / 2
+            center = (
+                width_axis[0] * along + normal[0] * across,
+                width_axis[1] * along + normal[1] * across,
+            )
+            depth = max(depth, bounds[3] - bounds[1])
+    half_width = width / 2 + width_margin
+    half_depth = depth / 2 + normal_extension
+    points = []
+    for along, across in [(-half_width, -half_depth), (half_width, -half_depth), (half_width, half_depth), (-half_width, half_depth)]:
+        points.append(
+            (
+                center[0] + width_axis[0] * along + normal[0] * across,
+                center[1] + width_axis[1] * along + normal[1] * across,
+            )
+        )
+    return Polygon(points)
+
+
+def _area_clearance_target(area) -> float:
+    min_x, min_y, max_x, max_y = area.bounds
+    return min(0.75, max(0.20, min(max_x - min_x, max_y - min_y) / 5))
+
+
+def _door_space_approach(door: Element, space: Element, area, footprints: dict[str, object], path_area=None):
+    from shapely.geometry import LineString, Point
+
+    if area is None or area.is_empty or not door.center:
+        return None
+    polygon = _element_polygon(space, footprints)
+    axes = _door_axes(door, _element_polygon(door, footprints))
+    if polygon is None or polygon.is_empty or axes is None:
+        return None
+    normal = axes[1]
+    center = float(door.center[0]), float(door.center[1])
+    target = _area_clearance_target(polygon)
+    reference = polygon.representative_point()
+    directions = [(normal[0], normal[1]), (-normal[0], -normal[1])]
+
+    def direction_key(direction):
+        end = center[0] + direction[0] * target, center[1] + direction[1] * target
+        inside = LineString([center, end]).intersection(polygon.buffer(PLAN_GEOMETRY_TOLERANCE)).length
+        toward = direction[0] * (reference.x - center[0]) + direction[1] * (reference.y - center[1])
+        return inside, toward
+
+    direction = max(directions, key=direction_key)
+    steps = max(0, math.ceil((target - 0.20) / 0.05))
+    distances = [target - index * 0.05 for index in range(steps + 1)]
+    if not distances or distances[-1] > 0.20 + 1e-6:
+        distances.append(0.20)
+    z = float(door.center[2])
+    for value in distances:
+        if value < 0.20 - 1e-6:
+            continue
+        point = center[0] + direction[0] * value, center[1] + direction[1] * value, z
+        if not polygon.buffer(PLAN_GEOMETRY_TOLERANCE).covers(Point(point[0], point[1])):
+            continue
+        if _path_inside_area([door.center, point], area, path_area):
+            return point
+    return None
+
+
 def _filter_door_spaces(
     spaces_by_door: dict[str, list[str]],
     elements: list[Element],
@@ -433,6 +676,15 @@ def _space_walkable_area(
     polygon = _element_polygon(space, footprints)
     if polygon is None or polygon.is_empty:
         return None
+    openings = []
+    for door in doors:
+        portal = _door_portal_polygon(door, footprints)
+        if portal is not None and not portal.is_empty:
+            openings.append(portal)
+    source = polygon.buffer(0)
+    if openings:
+        opening_area = unary_union(openings).intersection(polygon.buffer(0.75))
+        source = unary_union([source, opening_area]).buffer(0)
     blockers = []
     for obstacle in obstacles:
         if obstacle.ifc_type not in {"IfcWall", "IfcColumn", "IfcStair", "IfcStairFlight"}:
@@ -440,19 +692,20 @@ def _space_walkable_area(
         if not _z_overlap(space, obstacle):
             continue
         obstacle_polygon = _element_polygon(obstacle, footprints)
-        if obstacle_polygon is not None and not obstacle_polygon.is_empty and obstacle_polygon.distance(polygon) <= 0.05:
-            blockers.append(obstacle_polygon)
-    area = polygon.buffer(0)
+        if obstacle_polygon is None or obstacle_polygon.is_empty or obstacle_polygon.distance(source) > 0.05:
+            continue
+        blocked = obstacle_polygon
+        if obstacle.ifc_type == "IfcWall":
+            for door in doors:
+                if not _door_opens_wall(door, obstacle, footprints):
+                    continue
+                portal = _door_portal_polygon(door, footprints)
+                if portal is not None:
+                    blocked = blocked.difference(portal)
+        blockers.append(blocked)
+    area = source
     if blockers:
         area = area.difference(unary_union(blockers)).buffer(0)
-    openings = []
-    for door in doors:
-        door_polygon = _element_polygon(door, footprints)
-        if door_polygon is not None and not door_polygon.is_empty:
-            openings.append(door_polygon.buffer(0.22, cap_style=2, join_style=2))
-    if openings:
-        opening_area = unary_union(openings).intersection(polygon.buffer(0.75))
-        area = unary_union([area, opening_area]).buffer(0)
     return area if not area.is_empty else None
 
 
@@ -473,16 +726,29 @@ def _set_space_clearance_regions(
     for space in elements:
         if space.ifc_type != "IfcSpace" or not space.extra.get("isCorridorLike"):
             continue
-        space.issue_regions = [region for region in space.issue_regions if region.get("rule_id") != "corridor_width"]
+        space.issue_regions = [
+            region
+            for region in space.issue_regions
+            if region.get("rule_id") not in {"corridor_width", "corridor_movement_area"}
+        ]
+        space.passing_area_gaps = []
         doors = doors_by_space.get(space.guid, [])
         area = _space_walkable_area(space, doors, obstacles, footprints)
         if area is None or area.is_empty:
             continue
-        region = _space_clearance_region(space, area, doors, footprints)
-        if region is None:
-            continue
-        space.extra["derivedClearSpaceWidthM"] = region["measured"]
-        space.issue_regions.append(region)
+        segments = _space_skeleton_segments(area)
+        region = _space_clearance_region(space, area, doors, footprints, segments)
+        if region is not None:
+            space.extra["derivedClearSpaceWidthM"] = region["measured"]
+            space.issue_regions.append(region)
+        movement = _corridor_movement_area_region(space, area, segments)
+        if movement is not None:
+            space.extra["corridorMovementAreaMaxGapM"] = movement["measured"]
+            space.extra["derivedCorridorLengthM"] = max(
+                float(space.extra.get("derivedCorridorLengthM") or 0.0),
+                movement["length"],
+            )
+            space.passing_area_gaps.extend(movement["gaps"])
 
 
 def _space_clearance_region(
@@ -490,6 +756,7 @@ def _space_clearance_region(
     area,
     doors: list[Element],
     footprints: dict[str, object],
+    segments=None,
 ) -> dict | None:
     from shapely import union_all
     from shapely.geometry import LineString, Point, mapping
@@ -503,7 +770,7 @@ def _space_clearance_region(
     min_x, min_y, max_x, max_y = area.bounds
     span = math.hypot(max_x - min_x, max_y - min_y) + 2.0
     samples = []
-    for start, end in _space_skeleton_segments(area):
+    for start, end in segments if segments is not None else _space_skeleton_segments(area):
         dx = end[0] - start[0]
         dy = end[1] - start[1]
         length = math.hypot(dx, dy)
@@ -595,6 +862,148 @@ def _space_clearance_region(
         "area_count": len(polygons),
         "areas": areas,
     }
+
+
+def _corridor_movement_area_region(space: Element, area, segments=None) -> dict | None:
+    from shapely.geometry import LineString, mapping
+    from shapely.ops import unary_union
+
+    segments = segments if segments is not None else _space_skeleton_segments(area)
+    graph: dict[tuple[float, float], dict[tuple[float, float], float]] = defaultdict(dict)
+    for first, second in segments:
+        segment_length = math.dist(first, second)
+        if segment_length <= 1e-6:
+            continue
+        count = max(1, math.ceil(segment_length / CORRIDOR_MOVEMENT_STEP))
+        points = [
+            (
+                round(first[0] + (second[0] - first[0]) * index / count, 3),
+                round(first[1] + (second[1] - first[1]) * index / count, 3),
+            )
+            for index in range(count + 1)
+        ]
+        for a, b in zip(points, points[1:]):
+            length = math.dist(a, b)
+            graph[a][b] = min(length, graph[a].get(b, math.inf))
+            graph[b][a] = min(length, graph[b].get(a, math.inf))
+    if not graph:
+        return None
+
+    length, _start, _end = _graph_diameter(graph, set(graph))
+    side = RULE_LIMITS.corridor_movement_space_m
+    boundary = area.boundary
+    wide = {
+        node
+        for node in graph
+        if _corridor_movement_square_fits(area, node, side, boundary)
+    }
+    narrow = set(graph) - wide
+    gaps = []
+    remaining = set(narrow)
+    while remaining:
+        start = min(remaining)
+        component = _graph_component(graph, start, narrow)
+        remaining.difference_update(component)
+        gap, first, second = _graph_diameter(graph, component)
+        if first is not None:
+            gap += _corridor_movement_boundary_distance(area, graph, component, wide, first, side)
+        if second is not None and second != first:
+            gap += _corridor_movement_boundary_distance(area, graph, component, wide, second, side)
+        lines = [
+            LineString([first, second])
+            for first in component
+            for second in graph[first]
+            if second in component and first < second
+        ]
+        if not lines:
+            continue
+        geometry = unary_union(lines).buffer(0.20, cap_style=2, join_style=2).intersection(area).buffer(0)
+        if geometry.is_empty:
+            continue
+        anchor = geometry.representative_point()
+        measured = round(gap, 4)
+        key_text = f"corridor_movement_area:{space.guid}:{anchor.x:.3f}:{anchor.y:.3f}"
+        region_key = hashlib.sha1(key_text.encode("utf-8")).hexdigest()[:11].upper()
+        gaps.append(
+            {
+                "evidence_id": f"G{region_key}",
+                "region_id": f"R{region_key}",
+                "rule_id": "corridor_movement_area",
+                "element_guid": space.guid,
+                "measured": measured,
+                "required": RULE_LIMITS.corridor_movement_interval_m,
+                "unit": "m",
+                "geometry": mapping(geometry),
+                "anchor": [round(anchor.x, 4), round(anchor.y, 4), round(space.center[2] if space.center else 0.0, 4)],
+                "movement_space_m": side,
+                "area_count": 1,
+                "areas": [],
+            }
+        )
+
+    gaps.sort(key=lambda gap: (gap["anchor"][0], gap["anchor"][1], gap["evidence_id"]))
+    measured = max((gap["measured"] for gap in gaps), default=0.0)
+    return {"measured": measured, "length": round(length, 4), "gaps": gaps}
+
+
+def _corridor_movement_square_fits(area, node, side: float, boundary=None) -> bool:
+    from shapely.geometry import Point
+
+    point = Point(node[0], node[1])
+    boundary = boundary if boundary is not None else area.boundary
+    if point.distance(boundary) < side / 2 - 0.01:
+        return False
+    return _turning_square_side(area, point, side) >= side - 0.005
+
+
+def _corridor_movement_boundary_distance(area, graph, component, wide, node, side: float) -> float:
+    neighbours = [neighbour for neighbour in graph[node] if neighbour in wide and neighbour not in component]
+    values = []
+    for neighbour in neighbours:
+        low = node
+        high = neighbour
+        for _ in range(8):
+            middle = (low[0] + high[0]) / 2, (low[1] + high[1]) / 2
+            if _corridor_movement_square_fits(area, middle, side):
+                high = middle
+            else:
+                low = middle
+        values.append(math.dist(node, high))
+    return min(values, default=0.0)
+
+
+def _graph_component(graph, start, allowed) -> set:
+    result = {start}
+    queue = [start]
+    while queue:
+        current = queue.pop()
+        for neighbour in graph[current]:
+            if neighbour in allowed and neighbour not in result:
+                result.add(neighbour)
+                queue.append(neighbour)
+    return result
+
+
+def _graph_diameter(graph, nodes: set) -> tuple[float, tuple | None, tuple | None]:
+    best = 0.0, None, None
+    for start in nodes:
+        distances = {start: 0.0}
+        queue = [(0.0, start)]
+        while queue:
+            current_distance, current = heapq.heappop(queue)
+            if current_distance != distances.get(current):
+                continue
+            if current_distance > best[0]:
+                best = current_distance, start, current
+            for neighbour, length in graph[current].items():
+                if neighbour not in nodes:
+                    continue
+                value = current_distance + length
+                if value >= distances.get(neighbour, math.inf):
+                    continue
+                distances[neighbour] = value
+                heapq.heappush(queue, (value, neighbour))
+    return best
 
 
 def _space_skeleton_segments(area) -> list[tuple[tuple[float, float], tuple[float, float]]]:
@@ -731,18 +1140,94 @@ def _route_clear_width_measurement(
     return round(width, 4), point
 
 
-def _route_door_zone(route_doors: list[Element], footprints: dict[str, object]):
+def _route_door_zone(
+    route_doors: list[Element],
+    footprints: dict[str, object],
+    normal_extension: float = 0.35,
+    width_margin: float = 0.05,
+):
     from shapely.geometry import Point
     from shapely.ops import unary_union
 
     zones = []
     for door in route_doors:
-        polygon = _element_polygon(door, footprints)
-        if polygon is not None and not polygon.is_empty:
-            zones.append(polygon.buffer(0.35, cap_style=2, join_style=2))
+        portal = _door_portal_polygon(door, footprints, normal_extension, width_margin)
+        if portal is not None and not portal.is_empty:
+            zones.append(portal)
         elif door.center:
             zones.append(Point(door.center[0], door.center[1]).buffer(0.45))
     return unary_union(zones) if zones else None
+
+
+def _route_wall_clearance(path, area, route_doors: list[Element], footprints: dict[str, object]) -> float | None:
+    from shapely.geometry import LineString
+
+    line = LineString([(point[0], point[1]) for point in path])
+    door_zone = _route_door_zone(route_doors, footprints, normal_extension=0.80, width_margin=0.10)
+    value = line.difference(door_zone) if door_zone is not None else line
+    if value.is_empty or value.length <= 1e-6:
+        return None
+    return value.distance(area.boundary)
+
+
+def _door_opens_wall(door: Element, wall: Element, footprints: dict[str, object]) -> bool:
+    from shapely.geometry import Point
+
+    host_guid = door.extra.get("doorHostGuid")
+    if host_guid and str(host_guid) == wall.guid:
+        return True
+    if not door.center:
+        return False
+    door_polygon = _element_polygon(door, footprints)
+    wall_polygon = _element_polygon(wall, footprints)
+    axes = _door_axes(door, door_polygon)
+    if wall_polygon is None or wall_polygon.is_empty or axes is None:
+        return False
+    if door_polygon is not None and door_polygon.distance(wall_polygon) > 0.22:
+        return False
+    if door_polygon is None and Point(door.center[0], door.center[1]).distance(wall_polygon) > 0.22:
+        return False
+    local = wall_polygon.intersection(Point(door.center[0], door.center[1]).buffer(1.25))
+    size = _polygon_axis_size(local, (door.center[0], door.center[1]), axes[0])
+    return bool(size and size[0] >= size[1])
+
+
+def _route_avoids_walls(
+    path,
+    space: Element,
+    obstacles: list[Element],
+    route_doors: list[Element],
+    footprints: dict[str, object],
+) -> bool:
+    from shapely.geometry import LineString
+
+    if not path or len(path) < 2:
+        return False
+    route = LineString([(point[0], point[1]) for point in path]).buffer(
+        PLAN_ROUTE_HALF_WIDTH, cap_style=2, join_style=2
+    )
+    for obstacle in obstacles:
+        if obstacle.ifc_type not in {"IfcWall", "IfcColumn"} or not _z_overlap(space, obstacle):
+            continue
+        blocked = _element_polygon(obstacle, footprints)
+        if blocked is None or blocked.is_empty or blocked.distance(route) > PLAN_GEOMETRY_TOLERANCE:
+            continue
+        if obstacle.ifc_type == "IfcWall":
+            for door in route_doors:
+                if not _door_opens_wall(door, obstacle, footprints):
+                    continue
+                portal = _door_portal_polygon(
+                    door,
+                    footprints,
+                    normal_extension=0.22,
+                    width_margin=PLAN_ROUTE_HALF_WIDTH,
+                )
+                if portal is not None:
+                    blocked = blocked.difference(portal)
+        overlap = route.intersection(blocked)
+        if not overlap.is_empty and overlap.area > 1e-5:
+            return False
+    return True
 
 
 def _polygon_parts(geometry):
@@ -796,7 +1281,7 @@ def _area_grid(area) -> dict | None:
         return None
     width = max_x - min_x
     depth = max_y - min_y
-    target = min(0.75, max(0.35, min(width, depth) / 4))
+    target = _area_clearance_target(area)
     return {
         "step": step,
         "origin_x": origin_x,
@@ -823,20 +1308,28 @@ def _path_in_area(
     grid: dict,
     accessible: bool = False,
     path_area=None,
+    first_approach=None,
+    second_approach=None,
 ):
     z = _route_z(first, second, space)
     start = first.center[0], first.center[1], z
     end = second.center[0], second.center[1], z
-    start_cell = _nearest_cell(grid, start)
-    end_cell = _nearest_cell(grid, end)
+    start_approach = (
+        (first_approach[0], first_approach[1], z) if first_approach is not None else start
+    )
+    end_approach = (
+        (second_approach[0], second_approach[1], z) if second_approach is not None else end
+    )
+    start_cell = _nearest_cell(grid, start_approach)
+    end_cell = _nearest_cell(grid, end_approach)
     if start_cell is None or end_cell is None:
         return None
     cells = _astar(grid, start_cell, end_cell, accessible)
     if not cells:
         return None
     points = [_cell_point(grid, cell, z) for cell in cells]
-    start_path = _endpoint_path(start, points[0], area, path_area)
-    end_path = _endpoint_path(end, points[-1], area, path_area)
+    start_path = _endpoint_path(start, points[0], area, path_area, start_approach)
+    end_path = _endpoint_path(end, points[-1], area, path_area, end_approach)
     if not start_path or not end_path:
         return None
     path = _compact_path(start_path + points[1:-1] + list(reversed(end_path)))
@@ -1017,19 +1510,75 @@ def _nearest_cell(grid: dict, point) -> tuple[int, int] | None:
     return candidates[0] if candidates and math.dist(candidates[0], cell) * grid["step"] <= 1.5 else None
 
 
-def _endpoint_path(endpoint, grid_point, area, path_area=None):
+def _oriented_path(path, first: Element, second: Element):
+    if not path or not first.center or not second.center:
+        return path
+    forward = math.hypot(path[0][0] - first.center[0], path[0][1] - first.center[1]) + math.hypot(
+        path[-1][0] - second.center[0], path[-1][1] - second.center[1]
+    )
+    reverse = math.hypot(path[-1][0] - first.center[0], path[-1][1] - first.center[1]) + math.hypot(
+        path[0][0] - second.center[0], path[0][1] - second.center[1]
+    )
+    return list(reversed(path)) if reverse < forward else list(path)
+
+
+def _path_uses_door_approach(path, first: Element, second: Element, first_approach, second_approach) -> bool:
+    value = _oriented_path(path, first, second)
+    return _path_leaves_door(value, first, first_approach) and _path_leaves_door(
+        list(reversed(value)), second, second_approach
+    )
+
+
+def _path_leaves_door(path, door: Element, approach) -> bool:
+    if approach is None or not door.center:
+        return True
+    center = door.center
+    if math.hypot(path[0][0] - center[0], path[0][1] - center[1]) > 0.12:
+        return False
+    dx = approach[0] - center[0]
+    dy = approach[1] - center[1]
+    required = math.hypot(dx, dy)
+    if required <= 0.05:
+        return True
+    nx = dx / required
+    ny = dy / required
+    for point in path[1:]:
+        px = point[0] - center[0]
+        py = point[1] - center[1]
+        length = math.hypot(px, py)
+        if length <= 0.03:
+            continue
+        along = px * nx + py * ny
+        across = abs(px * ny - py * nx)
+        return along + PLAN_GRID_STEP / 2 >= required and across <= 0.05
+    return False
+
+
+def _endpoint_path(endpoint, grid_point, area, path_area=None, approach=None):
+    anchor = approach or endpoint
+    prefix = [endpoint]
+    if distance(endpoint, anchor) > 1e-8:
+        prefix.append(anchor)
     candidates = [
-        [endpoint, (grid_point[0], endpoint[1], endpoint[2]), grid_point],
-        [endpoint, (endpoint[0], grid_point[1], endpoint[2]), grid_point],
-        [endpoint, grid_point],
+        prefix + [(grid_point[0], anchor[1], endpoint[2]), grid_point],
+        prefix + [(anchor[0], grid_point[1], endpoint[2]), grid_point],
+        prefix + [grid_point],
     ]
     valid = [_compact_path(candidate) for candidate in candidates if _path_inside_area(candidate, area, path_area)]
-    return min(valid, key=_path_length) if valid else None
+    return min(valid, key=lambda value: (_diagonal_segment_count(value), _path_length(value))) if valid else None
+
+
+def _diagonal_segment_count(path) -> int:
+    return sum(
+        1
+        for first, second in zip(path, path[1:])
+        if abs(first[0] - second[0]) > 0.03 and abs(first[1] - second[1]) > 0.03
+    )
 
 
 def _route_path_area(area):
-    value = area.buffer(0.02).buffer(-PLAN_ROUTE_HALF_WIDTH, join_style=2)
-    return value if not value.is_empty else area.buffer(0.02)
+    value = area.buffer(PLAN_GEOMETRY_TOLERANCE).buffer(-PLAN_ROUTE_HALF_WIDTH, join_style=2)
+    return value if not value.is_empty else area.buffer(PLAN_GEOMETRY_TOLERANCE)
 
 
 def _path_inside_area(path, area, path_area=None) -> bool:
@@ -1040,8 +1589,10 @@ def _path_inside_area(path, area, path_area=None) -> bool:
     line = LineString([(point[0], point[1]) for point in path])
     if path_area is not None and path_area.covers(line):
         return True
-    outside = line.buffer(PLAN_ROUTE_HALF_WIDTH, cap_style=2, join_style=2).difference(area.buffer(0.02))
-    return outside.is_empty or outside.area <= 0.002
+    outside = line.buffer(PLAN_ROUTE_HALF_WIDTH, cap_style=2, join_style=2).difference(
+        area.buffer(PLAN_GEOMETRY_TOLERANCE)
+    )
+    return outside.is_empty or outside.area <= 1e-5
 
 
 def _simplify_path(path, area, path_area=None):
@@ -1116,8 +1667,8 @@ def _set_route_turning_space(measurements: dict, path, area, cache: dict | None 
     turning_space = _route_turning_space_measurement(turn_points, area, cache)
     if turning_space is None:
         return
-    width, point = turning_space
-    measurements["routeTurningSpaceM"] = width
+    side, point = turning_space
+    measurements["routeTurningSpaceM"] = side
     measurements["routeTurningPointX"] = round(point[0], 4)
     measurements["routeTurningPointY"] = round(point[1], 4)
     measurements["routeTurningPointZ"] = round(point[2], 4)
@@ -1157,33 +1708,123 @@ def _route_turn_points(path):
 
 def _route_turning_space_measurement(turn_points, area, cache: dict | None = None):
     from shapely.geometry import Point
-    from shapely.ops import polylabel
 
     values = []
     for middle in turn_points:
         key = round(middle[0], 3), round(middle[1], 3)
         if cache is not None and key in cache:
-            width = cache[key]
-            if width is not None:
-                values.append((width, middle))
+            side = cache[key]
+            if side is not None:
+                values.append((side, middle))
             continue
         point = Point(middle[0], middle[1])
-        local = area.intersection(point.buffer(1.20))
-        polygons = [value for value in _polygon_parts(local) if not value.is_empty and value.buffer(0.03).covers(point)]
+        polygons = [value for value in _polygon_parts(area) if not value.is_empty and value.buffer(0.03).covers(point)]
         if not polygons:
             if cache is not None:
                 cache[key] = None
             continue
         polygon = max(polygons, key=lambda value: value.area)
-        center = polylabel(polygon, tolerance=0.02)
-        width = center.distance(polygon.boundary) * 2
+        side = _turning_square_side(polygon, point)
         if cache is not None:
-            cache[key] = width
-        values.append((width, middle))
+            cache[key] = side
+        values.append((side, middle))
     if not values:
         return None
-    width, point = min(values, key=lambda value: value[0])
-    return round(width, 4), point
+    side, point = min(values, key=lambda value: value[0])
+    return round(side, 4), point
+
+
+def _turning_square_side(area, point, limit: float | None = None) -> float:
+    from shapely.affinity import rotate
+
+    limit = limit or RULE_LIMITS.turning_space_m
+    best = 0.0
+    for angle in _turning_square_angles(area):
+        value = rotate(area, -angle, origin=(point.x, point.y)) if angle else area
+        best = max(best, _axis_aligned_turning_square_side(value, point, limit))
+        if best >= limit - 1e-6:
+            return limit
+    return best
+
+
+def _turning_square_angles(area) -> list[float]:
+    rectangle = area.minimum_rotated_rectangle
+    coordinates = list(rectangle.exterior.coords)
+    angles = {0.0}
+    for first, second in zip(coordinates, coordinates[1:]):
+        dx = second[0] - first[0]
+        dy = second[1] - first[1]
+        if math.hypot(dx, dy) <= 0.03:
+            continue
+        angle = math.degrees(math.atan2(dy, dx)) % 90.0
+        if angle > 45.0:
+            angle -= 90.0
+        if abs(angle) > 0.01:
+            angles.add(round(angle, 4))
+    return sorted(angles)
+
+
+def _axis_aligned_turning_square_side(area, point, limit: float) -> float:
+    safe = area.buffer(1e-7)
+    coordinates = _turning_boundary_coordinates(area)
+    if _axis_aligned_turning_square_fits(safe, point, limit, coordinates):
+        return limit
+    low = 0.0
+    high = limit
+    for _ in range(9):
+        value = (low + high) / 2
+        if _axis_aligned_turning_square_fits(safe, point, value, coordinates):
+            low = value
+        else:
+            high = value
+    return low
+
+
+def _axis_aligned_turning_square_fits(area, point, side: float, coordinates) -> bool:
+    from shapely.geometry import box
+    from shapely.prepared import prep
+
+    if side <= 1e-6:
+        return True
+    half = side / 2
+    min_x, min_y, max_x, max_y = area.bounds
+    low_x = max(point.x - half, min_x + half)
+    high_x = min(point.x + half, max_x - half)
+    low_y = max(point.y - half, min_y + half)
+    high_y = min(point.y + half, max_y - half)
+    if low_x > high_x + 1e-7 or low_y > high_y + 1e-7:
+        return False
+    x_values = _turning_axis_candidates([value[0] for value in coordinates], low_x, high_x, point.x, half)
+    y_values = _turning_axis_candidates([value[1] for value in coordinates], low_y, high_y, point.y, half)
+    prepared = prep(area)
+    for x in x_values:
+        for y in y_values:
+            if prepared.covers(box(x - half, y - half, x + half, y + half)):
+                return True
+    return False
+
+
+def _turning_axis_candidates(boundaries, low: float, high: float, origin: float, half: float) -> list[float]:
+    values = {low, high, (low + high) / 2}
+    if low <= origin <= high:
+        values.add(origin)
+    for boundary in boundaries:
+        for value in [boundary - half, boundary, boundary + half]:
+            if low - 1e-7 <= value <= high + 1e-7:
+                values.add(min(high, max(low, value)))
+    value = math.ceil(low * 10 - 1e-7) / 10
+    while value <= high + 1e-7:
+        values.add(min(high, max(low, value)))
+        value += 0.1
+    return sorted(values, key=lambda item: (abs(item - origin), item))
+
+
+def _turning_boundary_coordinates(area) -> list[tuple[float, float]]:
+    coordinates = []
+    for polygon in _polygon_parts(area.simplify(0.01, preserve_topology=True)):
+        for ring in [polygon.exterior, *polygon.interiors]:
+            coordinates.extend((float(x), float(y)) for x, y in ring.coords)
+    return coordinates
 
 
 def _compact_path(path):
@@ -1223,34 +1864,6 @@ def _select_forest(edges: list[RouteEdge], pass_only: bool) -> list[RouteEdge]:
         parent[second] = first
         selected.append(edge)
     return selected
-
-
-def _issue_witnesses(edges: list[RouteEdge], elements: list[Element]) -> list[RouteEdge]:
-    by_guid = {element.guid: element for element in elements}
-    selected = {}
-    for edge in edges:
-        for key in _edge_issue_keys(edge, by_guid):
-            current = selected.get(key)
-            if current is None or edge.distance_m < current.distance_m:
-                selected[key] = edge
-    return list({edge.edge_id: edge for edge in selected.values()}.values())
-
-
-def _edge_issue_keys(edge: RouteEdge, elements: dict[str, Element]) -> list[tuple[str, str]]:
-    keys = []
-    for reason in edge.reasons:
-        if reason == "door_width":
-            narrow = []
-            for guid in (edge.start_guid, edge.end_guid):
-                width = _number(elements.get(guid).extra.get("derivedDoorWidthM")) if elements.get(guid) else None
-                if width is not None and width < RULE_LIMITS.route_door_width_m:
-                    narrow.append((reason, guid))
-            keys.extend(narrow or [(reason, edge.edge_id)])
-        elif edge.via_space_guid:
-            keys.append((reason, edge.via_space_guid))
-        else:
-            keys.append((reason, edge.edge_id))
-    return keys
 
 
 def _stair_markers(route_edges: list[RouteEdge]) -> list[RouteEdge]:
@@ -1298,12 +1911,16 @@ def _unreachable_markers(elements: list[Element], connected: set[str]) -> list[R
 def _measurement_reasons(measurements: dict) -> list[str]:
     reasons = []
     width = _number(measurements.get("routeDoorWidthMinM"))
+    height = _number(measurements.get("routeDoorHeightMinM"))
     clear = _number(measurements.get("routeClearWidthM"))
     turn = _number(measurements.get("routeTurningSpaceM"))
     slope = _number(measurements.get("routeRampSlopePercent"))
     ramp_width = _number(measurements.get("routeRampUsableWidthM"))
+    ramp_run_length = _number(measurements.get("routeRampRunLengthM"))
     if width is not None and width < RULE_LIMITS.route_door_width_m:
         reasons.append("door_width")
+    if height is not None and height < RULE_LIMITS.route_door_height_m:
+        reasons.append("door_height")
     if clear is not None and clear < RULE_LIMITS.corridor_width_m:
         reasons.append("route_width")
     if measurements.get("routeHasTurn") and turn is not None and turn < RULE_LIMITS.turning_space_m:
@@ -1314,6 +1931,8 @@ def _measurement_reasons(measurements: dict) -> list[str]:
         reasons.append("ramp_slope")
     if ramp_width is not None and ramp_width < RULE_LIMITS.ramp_width_m:
         reasons.append("ramp_width")
+    if ramp_run_length is not None and ramp_run_length > RULE_LIMITS.ramp_run_length_m:
+        reasons.append("ramp_run_length")
     return reasons
 
 

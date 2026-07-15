@@ -93,11 +93,15 @@ def _edge_dict(e: RouteEdge) -> dict:
 
 
 def _issue_regions(elements: list[Element], issues: list[Issue]) -> list[dict]:
-    issue_ids = {(issue.element_guid, issue.rule_id): issue.issue_id for issue in issues}
+    issue_ids = {
+        (issue.element_guid, issue.rule_id, issue.evidence_id): issue.issue_id
+        for issue in issues
+    }
     result = []
     for element in elements:
-        for region in element.issue_regions:
-            issue_id = issue_ids.get((element.guid, region.get("rule_id")))
+        for region in element.issue_regions + element.passing_area_gaps:
+            key = element.guid, region.get("rule_id"), region.get("evidence_id")
+            issue_id = issue_ids.get(key)
             if issue_id:
                 result.append({**region, "issue_id": issue_id})
     return result

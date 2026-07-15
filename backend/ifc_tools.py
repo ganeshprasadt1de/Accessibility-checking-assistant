@@ -82,7 +82,7 @@ def run_ifctolbd(ifc_path: Path, ifctolbd_zip: Path, output_ttl: Path, work_dir:
                 cwd=runtime,
                 stdout=log,
                 stderr=subprocess.STDOUT,
-                timeout=300,
+                timeout=600,
                 text=True,
             )
     except (subprocess.SubprocessError, OSError) as exc:
@@ -115,7 +115,7 @@ def run_ifctolbd_exe(ifc_path: Path, executable: Path, output_ttl: Path) -> str:
         str(ifc_path),
     ]
     try:
-        subprocess.run(command, check=True, timeout=240)
+        subprocess.run(command, check=True, timeout=600)
     except (subprocess.SubprocessError, OSError) as exc:
         raise RuntimeError(f"IFCtoLBD executable failed: {exc}") from exc
     if output_ttl.exists() and output_ttl.stat().st_size > 0:
@@ -131,6 +131,11 @@ def bind_graph(g: Graph) -> None:
 def element_uri(guid: str) -> URIRef:
     safe = "".join(ch if ch.isalnum() or ch in "_-" else "_" for ch in guid)
     return ACC[f"element/{safe}"]
+
+
+def passing_area_gap_uri(evidence_id: str) -> URIRef:
+    safe = "".join(ch if ch.isalnum() or ch in "_-" else "_" for ch in evidence_id)
+    return ACC[f"passing-area-gap/{safe}"]
 
 
 def load_raw_graph(path: Path) -> Graph:
@@ -179,3 +184,11 @@ def add_geometry_to_graph(g: Graph, elements: list[Element]) -> None:
                 g.add((uri, ACC[key], Literal(round(float(value), 4), datatype=XSD.decimal)))
             elif value is not None:
                 g.add((uri, ACC[key], Literal(str(value))))
+        for gap in element.passing_area_gaps:
+            gap_uri = passing_area_gap_uri(gap["evidence_id"])
+            g.add((gap_uri, RDF.type, ACC.CorridorPassingAreaGap))
+            g.add((gap_uri, ACC.inCorridor, uri))
+            g.add((gap_uri, ACC.passingAreaGapLengthM, Literal(gap["measured"], datatype=XSD.decimal)))
+            g.add((gap_uri, ACC.passingAreaTestWidthM, Literal(gap["movement_space_m"], datatype=XSD.decimal)))
+            g.add((gap_uri, ACC.passingAreaTestDepthM, Literal(gap["movement_space_m"], datatype=XSD.decimal)))
+            g.add((gap_uri, ACC.issueRegionId, Literal(gap["region_id"])))

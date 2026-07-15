@@ -12,6 +12,7 @@ from backend.ifc_tools import (
     bind_graph,
     element_uri,
     load_raw_graph,
+    passing_area_gap_uri,
     run_ifctolbd,
     run_ifctolbd_exe,
 )
@@ -57,7 +58,8 @@ def main() -> int:
         graph = Graph()
         bind_graph(graph)
     print(ifctolbd_note)
-    edges = build_route_edges(ifc_path, elements)
+    skipped_route_pairs = []
+    edges = build_route_edges(ifc_path, elements, skipped_route_pairs)
     try:
         plan_geometry = prepare_plan_geometry(ifc_path, elements)
     except Exception as exc:
@@ -83,6 +85,8 @@ def main() -> int:
         graph.add((issue_uri, ACC.severity, Literal(issue.severity)))
         graph.add((issue_uri, ACC.shortExplanation, Literal(issue.short_text)))
         graph.add((issue_uri, ACC.issueSource, Literal(issue.source)))
+        if issue.evidence_id:
+            graph.add((issue_uri, ACC.issueEvidence, passing_area_gap_uri(issue.evidence_id)))
         if issue.measured is not None:
             graph.add((issue_uri, ACC.measuredValue, Literal(round(issue.measured, 4), datatype=XSD.decimal)))
         if issue.required is not None:
@@ -95,20 +99,30 @@ def main() -> int:
     graph.serialize(destination=lbd_ttl, format="turtle")
 
     write_json_package(output, elements, issues, edges, missing_geometry, shacl_summary, ifctolbd_note, plan_edges)
-    write_audit_report(ifc_path, output, {"routeEdges": [
+    write_audit_report(
+        ifc_path,
+        output,
         {
-            "startGuid": edge.start_guid,
-            "endGuid": edge.end_guid,
-            "status": edge.status,
-            "reasons": edge.reasons,
-        }
-        for edge in edges
-    ]})
+            "routeEdges": [
+                {
+                    "startGuid": edge.start_guid,
+                    "endGuid": edge.end_guid,
+                    "status": edge.status,
+                    "reasons": edge.reasons,
+                }
+                for edge in edges
+            ],
+            "skippedRoutePairs": skipped_route_pairs,
+        },
+    )
     export_box_glb(elements, edges, output / "route_model.glb")
     if args.save_bin:
         save_route_binary(edges, output / "route_graph.bin")
     print(f"Wrote package: {output}")
-    print(f"Routes: {len(edges)}, plan routes: {len(plan_edges)}, issues: {len(issues)}, missing geometry: {len(missing_geometry)}")
+    print(
+        f"Routes: {len(edges)}, plan routes: {len(plan_edges)}, issues: {len(issues)}, "
+        f"missing geometry: {len(missing_geometry)}, skipped route pairs: {len(skipped_route_pairs)}"
+    )
     return 0
 
 

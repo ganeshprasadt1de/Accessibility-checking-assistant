@@ -14,6 +14,8 @@ import numpy as np
 from shapely import intersects_xy
 from shapely.geometry import shape
 
+from .config import RULE_LIMITS
+
 
 FORMAT_VERSION = 1
 RESOLUTION_M = 0.01
@@ -58,6 +60,16 @@ def build_navigation_package(app_data_path: Path, output_dir: Path) -> dict:
     try:
         for floor in data.get("floors", []):
             floor_guids = set(floor.get("elementGuids", []))
+            floor_surface = _floor_surface_elevation(floor, elements_by_guid)
+            clearance_min_z = floor_surface
+            clearance_max_z = floor_surface + RULE_LIMITS.clearance_height_m
+            for guid, item in elements_by_guid.items():
+                if (item.get("ifcType") in WALL_TYPES or _hard_obstacle(item)) and _intersects_height_band(
+                    item,
+                    clearance_min_z,
+                    clearance_max_z,
+                ):
+                    floor_guids.add(guid)
             for edge_id in floor.get("routeEdgeIds", []):
                 edge = route_edges_by_id.get(edge_id) or {}
                 for endpoint in (edge.get("startGuid"), edge.get("endGuid")):
@@ -146,14 +158,13 @@ def _build_floor_package(root: Path, floor: dict, elements: list[dict], issue_re
             }
 
     graph = _component_graph(tiles)
-    elevation = floor.get("elevation")
     return {
         "name": floor["name"],
         "key": floor_key,
         "origin": [min_x, min_y],
         "size": [nx, ny],
         "tiles": [tiles_x, tiles_y],
-        "elevation": float(elevation) if elevation is not None else 0.0,
+        "elevation": float(floor.get("elevation")) if floor.get("elevation") is not None else 0.0,
         "tileIndex": tiles,
         "componentGraph": graph,
         "blockedRects": [list(rect) for rect in blocked_rects],
@@ -161,6 +172,37 @@ def _build_floor_package(root: Path, floor: dict, elements: list[dict], issue_re
         "accessibleDoorGuids": [item["guid"] for item in accessible_doors],
         "accessibleRouteWidthM": ACCESSIBLE_ROUTE_WIDTH_M,
     }
+
+
+def _floor_surface_elevation(floor: dict, elements_by_guid: dict[str, dict]) -> float:
+    """Find the floor surface used by the vertical clearance volume."""
+    elevations = []
+    for guid in floor.get("doorGuids", []):
+        item = elements_by_guid.get(guid) or {}
+        bbox_min = item.get("bboxMin")
+        if bbox_min and len(bbox_min) >= 3:
+            elevations.append(float(bbox_min[2]))
+    if elevations:
+        elevations.sort()
+        middle = len(elevations) // 2
+        if len(elevations) % 2:
+            return elevations[middle]
+        return (elevations[middle - 1] + elevations[middle]) / 2
+    elevation = _number(floor.get("elevation"))
+    return elevation if elevation is not None else 0.0
+
+
+def _intersects_height_band(item: dict, minimum: float, maximum: float) -> bool:
+    bbox_min = item.get("bboxMin")
+    bbox_max = item.get("bboxMax")
+    return bool(
+        bbox_min
+        and bbox_max
+        and len(bbox_min) >= 3
+        and len(bbox_max) >= 3
+        and float(bbox_min[2]) <= maximum
+        and float(bbox_max[2]) >= minimum
+    )
 
 
 def _accessible_space(item: dict) -> bool:
@@ -403,16 +445,19 @@ def _split_walls_and_portals(walls: list[dict], doors: list[dict]):
         along_x = (wx1 - wx0) >= (wy1 - wy0)
         openings = []
         for door in doors:
-            if not _boxes_touch(_rect(wall), _rect(door), 0.22):
+            door_rect = _rect(door)
+            if not _boxes_touch(_rect(wall), door_rect, 0.22):
                 continue
-            width = _door_width(door)
-            cx, cy = float(door["center"][0]), float(door["center"][1])
             if along_x:
-                openings.append((max(wx0, cx - width / 2), min(wx1, cx + width / 2)))
-                portal_rects.append((cx - width / 2, wy0 - WHEELCHAIR_RADIUS_M, cx + width / 2, wy1 + WHEELCHAIR_RADIUS_M))
+                opening = (max(wx0, door_rect[0]), min(wx1, door_rect[2]))
+                portal = (opening[0], wy0 - WHEELCHAIR_RADIUS_M, opening[1], wy1 + WHEELCHAIR_RADIUS_M)
             else:
-                openings.append((max(wy0, cy - width / 2), min(wy1, cy + width / 2)))
-                portal_rects.append((wx0 - WHEELCHAIR_RADIUS_M, cy - width / 2, wx1 + WHEELCHAIR_RADIUS_M, cy + width / 2))
+                opening = (max(wy0, door_rect[1]), min(wy1, door_rect[3]))
+                portal = (wx0 - WHEELCHAIR_RADIUS_M, opening[0], wx1 + WHEELCHAIR_RADIUS_M, opening[1])
+            if opening[1] - opening[0] <= GEOMETRY_TOLERANCE_M:
+                continue
+            openings.append(opening)
+            portal_rects.append(portal)
             doors_used.add(door["guid"])
         merged = _merge_intervals([opening for opening in openings if opening[1] > opening[0]])
         start, end = (wx0, wx1) if along_x else (wy0, wy1)
@@ -441,10 +486,6 @@ def _merge_intervals(intervals):
 
 def _boxes_touch(a, b, tolerance):
     return a[0] - tolerance <= b[2] and a[2] + tolerance >= b[0] and a[1] - tolerance <= b[3] and a[3] + tolerance >= b[1]
-
-
-def _door_width(door: dict) -> float:
-    return float((door.get("extra") or {}).get("derivedDoorWidthM") or door.get("width") or 0)
 
 
 def _has_plan_box(item: dict) -> bool:

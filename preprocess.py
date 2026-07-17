@@ -21,8 +21,8 @@ from backend.package_writer import write_json_package
 from backend.navigation import build_navigation_package
 from backend.plan_routes import build_plan_route_edges, prepare_plan_geometry
 from backend.routes import add_plan_routes_to_graph, add_routes_to_graph, build_route_edges, save_route_binary
+from backend.simulation_routes import add_floor_check_routes, apply_strict_navigation_to_edges
 from backend.shacl_runner import issues_from_shacl_report, run_shacl
-from backend.simulation_routes import add_floor_check_routes
 from backend.audit import write_audit_report
 from rdflib import Graph, Literal, Namespace, RDF
 from rdflib.namespace import XSD
@@ -77,12 +77,35 @@ def main() -> int:
         plan_routes_available = False
     rdf_plan_edges = [edge for edge in plan_edges if not edge.measurements.get("planMarkerOnly")]
     add_geometry_to_graph(graph, elements)
+    provisional_shacl = {
+        "available": False,
+        "conforms": None,
+        "source": "pending strict 0.01 m route generation",
+        "resultCount": 0,
+        "message": "SHACL runs after strict tiled route generation.",
+    }
+    write_json_package(output, elements, [], edges, missing_geometry, provisional_shacl, ifctolbd_note)
+    print("Building tiled navigation package at 0.01 m resolution")
+    navigation_index = build_navigation_package(output / "app_data.json", output)
+    print("Replacing provisional route candidates with audited 0.01 m routes")
+    strict_summary, strict_records = apply_strict_navigation_to_edges(
+        output / "app_data.json",
+        output,
+        elements,
+        edges,
+    )
+    print(
+        "Strict route edges: "
+        f"{strict_summary['passCount']} connected, "
+        f"{strict_summary['blockedCount']} blocked, "
+        f"{strict_summary['unavailableCount']} without a drawable candidate"
+    )
+
     add_routes_to_graph(graph, edges)
     if plan_routes_available:
         add_plan_routes_to_graph(graph, plan_edges, elements)
     lbd_ttl = output / "lbd_graph.ttl"
     graph.serialize(destination=lbd_ttl, format="turtle")
-
     shacl_summary = run_shacl(lbd_ttl, ROOT / "rules" / "accessibility_rules.shacl.ttl", output / "shacl_report.ttl")
     issues = issues_from_shacl_report(
         output / "shacl_report.ttl",
@@ -91,6 +114,16 @@ def main() -> int:
         edges,
         rdf_plan_edges,
     )
+    unexplained_navigation_failures = [
+        edge.edge_id
+        for edge in edges
+        if edge.measurements.get("routeNavigationBlocked") is True and edge.status != "fail"
+    ]
+    if unexplained_navigation_failures:
+        raise RuntimeError(
+            "SHACL did not reject strict navigation failures: "
+            + ", ".join(unexplained_navigation_failures)
+        )
     for issue in issues:
         issue_uri = ACC[f"issue/{issue.issue_id}"]
         graph.add((issue_uri, RDF.type, ACC.AccessibilityIssue))
@@ -114,8 +147,6 @@ def main() -> int:
     graph.serialize(destination=lbd_ttl, format="turtle")
 
     write_json_package(output, elements, issues, edges, missing_geometry, shacl_summary, ifctolbd_note, plan_edges)
-    print("Building tiled point-navigation package at 0.01 m resolution")
-    navigation_index = build_navigation_package(output / "app_data.json", output)
     app_data_path = output / "app_data.json"
     app_data = json.loads(app_data_path.read_text(encoding="utf-8"))
     app_data["summary"]["pointNavigation"] = {
@@ -126,10 +157,13 @@ def main() -> int:
         "accessibleRouteWidthM": navigation_index["accessibleRouteWidthM"],
         "floorCount": len(navigation_index["floors"]),
     }
+    app_data["summary"]["routeNavigation"] = strict_summary
     app_data["sources"]["pointNavigation"] = "precomputed tiled occupancy and component graph from IFC floor geometry"
+    app_data["sources"]["routes"] = "audited four-direction A* routes from the precomputed 0.01 m navigation tiles"
     app_data_path.write_text(json.dumps(app_data, indent=2), encoding="utf-8")
     print("Building strict routes for the 2.5D floor-check simulation")
-    floor_check_summary = add_floor_check_routes(app_data_path, output)
+    floor_check_precomputed = None if rdf_plan_edges else strict_records
+    floor_check_summary = add_floor_check_routes(app_data_path, output, floor_check_precomputed)
     print(
         "Floor-check routes: "
         f"{floor_check_summary['directionalRouteCount']} directional, "

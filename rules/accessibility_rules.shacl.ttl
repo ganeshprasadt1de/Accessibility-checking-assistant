@@ -152,6 +152,39 @@ acc:RouteShape
     sh:targetClass acc:RouteEdge ;
     sh:sparql [
         a sh:SPARQLConstraint ;
+        sh:message "unreachable|No collision-free route exists on the 0.01 m navigation grid." ;
+        sh:select """
+            PREFIX acc: <https://example.org/wheelchair-accessibility#>
+            PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+            SELECT $this WHERE {
+                $this acc:routeNavigationBlocked true .
+                FILTER NOT EXISTS {
+                    $this acc:routeDoorWidthMinM ?doorWidth .
+                    FILTER(xsd:decimal(?doorWidth) < 0.90)
+                }
+                FILTER NOT EXISTS {
+                    $this acc:routeClearWidthM ?routeWidth .
+                    FILTER(xsd:decimal(?routeWidth) < 1.50)
+                }
+                FILTER NOT EXISTS {
+                    $this acc:routeHasTurn true ;
+                          acc:routeTurningSpaceM ?turningWidth .
+                    FILTER(xsd:decimal(?turningWidth) < 1.50)
+                }
+                FILTER NOT EXISTS { $this acc:routeHitsStair true . }
+                FILTER NOT EXISTS {
+                    $this acc:routeRampSlopePercent ?slope .
+                    FILTER(xsd:decimal(?slope) > 6.0)
+                }
+                FILTER NOT EXISTS {
+                    $this acc:routeRampUsableWidthM ?rampWidth .
+                    FILTER(xsd:decimal(?rampWidth) < 1.20)
+                }
+            }
+        """ ;
+    ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
         sh:message "route_door_width|Route uses a door below 0.90 m clear width." ;
         sh:select """
             PREFIX acc: <https://example.org/wheelchair-accessibility#>

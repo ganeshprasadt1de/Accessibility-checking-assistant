@@ -5,9 +5,113 @@ import math
 from pathlib import Path
 
 from .navigation import NavigationPackage
+from .model import Element, RouteEdge
+from .routes import apply_navigation_result_to_edge
 
 
-def add_floor_check_routes(app_data_path: Path, package_dir: Path) -> dict:
+def apply_strict_navigation_to_edges(
+    app_data_path: Path,
+    package_dir: Path,
+    elements: list[Element],
+    edges: list[RouteEdge],
+) -> tuple[dict, dict[str, dict]]:
+    """Make audited 0.01 m navigation the final source for every graph edge."""
+    data = json.loads(app_data_path.read_text(encoding="utf-8"))
+    navigation = NavigationPackage(package_dir)
+    element_by_guid = {element.guid: element for element in elements}
+    floor_by_edge = {
+        edge_id: floor["name"]
+        for floor in data.get("floors", [])
+        for edge_id in floor.get("routeEdgeIds", [])
+    }
+    records_by_edge: dict[str, dict] = {}
+    passed = blocked = unavailable = swapped = 0
+
+    for edge in edges:
+        floor_name = floor_by_edge.get(edge.edge_id)
+        start = element_by_guid.get(edge.start_guid)
+        end = element_by_guid.get(edge.end_guid)
+        if not floor_name or not start or not end or not start.center or not end.center:
+            raise RuntimeError(f"Route {edge.edge_id} lacks a floor or exact IFC endpoint geometry.")
+
+        directional: list[tuple[str, dict, dict | None]] = []
+        for start_guid, start_element, end_element in (
+            (edge.start_guid, start, end),
+            (edge.end_guid, end, start),
+        ):
+            result = navigation.route(
+                floor_name,
+                [float(start_element.center[0]), float(start_element.center[1])],
+                [float(end_element.center[0]), float(end_element.center[1])],
+            )
+            result.setdefault("resolutionM", navigation.index["resolutionM"])
+            result.setdefault("clearanceM", navigation.index["wheelchairClearanceM"])
+            result.setdefault("routeWidthM", navigation.index["accessibleRouteWidthM"])
+            record = _record(result, navigation, floor_name)
+            directional.append((start_guid, result, record))
+
+        statuses = {result.get("status") for _guid, result, _record_value in directional}
+        if "pass" in statuses and statuses != {"pass"}:
+            raise RuntimeError(f"Strict navigation became directional for undirected edge {edge.edge_id}: {statuses}")
+
+        route_records = {
+            start_guid: record
+            for start_guid, _result, record in directional
+            if record is not None
+        }
+        records_by_edge[edge.edge_id] = route_records
+        passing = [item for item in directional if item[1].get("status") == "pass" and item[2]]
+        blocked_candidates = [item for item in directional if item[2] and item[2].get("collisionPath")]
+
+        if passing:
+            chosen_guid, chosen_result, chosen_record = passing[0]
+            display_path = chosen_record["path"]
+            passed += 1
+        elif blocked_candidates:
+            chosen_guid, chosen_result, chosen_record = max(
+                blocked_candidates,
+                key=lambda item: (float(item[2].get("distanceM") or 0.0), item[0]),
+            )
+            collision_audit = chosen_record.get("collisionAudit") or {}
+            if not all(
+                collision_audit.get(key) is True
+                for key in ("endpointsExact", "orthogonal", "safePrefixCollisionFree", "collisionEncountered")
+            ):
+                raise RuntimeError(f"Blocked route {edge.edge_id} has an invalid collision attempt: {collision_audit}")
+            display_path = chosen_record["collisionPath"]
+            blocked += 1
+        else:
+            chosen_guid, chosen_result, _chosen_record = directional[0]
+            display_path = []
+            unavailable += 1
+
+        if chosen_guid != edge.start_guid:
+            edge.start_guid, edge.end_guid = edge.end_guid, edge.start_guid
+            swapped += 1
+        apply_navigation_result_to_edge(edge, elements, chosen_result, display_path)
+        edge.measurements["routeFloor"] = floor_name
+        edge.measurements["routeStrictDirectionalRecordCount"] = len(route_records)
+
+    summary = {
+        "edgeCount": len(edges),
+        "passCount": passed,
+        "blockedCount": blocked,
+        "unavailableCount": unavailable,
+        "orientationSwapCount": swapped,
+        "resolutionM": navigation.index["resolutionM"],
+        "wheelchairClearanceM": navigation.index["wheelchairClearanceM"],
+        "accessibleRouteWidthM": navigation.index["accessibleRouteWidthM"],
+    }
+    if passed + blocked + unavailable != len(edges):
+        raise RuntimeError(f"Strict route accounting failed: {summary}")
+    return summary, records_by_edge
+
+
+def add_floor_check_routes(
+    app_data_path: Path,
+    package_dir: Path,
+    precomputed_records: dict[str, dict] | None = None,
+) -> dict:
     """Attach strict navigation geometry used only by the 2.5D floor-check view."""
     data = json.loads(app_data_path.read_text(encoding="utf-8"))
     navigation = NavigationPackage(package_dir)
@@ -34,6 +138,16 @@ def add_floor_check_routes(app_data_path: Path, package_dir: Path) -> dict:
 
     for edge in floor_check_edges:
         floor_name = floor_by_edge.get(edge.get("edgeId"))
+        if precomputed_records is not None:
+            edge["floorCheckRoutes"] = precomputed_records.get(edge.get("edgeId"), {})
+            generated += len(edge["floorCheckRoutes"])
+            blocked += sum(
+                route["navigationStatus"] == "blocked"
+                for route in edge["floorCheckRoutes"].values()
+            )
+            if not floor_name or not edge["floorCheckRoutes"]:
+                unavailable += 1
+            continue
         endpoints = _edge_endpoints(edge, element_by_guid)
         edge["floorCheckRoutes"] = {}
         if _cross_floor_edge(edge, floor_by_element):

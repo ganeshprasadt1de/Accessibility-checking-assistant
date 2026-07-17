@@ -6,9 +6,8 @@ The application contains:
 
 - IFC geometry extraction with IfcOpenShell
 - IFC-to-RDF conversion with the included IFCtoLBD 2.43.4 Java runtime
-- four-direction A* routing on a 0.10 m occupancy grid
-- Shapely-based route generation for the 2D floor plan
-- interactive point-to-point A* routing on precomputed 0.01 m floor tiles
+- four-direction A* routing on precomputed 0.01 m floor tiles for door routes and point-to-point checks
+- Shapely-based plan-route generation for 2D floor routing and visual route topology
 - shortest door-graph routes calculated with Dijkstra's algorithm
 - SHACL validation with pySHACL
 - matching 2D floor plans and a 2.5D wheelchair simulation
@@ -318,25 +317,27 @@ These checks support model review. They do not replace professional accessibilit
 
 ## Route Construction
 
-Routes use `IfcRelSpaceBoundary` door-to-space relationships.
+Routes use `IfcRelSpaceBoundary` door-to-space relationships to decide which doors may form an edge in the door graph. This relationship creates only the candidate pair. It does not prove that the space between the doors is accessible.
 
-For each usable space, the checker builds a 0.10 m occupancy grid from wall, column, stair and other obstacle bounding boxes. Obstacles are expanded by 0.38 m around the route centre. Door rectangles carve controlled portals through wall cells. A four-direction A* search connects exact door centres with horizontal and vertical movement.
+Preprocessing divides each floor into compressed 5 m tiles containing 0.01 m cells. Walls, columns and stairs are included when their IFC bounding boxes enter the floor's 2.05 m vertical clearance volume. In plan view, solid obstacles are expanded by 0.445 m around the route centre: a 0.45 m wheelchair radius minus a 0.005 m geometry tolerance. Accessible door rectangles create controlled portals through wall openings.
+
+Every candidate door pair is then checked by four-direction A* on these tiles. The strict result replaces the provisional candidate before RDF measurements, SHACL validation, Dijkstra indexes, audit files or browser data are written. The same tiled geometry and clearance rules are therefore used by the door graph, the floor-check simulation and interactive point-to-point mode.
 
 The generated route has these properties:
 
 - every plan segment uses 0, 90 or 180 degrees
-- consecutive dense route points are no more than 0.12 m apart
 - route endpoints match the selected door centres
 - a route is rejected when no collision-free grid connection exists
 - a route intersecting a blocked wall cell is never accepted
+- every accepted path is audited again for exact endpoints, orthogonal segments and collision-free cells
 
 Dijkstra's algorithm joins passing door-to-door edges into shortest routes across the door graph. Stair approaches are stored as blocked edges so the simulation can stop before the stair.
 
 `backend/plan_routes.py` builds a separate 2D route network from Shapely walkable-space geometry. It removes wall, column and stair obstacles, restores controlled openings at valid doors and checks the buffered route footprint against the walkable area. A 0.20 m grid search is used when a direct candidate is not suitable.
 
-The automatic 2.5D floor check uses `planRouteEdges` as its route topology and audits the displayed paths against the precomputed 0.01 m navigation tiles. The accessible plan network selects direct door pairs, while failed physical edges remain available as blocked evidence. Cross-floor edges and disagreements between the plan network and the strict navigation grid are recorded instead of being drawn as valid floor routes.
+The automatic 2.5D floor check uses `planRouteEdges` as its visual route topology and audits the displayed paths against the strict precomputed 0.01 m navigation tiles. Passing routes must be collision-free, orthogonal and consistent with the strict grid. Failed physical edges remain available as blocked evidence. A blocked red route follows its collision-free prefix to the exact door or stair obstacle where the failure occurs. Cross-floor edges and disagreements between the plan network and the strict navigation grid are recorded instead of being drawn as valid floor routes.
 
-Interactive point-to-point routing uses a separate floor grid. Preprocessing divides each floor into compressed 5 m tiles containing 0.01 m cells. Solid obstacles are expanded by 0.445 m around the route centre: a 0.45 m wheelchair radius minus a 0.005 m geometry tolerance. Accessible door rectangles create controlled portals between spaces. A point request loads only the required tiles, runs four-direction A* once, restores the exact selected endpoints and performs a final geometry audit. A complete audited route is green. If the destination cannot be reached, the red candidate ends at the last collision-free cell and is never labelled accessible.
+Interactive point-to-point routing reads the shared floor package. A request loads only the required tiles, runs four-direction A*, restores the exact selected endpoints and performs a final geometry audit. Tiles from other floors remain on disk, and the in-memory tile cache has a fixed limit. A complete audited route is green. If the destination cannot be reached, the red candidate ends at the last collision-free cell and is never labelled accessible.
 
 ## RDF, SHACL And Ollama
 
@@ -378,9 +379,9 @@ preprocess.py                              preprocessing entry point
 server.py                                  local server, Model Library and Ollama control
 requirements.txt                           exact Python dependency versions
 backend/geometry.py                        IFC geometry and bounding-box extraction
-backend/routes.py                          occupancy grid, A* and door graph
+backend/routes.py                          IFC door graph candidates and route measurements
 backend/plan_routes.py                     Shapely-based 2D route network generation
-backend/navigation.py                      tiled point-route grid, A* and final audit
+backend/navigation.py                      compressed 0.01 m navigation tiles, A* and final audit
 backend/simulation_routes.py               strict automatic floor-check route geometry
 backend/ifc_tools.py                       pinned IFCtoLBD execution
 backend/shacl_runner.py                    SHACL validation and issue extraction

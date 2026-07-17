@@ -2,8 +2,6 @@
 
 The Wheelchair Route Checker reads an IFC building model, calculates indoor door-to-door wheelchair routes, checks accessibility measurements with SHACL and shows the results in a browser.
 
-The illustrated technical manual is available as [ACC_manual.pdf](docs/ACC_manual.pdf). Its editable LaTeX source is [ACC_manual.tex](docs/ACC_manual.tex).
-
 The application contains:
 
 - IFC geometry extraction with IfcOpenShell

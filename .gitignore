@@ -27,3 +27,5 @@ docs/*.aux
 docs/*.log
 docs/*.out
 docs/*.toc
+docs/ACC_manual.pdf
+docs/ACC_manual.tex

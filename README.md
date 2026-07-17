@@ -203,6 +203,14 @@ Generate the DigitalHub browser package with:
 python preprocess.py --ifc ".\20201208DigitalHub_ARC.ifc" --save-bin
 ```
 
+For weaker laptops, add `--low-end`:
+
+```powershell
+python preprocess.py --ifc ".\20201208DigitalHub_ARC.ifc" --save-bin --low-end
+```
+
+Low-end mode uses the same IFC extraction, RDF conversion, 0.01 m navigation tiles, route audits and SHACL checks. It does not loosen the route rules and should produce the same accessibility results as the normal run. It only changes how the computer spends CPU time: the preprocessing process gets lower priority, native math and Java worker threads are limited, and short pauses are added inside heavy tile and route loops. The laptop should stay more responsive, but preprocessing can take longer.
+
 `output/app_package` contains one active package at a time. Running either command replaces that generated package with the selected model's results. The original IFC files are not modified.
 
 Preprocessing also builds the point-to-point navigation data. Each floor is divided into 5 m tiles at 0.01 m resolution. Walkable cells are packed as bits and compressed, so the browser and server load only the tiles needed for the selected floor and route. Walls, columns, stairs, inaccessible ramps and narrow doors are blocked during this build. Corridor-width issue regions are blocked locally instead of removing the complete IFC space from the navigation grid.
@@ -286,6 +294,8 @@ The website contains:
 - `Floor Plan 2D`: inspect floor geometry and route overlays
 - `Building Model`: inspect the compact GLB model
 - `Wheelchair Simulation`: play clear and blocked routes on a 2.5D floor slice
+
+In the Model Library, `Generate` uses the normal full-speed preprocessing run. `Generate low-end` runs the same checks with reduced CPU pressure. Use it when a laptop becomes noisy, hot or slow during IFC preprocessing. The result package still uses the same 0.01 m routing data and the same SHACL rules.
 
 The Check Results page includes `Restart Ollama`. It stops verified Ollama processes, starts one clean Ollama service, waits for the API and warms the selected model. It refuses to stop an unrelated program if another executable owns port 11434.
 

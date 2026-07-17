@@ -15,6 +15,7 @@ from shapely import intersects_xy
 from shapely.geometry import shape
 
 from .config import RULE_LIMITS
+from .resource_control import low_end_throttle
 
 
 FORMAT_VERSION = 1
@@ -135,8 +136,11 @@ def _build_floor_package(root: Path, floor: dict, elements: list[dict], issue_re
     floor_dir.mkdir(parents=True)
 
     tiles: dict[str, dict] = {}
+    tile_counter = 0
     for ty in range(tiles_y):
         for tx in range(tiles_x):
+            low_end_throttle(tile_counter, interval=8, delay_s=0.002)
+            tile_counter += 1
             width = min(TILE_CELLS, nx - tx * TILE_CELLS)
             height = min(TILE_CELLS, ny - ty * TILE_CELLS)
             tile = _raster_tile(min_x, min_y, tx, ty, width, height, walkable_rects, blocked_rects, local_restrictions)

@@ -6,6 +6,7 @@ from pathlib import Path
 
 from .navigation import NavigationPackage
 from .model import Element, RouteEdge
+from .resource_control import low_end_throttle
 from .routes import apply_navigation_result_to_edge
 
 
@@ -27,7 +28,8 @@ def apply_strict_navigation_to_edges(
     records_by_edge: dict[str, dict] = {}
     passed = blocked = unavailable = swapped = 0
 
-    for edge in edges:
+    for edge_index, edge in enumerate(edges):
+        low_end_throttle(edge_index, interval=4, delay_s=0.003)
         floor_name = floor_by_edge.get(edge.edge_id)
         start = element_by_guid.get(edge.start_guid)
         end = element_by_guid.get(edge.end_guid)
@@ -136,7 +138,8 @@ def add_floor_check_routes(
     blocked = 0
     cross_floor = 0
 
-    for edge in floor_check_edges:
+    for edge_index, edge in enumerate(floor_check_edges):
+        low_end_throttle(edge_index, interval=4, delay_s=0.003)
         floor_name = floor_by_edge.get(edge.get("edgeId"))
         if precomputed_records is not None:
             edge["floorCheckRoutes"] = precomputed_records.get(edge.get("edgeId"), {})
@@ -241,7 +244,8 @@ def _direct_door_routes(
     records = []
     mismatches = []
     edge_by_id = {edge["edgeId"]: edge for edge in data.get("routeEdges", [])}
-    for (start_guid, end_guid), request in sorted(requests.items()):
+    for request_index, ((start_guid, end_guid), request) in enumerate(sorted(requests.items())):
+        low_end_throttle(request_index, interval=4, delay_s=0.003)
         floor_name = request["floor"]
         start = element_by_guid[start_guid].get("center")
         end = element_by_guid[end_guid].get("center")

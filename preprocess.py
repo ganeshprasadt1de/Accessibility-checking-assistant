@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -24,6 +25,7 @@ from backend.routes import add_plan_routes_to_graph, add_routes_to_graph, build_
 from backend.simulation_routes import add_floor_check_routes, apply_strict_navigation_to_edges
 from backend.shacl_runner import issues_from_shacl_report, run_shacl
 from backend.audit import write_audit_report
+from backend.resource_control import LOW_END_ENV, configure_current_process_low_end
 from rdflib import Graph, Literal, Namespace, RDF
 from rdflib.namespace import XSD
 
@@ -37,7 +39,12 @@ def main() -> int:
     parser.add_argument("--ifctolbd-zip", type=Path, default=default_ifctolbd_zip(), help="Path to IFCtoLBD-master.zip.")
     parser.add_argument("--output", type=Path, default=ROOT / "output" / "app_package", help="Output app package folder.")
     parser.add_argument("--save-bin", action="store_true", help="Save route_graph.bin for fast route loading.")
+    parser.add_argument("--low-end", action="store_true", help="Run the same checks with lower process priority and throttled preprocessing loops.")
     args = parser.parse_args()
+
+    if args.low_end:
+        os.environ[LOW_END_ENV] = "1"
+    configure_current_process_low_end()
 
     output = args.output.resolve()
     work = output / "_work"
@@ -45,6 +52,8 @@ def main() -> int:
     ifc_path = args.ifc.resolve()
 
     print(f"Reading IFC: {ifc_path}")
+    if args.low_end:
+        print("Low-end mode: using the same route checks with reduced CPU pressure.")
     elements, missing_geometry = extract_elements(ifc_path)
     print(f"Extracted elements: {len(elements)}")
 

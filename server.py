@@ -15,10 +15,11 @@ import uuid
 from collections import Counter
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import unquote, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 from backend.short_explainer import POINT_ROUTE_EXPLANATIONS, explain_point_route, explain_question
 from backend.navigation import NavigationError, NavigationPackage
+from backend.resource_control import low_end_environment
 
 ROOT = Path(__file__).resolve().parent
 FRONTEND = ROOT / "frontend"
@@ -140,7 +141,7 @@ class Handler(SimpleHTTPRequestHandler):
                 self._json(rename_model(model_id, self._body_json()))
                 return
             if action == "generate":
-                self._json(start_model_generation(model_id))
+                self._json(start_model_generation(model_id, generation_profile(parsed)))
                 return
             if action == "select":
                 self._json(select_model(model_id))
@@ -405,7 +406,12 @@ def select_model(model_id: str) -> dict:
         return {"activeModelId": model_id}
 
 
-def start_model_generation(model_id: str) -> dict:
+def generation_profile(parsed) -> str:
+    requested = (parse_qs(parsed.query).get("profile") or ["full"])[0]
+    return "low-end" if requested == "low-end" else "full"
+
+
+def start_model_generation(model_id: str, profile: str = "full") -> dict:
     with MODEL_LOCK:
         data = load_model_state()
         model = find_model(data, model_id)
@@ -416,16 +422,17 @@ def start_model_generation(model_id: str) -> dict:
         model["status"] = "running"
         model["progress"] = 3
         model["stage"] = "Queued"
-        model["message"] = "Starting preprocessing."
+        model["generationProfile"] = profile
+        model["message"] = "Starting low-end preprocessing." if profile == "low-end" else "Starting preprocessing."
         model["log"] = []
         model["updatedAt"] = int(time.time())
         save_model_state(data)
-    thread = threading.Thread(target=run_model_generation, args=(model_id,), daemon=True)
+    thread = threading.Thread(target=run_model_generation, args=(model_id, profile), daemon=True)
     thread.start()
     return {"modelId": model_id, "status": "running"}
 
 
-def run_model_generation(model_id: str) -> None:
+def run_model_generation(model_id: str, profile: str = "full") -> None:
     with MODEL_LOCK:
         data = load_model_state()
         model = find_model(data, model_id)
@@ -445,6 +452,9 @@ def run_model_generation(model_id: str) -> None:
         str(package),
         "--save-bin",
     ]
+    low_end = profile == "low-end"
+    if low_end:
+        command.append("--low-end")
     zip_path = ifctolbd_zip()
     exe_path = ifctolbd_exe()
     if exe_path:
@@ -452,14 +462,20 @@ def run_model_generation(model_id: str) -> None:
     if zip_path:
         command.extend(["--ifctolbd-zip", str(zip_path)])
     try:
+        env = low_end_environment(os.environ) if low_end else None
+        creation_flags = 0
+        if low_end and sys.platform.startswith("win"):
+            creation_flags |= getattr(subprocess, "BELOW_NORMAL_PRIORITY_CLASS", 0)
         process = subprocess.Popen(
             command,
             cwd=ROOT,
+            env=env,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
             encoding="utf-8",
             errors="replace",
+            creationflags=creation_flags,
         )
         assert process.stdout is not None
         for line in process.stdout:

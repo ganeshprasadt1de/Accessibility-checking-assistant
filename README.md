@@ -182,22 +182,14 @@ if ($failed.Count -eq 0 -and $expected.Count -eq 170) {
 }
 ```
 
-## 8. Run The Automated Tests
-
-```powershell
-python -m unittest discover -s tests -v
-```
-
-The tests check assistant grounding, unsupported-recommendation rejection, structured answer formatting, complete SHACL issue aggregation, exact point-route endpoints, wall clearance, door width, route width, stair blocking, tile streaming and navigation-file integrity.
-
-## 9. Prepare An IFC Model
+## 8. Prepare An IFC Model
 
 The repository includes both project IFC files:
 
 - `AC20-Institute-Var-2.ifc`
 - `20201208DigitalHub_ARC.ifc`
 
-The repository also includes a ready-to-run DigitalHub package in `output/app_package`. A new user can skip the two preprocessing commands below and start at step 10. Run preprocessing when changing the IFC model or the geometry and routing code.
+The repository also includes a ready-to-run DigitalHub package in `output/app_package`. A new user can skip the two preprocessing commands below and continue with step 9. Run preprocessing when changing the IFC model or the geometry and routing code.
 
 Generate the AC20 browser package with:
 
@@ -234,7 +226,7 @@ In the browser, open **Floor Plan 2D** or **Wheelchair Simulation**, change **Mo
 
 If preprocessing reports that Java is missing, close PowerShell, open it again and rerun `java -version`.
 
-## 10. Start Ollama
+## 9. Start Ollama
 
 Check whether Ollama is already running:
 
@@ -250,7 +242,7 @@ ollama serve
 
 Keep that window open.
 
-## 11. Start The Website
+## 10. Start The Website
 
 Return to the project PowerShell window. Make sure the virtual environment is active, then run:
 
@@ -335,6 +327,8 @@ The generated route has these properties:
 
 Dijkstra's algorithm joins passing door-to-door edges into shortest routes across the door graph. Stair approaches are stored as blocked edges so the simulation can stop before the stair.
 
+The automatic 2.5D floor check uses the same precomputed 0.01 m navigation tiles as point-to-point mode. The door graph decides which final doors are reachable, but intermediate doors are not forced into the displayed path as visual milestones. A separate four-direction A* search connects the true start and final door centres directly. The chosen green path must be collision-free, orthogonal and no longer than the audited door-graph chain. A blocked red route follows its collision-free candidate to the exact door or stair obstacle where the failure occurs.
+
 Interactive point-to-point routing uses a separate floor grid. Preprocessing divides each floor into compressed 5 m tiles containing 0.01 m cells. Solid obstacles are expanded by 0.445 m around the route centre: a 0.45 m wheelchair radius minus a 0.005 m geometry tolerance. Accessible door rectangles create controlled portals between spaces. A point request loads only the required tiles, runs four-direction A* once, restores the exact selected endpoints and performs a final geometry audit. A complete audited route is green. If the destination cannot be reached, the red candidate ends at the last collision-free cell and is never labelled accessible.
 
 ## RDF, SHACL And Ollama
@@ -365,7 +359,7 @@ output/app_package/route_graph.bin       saved route graph when --save-bin is us
 output/app_package/ifc_route_audit.json  machine-readable route audit
 output/app_package/ifc_route_audit.md    readable route audit
 output/app_package/navigation/index.json floor extents, tile metadata and hashes
-output/app_package/navigation/*/*.bin    compressed 0.01 m walkability tiles
+output/app_package/navigation/tiles/*/*.nav compressed 0.01 m walkability tiles
 ```
 
 Uploaded Model Library entries have separate generated packages. After changing preprocessing or route code, select `Regenerate`, wait for `Complete`, then select `Open`.
@@ -379,6 +373,7 @@ requirements.txt                           exact Python dependency versions
 backend/geometry.py                        IFC geometry and bounding-box extraction
 backend/routes.py                          occupancy grid, A* and door graph
 backend/navigation.py                      tiled point-route grid, A* and final audit
+backend/simulation_routes.py               strict automatic floor-check route geometry
 backend/ifc_tools.py                       pinned IFCtoLBD execution
 backend/shacl_runner.py                    SHACL validation and issue extraction
 backend/package_writer.py                  browser package generation
@@ -389,10 +384,7 @@ frontend/app.js                            2D, 3D and simulation behaviour
 frontend/styles.css                        website styling
 frontend/vendor/three/                     included Three.js 0.165.0 browser modules
 rules/accessibility_rules.shacl.ttl        accessibility constraints
-tests/                                     route, context and assistant regression tests
 tools/ifctolbd/java_libraries/             complete unzipped IFCtoLBD Java runtime
-docs/ACC_manual.pdf                        illustrated technical manual
-docs/ACC_manual.tex                        editable manual source
 ```
 
 ## Troubleshooting

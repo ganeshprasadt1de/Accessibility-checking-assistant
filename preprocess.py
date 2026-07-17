@@ -17,6 +17,7 @@ from backend.ifc_tools import (
 )
 from backend.package_writer import write_json_package
 from backend.navigation import build_navigation_package
+from backend.simulation_routes import add_floor_check_routes
 from backend.routes import add_routes_to_graph, build_route_edges, save_route_binary
 from backend.shacl_runner import issues_from_shacl_report, run_shacl
 from backend.audit import write_audit_report
@@ -94,6 +95,13 @@ def main() -> int:
     }
     app_data["sources"]["pointNavigation"] = "precomputed tiled occupancy and component graph from IFC floor geometry"
     app_data_path.write_text(json.dumps(app_data, indent=2), encoding="utf-8")
+    print("Building strict routes for the 2.5D floor-check simulation")
+    floor_check_summary = add_floor_check_routes(app_data_path, output)
+    print(
+        "Floor-check routes: "
+        f"{floor_check_summary['directionalRouteCount']} directional, "
+        f"{floor_check_summary['unavailableEdgeCount']} unavailable edges"
+    )
     write_audit_report(ifc_path, output, {"routeEdges": [
         {
             "startGuid": edge.start_guid,

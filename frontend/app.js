@@ -1661,7 +1661,8 @@ function loadSimulationScenario(name) {
   simBlockedHold = 0;
   simPlaying = simInteractionMode === "automatic";
   document.querySelector("#simPlayPause").textContent = simPlaying ? "Pause" : "Play";
-  simWorld.clear();
+  if (simInteractionMode === "automatic" || simWorld.userData.assetMode === "automatic") disposeFloorCheckWorldAssets();
+  else simWorld.clear();
   simScenarioData = buildFloorScenario();
   simFloorTransform = simScenarioData.transform;
   if (simInteractionMode === "point") configurePointSimulationScenario();
@@ -1681,6 +1682,8 @@ function loadSimulationScenario(name) {
     document.querySelector("#simPlayPause").textContent = "Play";
   }
   simScenarioData.build(simWorld);
+  simWorld.userData.assetMode = simInteractionMode;
+  simWorld.userData.floorName = simFloorName;
   simChair.scale.setScalar(0.58 * simFloorTransform.scale);
   groundWheelchairModel();
   const simulationViewer = document.querySelector("#simulationViewer");
@@ -1688,6 +1691,7 @@ function loadSimulationScenario(name) {
     simulationViewer.dataset.uniformScale = String(simFloorTransform.scale);
     simulationViewer.dataset.chairScale = String(simChair.scale.x);
     simulationViewer.dataset.routeTransformAudit = "passed";
+    simulationViewer.dataset.loadedFloorAsset = simFloorName;
     simulationViewer.dataset.floorGeometryContract = JSON.stringify(simScenarioData.geometryContract);
     if (simInteractionMode === "point" && !simPath.length) {
       simulationViewer.dataset.pointAnimationRequestId = String(pointCheck.requestId || 0);
@@ -1697,7 +1701,9 @@ function loadSimulationScenario(name) {
       delete simulationViewer.dataset.pointAnimationZ;
     }
   }
-  simPathLine = pointPathHasTravel ? addSimulationPath(simWorld, simPath, currentSimulationRoute()?.status === "fail" ? 0xb3261e : 0x2d7d46, simFloorTransform) : null;
+  simPathLine = pointPathHasTravel
+    ? addCurrentSimulationPath(simWorld, simPath, currentSimulationRoute()?.status === "fail" ? 0xb3261e : 0x2d7d46, simFloorTransform)
+    : null;
   addSimulationPointMarkers();
   simChair.visible = simInteractionMode === "automatic" || simPath.length > 0;
   updateSimulationModeControls();
@@ -1713,6 +1719,25 @@ function loadSimulationScenario(name) {
   }
   updateSimulationPanel();
   updateChairPose(0, 0);
+}
+
+function disposeFloorCheckWorldAssets() {
+  if (!simWorld) return;
+  disposeObjectTree(simWorld);
+  simWorld.clear();
+}
+
+function disposeObjectTree(root) {
+  root.traverse((object) => {
+    object.geometry?.dispose?.();
+    const materials = Array.isArray(object.material) ? object.material : [object.material];
+    for (const material of materials.filter(Boolean)) {
+      for (const value of Object.values(material)) {
+        if (value?.isTexture) value.dispose?.();
+      }
+      material.dispose?.();
+    }
+  });
 }
 
 function configurePointSimulationScenario() {
@@ -1867,10 +1892,9 @@ function buildFloorScenario() {
   const routeStartDoors = floorDoors.filter((door) => !isLiftDoor(door));
   const rawFloorEdges = (floor.routeEdgeIds || [])
     .map((edgeId) => appData.routeEdges.find((edge) => edge.edgeId === edgeId))
-    .filter(Boolean);
-  const floorEdges = rawFloorEdges;
-  const passEdges = rawFloorEdges.filter((edge) => edge.status === "pass");
-  const failedEdges = rawFloorEdges.filter((edge) => edge.status === "fail");
+    .filter((edge) => edge && isFloorCheckRouteEdge(edge, elementsByGuid));
+  const floorEdges = rawFloorEdges.map(floorCheckEdge);
+  const failedEdges = floorEdges.filter((edge) => edge.status === "fail");
   const transform = createFloorTransform(floorElements);
   const geometryContract = floorGeometryContract(floorElements, floorEdges);
   validateSimulationTransform(transform, floorElements, floorEdges);
@@ -1879,7 +1903,7 @@ function buildFloorScenario() {
   const routePaths = buildSimulationRoutesFromStarts(startDoors, floorEdges, transform, floorStart);
   const chosenRoute = routePaths[0];
   const path = routePaths[0]?.path || [new THREE.Vector3(-5, 0.08, 0), new THREE.Vector3(5, 0.08, 0)];
-  const reasonCounts = countReasons(rawFloorEdges);
+  const reasonCounts = countReasons(floorEdges);
   const floorFailReason = topReasonText(reasonCounts);
   const startText = floorStart?.label || startDoors.map((door) => cleanElementName(door.name || door.label)).join(", ") || "no start point";
   const visualFailedRoutes = routePaths.filter((route) => route.status === "fail").length;
@@ -1891,7 +1915,7 @@ function buildFloorScenario() {
         ? `Starting from ${startText}. The stair approach is shown as blocked, then the other door routes continue.`
         : `Starting from ${startText}. All generated routes on this floor pass the indoor checks.`
       : "No door-to-door route edges were generated for this floor.",
-    source: "SHACL rules over IFCtoLBD RDF and IFC-derived route measurements.",
+    source: "SHACL measurements plus strict 0.01 m tiled navigation and final route audits.",
     fail: Boolean(chosenRoute && chosenRoute.status === "fail"),
     blockAt: chosenRoute?.status === "fail" ? 0.72 : 1,
     routePaths,
@@ -1978,6 +2002,10 @@ function chooseFloorStartDoors(floor, floorDoors, floorEdges) {
 
 function buildSimulationRoutesFromStarts(startDoors, floorEdges, transform, floorStart) {
   const edgeById = new Map(floorEdges.map((edge) => [edge.edgeId, edge]));
+  const directRouteByPair = new Map((appData.floorCheckDirectRoutes || []).map((route) => [
+    [route.startGuid, route.endGuid].sort().join("|"),
+    route,
+  ]));
   const routes = [];
   const seen = new Set();
   for (const startDoor of startDoors) {
@@ -1993,7 +2021,13 @@ function buildSimulationRoutesFromStarts(startDoors, floorEdges, transform, floo
     }
     const passRoutes = appData.accessibleRoutesByDoor?.[startDoor.guid] || [];
     for (const route of passRoutes) {
-      const item = routePathFromEdgeIds(startDoor.guid, route.edge_ids || [], edgeById, transform, "pass", "clear", route.target_guid);
+      const item = routePathFromDirectDoorRoute(
+        startDoor.guid,
+        route.target_guid,
+        route.edge_ids,
+        directRouteByPair,
+        transform,
+      );
       if (item && !seen.has(item.key)) {
         seen.add(item.key);
         routes.push(item);
@@ -2003,17 +2037,44 @@ function buildSimulationRoutesFromStarts(startDoors, floorEdges, transform, floo
   return routes;
 }
 
+function routePathFromDirectDoorRoute(startGuid, targetGuid, edgeIds, directRouteByPair, transform) {
+  const pairKey = [startGuid, targetGuid].sort().join("|");
+  const route = directRouteByPair.get(pairKey);
+  if (!route?.path?.length) return null;
+  if (route.audit?.endpointsExact !== true || route.audit?.orthogonal !== true || route.audit?.collisionFree !== true) return null;
+  const rawPath = route.startGuid === startGuid ? route.path : [...route.path].reverse();
+  const points = rawPath.map((point) => transform.point(point));
+  return {
+    key: `${startGuid}:direct:${targetGuid}`,
+    edgeId: (edgeIds || []).join(" + ") || "direct door route",
+    status: "pass",
+    reason: "clear",
+    blockAt: 1,
+    path: points,
+  };
+}
+
 function routePathFromEdgeIds(startGuid, edgeIds, edgeById, transform, status, reason, targetGuid) {
   let currentGuid = startGuid;
   const points = [];
   const ids = [];
+  let blockedProgress = 1;
   for (const edgeId of edgeIds) {
     const edge = edgeById.get(edgeId);
-    if (!edge?.path?.length) return null;
+    if (!edge) return null;
     const forward = edge.startGuid === currentGuid;
     const reverse = edge.endGuid === currentGuid;
     if (!forward && !reverse) return null;
-    const rawPath = forward ? edge.path : [...edge.path].reverse();
+    const floorCheckRoute = edge.floorCheckRoutes?.[currentGuid];
+    if (!floorCheckRoute?.path?.length) return null;
+    if (status === "pass" && floorCheckRoute.navigationStatus !== "pass") return null;
+    const rawPath = status === "fail" ? floorCheckRoute.collisionPath : floorCheckRoute.path;
+    if (!rawPath?.length) return null;
+    if (status === "fail") {
+      const progress = Number(floorCheckRoute.collisionProgress);
+      if (!Number.isFinite(progress) || progress <= 0 || progress >= 1) return null;
+      blockedProgress = progress;
+    }
     for (const point of rawPath) {
       const next = transform.point(point);
       if (!points.length || points[points.length - 1].distanceTo(next) > 0.000001) points.push(next);
@@ -2027,7 +2088,7 @@ function routePathFromEdgeIds(startGuid, edgeIds, edgeById, transform, status, r
     edgeId: ids.join(" + "),
     status,
     reason,
-    blockAt: status === "fail" ? 0.72 : 1,
+    blockAt: status === "fail" ? blockedProgress : 1,
     path: points,
   };
 }
@@ -2135,26 +2196,53 @@ function validateSimulationTransform(transform, elements, edges) {
     }
   }
   for (const edge of edges) {
-    for (let index = 1; index < (edge.path || []).length; index++) {
-      const rawA = edge.path[index - 1];
-      const rawB = edge.path[index];
-      const sceneA = transform.point(rawA);
-      const sceneB = transform.point(rawB);
-      if (Math.abs(sceneA.y - transform.floorSurfaceY) > tolerance || Math.abs(sceneB.y - transform.floorSurfaceY) > tolerance) {
-        throw new Error(`Simulation route elevation changed for ${edge.edgeId}.`);
-      }
-      const rawPlanDistance = Math.hypot(rawB[0] - rawA[0], rawB[1] - rawA[1]);
-      const scenePlanDistance = Math.hypot(sceneB.x - sceneA.x, sceneB.z - sceneA.z);
-      if (Math.abs(scenePlanDistance - rawPlanDistance * transform.scale) > tolerance) {
-        throw new Error(`Simulation route scale mismatch for ${edge.edgeId}.`);
-      }
-      const rawOrthogonal = Math.abs(rawB[0] - rawA[0]) <= tolerance || Math.abs(rawB[1] - rawA[1]) <= tolerance;
-      const sceneOrthogonal = Math.abs(sceneB.x - sceneA.x) <= tolerance || Math.abs(sceneB.z - sceneA.z) <= tolerance;
-      if (rawOrthogonal !== sceneOrthogonal) {
-        throw new Error(`Simulation route angle changed for ${edge.edgeId}.`);
+    for (const route of Object.values(edge.floorCheckRoutes || {})) {
+      for (let index = 1; index < (route.path || []).length; index++) {
+        const rawA = route.path[index - 1];
+        const rawB = route.path[index];
+        const sceneA = transform.point(rawA);
+        const sceneB = transform.point(rawB);
+        if (Math.abs(sceneA.y - transform.floorSurfaceY) > tolerance || Math.abs(sceneB.y - transform.floorSurfaceY) > tolerance) {
+          throw new Error(`Simulation route elevation changed for ${edge.edgeId}.`);
+        }
+        const rawPlanDistance = Math.hypot(rawB[0] - rawA[0], rawB[1] - rawA[1]);
+        const scenePlanDistance = Math.hypot(sceneB.x - sceneA.x, sceneB.z - sceneA.z);
+        if (Math.abs(scenePlanDistance - rawPlanDistance * transform.scale) > tolerance) {
+          throw new Error(`Simulation route scale mismatch for ${edge.edgeId}.`);
+        }
+        const rawOrthogonal = Math.abs(rawB[0] - rawA[0]) <= tolerance || Math.abs(rawB[1] - rawA[1]) <= tolerance;
+        const sceneOrthogonal = Math.abs(sceneB.x - sceneA.x) <= tolerance || Math.abs(sceneB.z - sceneA.z) <= tolerance;
+        if (rawOrthogonal !== sceneOrthogonal) {
+          throw new Error(`Simulation route angle changed for ${edge.edgeId}.`);
+        }
       }
     }
   }
+}
+
+function isFloorCheckRouteEdge(edge, elementsByGuid) {
+  const startType = elementsByGuid.get(edge.startGuid)?.ifcType;
+  const endType = elementsByGuid.get(edge.endGuid)?.ifcType;
+  return startType === "IfcDoor"
+    && ["IfcDoor", "IfcStair", "IfcStairFlight"].includes(endType);
+}
+
+function floorCheckEdge(edge) {
+  const navigationRoutes = Object.values(edge.floorCheckRoutes || {});
+  const navigationPasses = navigationRoutes.some((route) => route.navigationStatus === "pass");
+  const navigationReasons = navigationRoutes
+    .map((route) => route.reason)
+    .filter(Boolean);
+  const failed = edge.status === "fail" || !navigationPasses;
+  return {
+    ...edge,
+    status: failed ? "fail" : "pass",
+    reasons: failed
+      ? edge.reasons?.length
+        ? edge.reasons
+        : [...new Set(navigationReasons.length ? navigationReasons : ["no_accessible_connection"])]
+      : [],
+  };
 }
 
 function addWallWithDoorOpenings(group, wall, doors, transform) {
@@ -2237,8 +2325,10 @@ function addFloorDoors(group, doors, edges, transform) {
 
 function addFloorRouteLines(group, edges, transform) {
   for (const edge of edges) {
-    if (!edge.path?.length) continue;
-    const points = edge.path.map((point) => transform.point(point).add(new THREE.Vector3(0, transform.length(0.045), 0)));
+    const route = edge.floorCheckRoutes?.[edge.startGuid]
+      || edge.floorCheckRoutes?.[edge.endGuid];
+    if (!route?.path?.length) continue;
+    const points = route.path.map((point) => transform.point(point).add(new THREE.Vector3(0, transform.length(0.045), 0)));
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
     const material = new THREE.LineBasicMaterial({
       color: 0x7a9a93,
@@ -2320,6 +2410,40 @@ function addSimulationPath(group, points, color, transform) {
     addCylinder(group, [point.x, point.y + transform.length(0.02), point.z], transform.length(0.12), transform.length(0.06), color);
   }
   return line;
+}
+
+function addCurrentSimulationPath(group, points, color, transform) {
+  return simInteractionMode === "automatic"
+    ? addFloorCheckSimulationPath(group, points, color, transform)
+    : addSimulationPath(group, points, color, transform);
+}
+
+function addFloorCheckSimulationPath(group, points, color, transform) {
+  const routeGroup = new THREE.Group();
+  routeGroup.userData.floorCheckPath = true;
+  const width = transform.length(0.22);
+  const height = transform.length(0.035);
+  const y = transform.floorSurfaceY + transform.length(0.025) + height / 2;
+  for (let index = 1; index < points.length; index++) {
+    const start = points[index - 1];
+    const end = points[index];
+    const dx = end.x - start.x;
+    const dz = end.z - start.z;
+    if (Math.abs(dx) > 0.000001 && Math.abs(dz) > 0.000001) {
+      throw new Error("A floor-check path contains a non-orthogonal segment.");
+    }
+    if (Math.abs(dx) + Math.abs(dz) <= 0.000001) continue;
+    addBox(
+      routeGroup,
+      [(start.x + end.x) / 2, y, (start.z + end.z) / 2],
+      Math.abs(dx) > 0.000001
+        ? [Math.abs(dx) + width, height, width]
+        : [width, height, Math.abs(dz) + width],
+      color,
+    );
+  }
+  group.add(routeGroup);
+  return routeGroup;
 }
 
 function createGrandpaWheelchair() {
@@ -2505,11 +2629,14 @@ function advanceSimulationRoute() {
   simPath = currentSimulationPath();
   if (simPathLine) {
     simWorld.remove(simPathLine);
-    simPathLine.geometry?.dispose?.();
-    simPathLine.material?.dispose?.();
+    if (simInteractionMode === "automatic") disposeObjectTree(simPathLine);
+    else {
+      simPathLine.geometry?.dispose?.();
+      simPathLine.material?.dispose?.();
+    }
   }
   const route = currentSimulationRoute();
-  simPathLine = addSimulationPath(simWorld, simPath, route?.status === "fail" ? 0xb3261e : 0x2d7d46, simFloorTransform);
+  simPathLine = addCurrentSimulationPath(simWorld, simPath, route?.status === "fail" ? 0xb3261e : 0x2d7d46, simFloorTransform);
 }
 
 function updateChairPose(progress, delta) {
@@ -2717,6 +2844,9 @@ function reasonText(code) {
     ramp_width: "ramp too narrow",
     missing: "data is missing",
     unreachable: "route not connected",
+    no_accessible_connection: "no accessible connection",
+    destination_not_walkable: "destination is blocked",
+    start_not_walkable: "start point is blocked",
   }[code] || "access issue found";
 }
 

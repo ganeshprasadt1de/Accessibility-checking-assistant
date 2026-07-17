@@ -10,18 +10,21 @@ from backend.geometry import extract_elements
 from backend.glb_export import export_box_glb
 from backend.ifc_tools import (
     add_geometry_to_graph,
+    bind_graph,
     element_uri,
     load_raw_graph,
+    passing_area_gap_uri,
     run_ifctolbd,
     run_ifctolbd_exe,
 )
 from backend.package_writer import write_json_package
 from backend.navigation import build_navigation_package
-from backend.simulation_routes import add_floor_check_routes
-from backend.routes import add_routes_to_graph, build_route_edges, save_route_binary
+from backend.plan_routes import build_plan_route_edges, prepare_plan_geometry
+from backend.routes import add_plan_routes_to_graph, add_routes_to_graph, build_route_edges, save_route_binary
 from backend.shacl_runner import issues_from_shacl_report, run_shacl
+from backend.simulation_routes import add_floor_check_routes
 from backend.audit import write_audit_report
-from rdflib import Literal, Namespace, RDF
+from rdflib import Graph, Literal, Namespace, RDF
 from rdflib.namespace import XSD
 
 ACC = Namespace("https://example.org/wheelchair-accessibility#")
@@ -47,20 +50,47 @@ def main() -> int:
 
     raw_ttl = output / "raw_lbd_graph.ttl"
     ifctolbd_note = "raw graph created by IFCtoLBD"
-    if args.ifctolbd_exe.exists():
-        ifctolbd_note = run_ifctolbd_exe(ifc_path, args.ifctolbd_exe.resolve(), raw_ttl)
-    else:
-        ifctolbd_note = run_ifctolbd(ifc_path, args.ifctolbd_zip.resolve(), raw_ttl, work)
-    graph = load_raw_graph(raw_ttl)
+    try:
+        if args.ifctolbd_exe.exists():
+            ifctolbd_note = run_ifctolbd_exe(ifc_path, args.ifctolbd_exe.resolve(), raw_ttl)
+        else:
+            ifctolbd_note = run_ifctolbd(ifc_path, args.ifctolbd_zip.resolve(), raw_ttl, work)
+        graph = load_raw_graph(raw_ttl)
+    except Exception as exc:
+        ifctolbd_note = f"IFCtoLBD failed; continued with IFC geometry only: {exc}"
+        graph = Graph()
+        bind_graph(graph)
     print(ifctolbd_note)
+    skipped_route_pairs = []
+    edges = build_route_edges(ifc_path, elements, skipped_route_pairs)
+    try:
+        plan_geometry = prepare_plan_geometry(ifc_path, elements)
+    except Exception as exc:
+        print(f"2D geometry preparation failed: {exc}", file=sys.stderr)
+        plan_geometry = None
+    plan_routes_available = True
+    try:
+        plan_edges = build_plan_route_edges(ifc_path, elements, edges, plan_geometry)
+    except Exception as exc:
+        print(f"2D route generation failed: {exc}", file=sys.stderr)
+        plan_edges = []
+        plan_routes_available = False
+    rdf_plan_edges = [edge for edge in plan_edges if not edge.measurements.get("planMarkerOnly")]
     add_geometry_to_graph(graph, elements)
-    edges = build_route_edges(ifc_path, elements)
     add_routes_to_graph(graph, edges)
+    if plan_routes_available:
+        add_plan_routes_to_graph(graph, plan_edges, elements)
     lbd_ttl = output / "lbd_graph.ttl"
     graph.serialize(destination=lbd_ttl, format="turtle")
 
     shacl_summary = run_shacl(lbd_ttl, ROOT / "rules" / "accessibility_rules.shacl.ttl", output / "shacl_report.ttl")
-    issues = issues_from_shacl_report(output / "shacl_report.ttl", lbd_ttl, elements, edges)
+    issues = issues_from_shacl_report(
+        output / "shacl_report.ttl",
+        lbd_ttl,
+        elements,
+        edges,
+        rdf_plan_edges,
+    )
     for issue in issues:
         issue_uri = ACC[f"issue/{issue.issue_id}"]
         graph.add((issue_uri, RDF.type, ACC.AccessibilityIssue))
@@ -69,18 +99,21 @@ def main() -> int:
         graph.add((issue_uri, ACC.severity, Literal(issue.severity)))
         graph.add((issue_uri, ACC.shortExplanation, Literal(issue.short_text)))
         graph.add((issue_uri, ACC.issueSource, Literal(issue.source)))
+        if issue.evidence_id:
+            graph.add((issue_uri, ACC.issueEvidence, passing_area_gap_uri(issue.evidence_id)))
         if issue.measured is not None:
             graph.add((issue_uri, ACC.measuredValue, Literal(round(issue.measured, 4), datatype=XSD.decimal)))
         if issue.required is not None:
             graph.add((issue_uri, ACC.requiredValue, Literal(round(issue.required, 4), datatype=XSD.decimal)))
-    for edge in edges:
+    for edge in [*edges, *rdf_plan_edges]:
         route_uri = ACC[f"route/{edge.edge_id}"]
         graph.set((route_uri, ACC.routeStatus, Literal(edge.status)))
+        graph.remove((route_uri, ACC.routeFailureReason, None))
         for reason in edge.reasons:
             graph.add((route_uri, ACC.routeFailureReason, Literal(reason)))
     graph.serialize(destination=lbd_ttl, format="turtle")
 
-    write_json_package(output, elements, issues, edges, missing_geometry, shacl_summary, ifctolbd_note)
+    write_json_package(output, elements, issues, edges, missing_geometry, shacl_summary, ifctolbd_note, plan_edges)
     print("Building tiled point-navigation package at 0.01 m resolution")
     navigation_index = build_navigation_package(output / "app_data.json", output)
     app_data_path = output / "app_data.json"
@@ -102,20 +135,30 @@ def main() -> int:
         f"{floor_check_summary['directionalRouteCount']} directional, "
         f"{floor_check_summary['unavailableEdgeCount']} unavailable edges"
     )
-    write_audit_report(ifc_path, output, {"routeEdges": [
+    write_audit_report(
+        ifc_path,
+        output,
         {
-            "startGuid": edge.start_guid,
-            "endGuid": edge.end_guid,
-            "status": edge.status,
-            "reasons": edge.reasons,
-        }
-        for edge in edges
-    ]})
+            "routeEdges": [
+                {
+                    "startGuid": edge.start_guid,
+                    "endGuid": edge.end_guid,
+                    "status": edge.status,
+                    "reasons": edge.reasons,
+                }
+                for edge in edges
+            ],
+            "skippedRoutePairs": skipped_route_pairs,
+        },
+    )
     export_box_glb(elements, edges, output / "route_model.glb")
     if args.save_bin:
         save_route_binary(edges, output / "route_graph.bin")
     print(f"Wrote package: {output}")
-    print(f"Routes: {len(edges)}, issues: {len(issues)}, missing geometry: {len(missing_geometry)}")
+    print(
+        f"Routes: {len(edges)}, plan routes: {len(plan_edges)}, issues: {len(issues)}, "
+        f"missing geometry: {len(missing_geometry)}, skipped route pairs: {len(skipped_route_pairs)}"
+    )
     return 0
 
 

@@ -412,56 +412,23 @@ th {
   color: #3d494b;
 }
 
-.planZoom {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.planZoom button {
-  padding: 8px 10px;
-}
-
-.pointCoordinateControl {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding: 7px 9px;
-  border: 1px solid #c8d1ce;
-  border-radius: 7px;
-  background: #f8faf8;
-  color: #263134;
-  font-size: 13px;
-}
-
-.pointCoordinateControl[hidden] {
-  display: none;
-}
-
-.pointCoordinateControl label {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.pointCoordinateControl input {
-  width: 78px;
-  padding: 7px 6px;
-  border: 1px solid #9aa7a3;
-  border-radius: 5px;
-}
-
-.pointCoordinateControl button {
-  padding: 8px 10px;
-}
-
 .legendLine {
   display: inline-block;
   width: 26px;
   height: 0;
   border-top: 4px solid;
   margin-right: 6px;
+  vertical-align: middle;
+}
+
+.legendMarker {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid;
+  border-radius: 50%;
+  margin-right: 6px;
+  position: relative;
   vertical-align: middle;
 }
 
@@ -474,15 +441,41 @@ th {
   vertical-align: middle;
 }
 
-.passLine { border-color: #2d7d46; }
-.failLine { border-color: #b3261e; }
-.roomBox { border-color: #b57f48; background: #f4d09a; }
-.corridorBox { border-color: #3b8a84; background: #f4d09a; }
-.wallBox { border-color: #0c6f68; background: #20a48f; }
-.doorBox { border-color: #10513f; background: #2d7d46; }
+.passLine { border-color: #1f6699; }
+.failLine {
+  border-color: #8e2f28;
+  background: #fff5f2;
+}
+.roomBox { border-color: #7a958b; background: #e6efe9; }
+.corridorBox { border-color: #3b8a84; background: #d7ebea; }
+.wallBox { border-color: #2f4144; background: #53686b; }
+.doorBox { border-color: #1f7a65; background: #1f7a65; }
 .stairBox { border-color: #7d1c16; background: #b3261e; }
 .rampBox { border-color: #875500; background: #c47b00; }
-.issueBox { border-color: #b3261e; background: #f4d3cf; }
+.issueMarker {
+  border-color: #8e2f28;
+  background: #fff5f2;
+}
+
+.issueMarker::after {
+  content: "!";
+  color: #8e2f28;
+  font-size: 10px;
+  font-weight: 700;
+  left: 3px;
+  line-height: 12px;
+  position: absolute;
+  top: -1px;
+}
+
+.planShell[data-route-mode="issues"] .legendRoute,
+.planShell[data-route-mode="issues"] .legendBlockage,
+.planShell[data-route-mode="issues"] .planAccessibleToggle,
+.planShell[data-route-mode="accessible"] .legendBlockage,
+.planShell[data-route-mode="accessible"] .legendIssue,
+.planShell[data-route-mode="candidate"] .legendIssue {
+  display: none;
+}
 
 .planLayout {
   display: grid;
@@ -517,43 +510,49 @@ th {
 }
 
 .planCanvas {
-  fill: #efc58e;
+  fill: #fbfaf7;
 }
 
 .planSpace {
-  fill: #f4d09a;
-  stroke: #b57f48;
-  stroke-width: 1.4;
+  fill: #e6efe9;
+  stroke: none;
   fill-opacity: 0.62;
 }
 
 .corridorSpace {
-  fill: #f4d09a;
+  fill: #d7ebea;
+}
+
+.planSpaceBorder {
+  fill: none;
+  stroke: #7a958b;
+  stroke-width: 1.4;
+  pointer-events: none;
+}
+
+.corridorSpaceBorder {
   stroke: #3b8a84;
 }
 
-.issueSpace,
-.hasIssue {
-  stroke: #b3261e;
-  stroke-width: 2.4;
-}
-
 .planWall {
-  fill: #20a48f;
-  stroke: #0c6f68;
+  fill: #53686b;
+  stroke: #2f4144;
   stroke-width: 0.8;
-  fill-opacity: 0.84;
+  fill-opacity: 0.36;
 }
 
 .planDoor {
-  fill: #2d7d46;
-  stroke: #10513f;
-  stroke-width: 1.2;
+  fill: #1f7a65;
+  stroke: #1f7a65;
+  stroke-width: 0.8;
+  fill-opacity: 0.94;
+  pointer-events: none;
 }
 
-.issueDoor {
-  fill: #b3261e;
-  stroke: #7d1c16;
+.planDoorHit {
+  fill: transparent;
+  stroke: transparent;
+  pointer-events: all;
 }
 
 .planBlocker {
@@ -574,31 +573,286 @@ th {
   fill: none;
   stroke-linecap: round;
   stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.planRouteItem {
   cursor: pointer;
 }
 
-.passRoute {
-  stroke: #2d7d46;
-  stroke-width: 2.2;
-  stroke-opacity: 0.28;
+.planRouteHit {
+  fill: none;
+  stroke: transparent;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 14;
+  pointer-events: stroke;
 }
 
-.failRoute {
-  stroke: #b3261e;
-  stroke-width: 4.2;
-  stroke-opacity: 0.82;
+.planRouteDotHit {
+  fill: transparent;
+  pointer-events: all;
+}
+
+.planRouteCasing {
+  fill: none;
+  stroke: #f8faf7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4.4;
+  stroke-opacity: 0.86;
+  pointer-events: none;
+}
+
+.passRoute {
+  stroke: #1f6699;
+  stroke-width: 1.9;
+  stroke-opacity: 0.78;
+}
+
+.planRouteDot {
+  fill: #f8faf7;
+  stroke: #1f6699;
+  stroke-width: 1.9;
+  stroke-opacity: 0.92;
+  pointer-events: none;
+}
+
+.planRouteDoorMarkerHit {
+  fill: transparent;
+  pointer-events: all;
+}
+
+.planRouteDoorMarker {
+  fill: #f8faf7;
+  stroke: #1f6699;
+  stroke-width: 2.1;
+  fill-opacity: 0.88;
+  stroke-opacity: 0.96;
+  pointer-events: none;
+}
+
+.blockedRoute {
+  stroke-opacity: 0.5;
+}
+
+.routeIssueMarker {
+  cursor: pointer;
+}
+
+.routeIssueHit {
+  fill: transparent;
+  pointer-events: all;
+}
+
+.routeIssueHalo {
+  fill: #fbfaf7;
+  stroke: #fbfaf7;
+  stroke-width: 1.2;
+  pointer-events: none;
+}
+
+.routeIssueDot {
+  fill: #fff5f2;
+  stroke: #8e2f28;
+  stroke-width: 2.2;
+  pointer-events: none;
+}
+
+.planIssueLeaderHalo {
+  stroke: #fbfaf7;
+  stroke-width: 3.4;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+.planIssueLeader {
+  stroke: #a84d45;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+.planIssueAnchorHalo {
+  fill: #fbfaf7;
+  pointer-events: none;
+}
+
+.planIssueAnchor {
+  fill: #8e2f28;
+  pointer-events: none;
+}
+
+.routeIssueTick {
+  stroke: #8e2f28;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+.routeIssueCount {
+  fill: #8e2f28;
+  font-size: 9px;
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+
+.planElementIssueMarker {
+  cursor: pointer;
+}
+
+.planElementIssueHit {
+  fill: transparent;
+  pointer-events: all;
+}
+
+.planElementIssueHalo {
+  fill: #fbfaf7;
+  stroke: #fbfaf7;
+  stroke-width: 1.2;
+  pointer-events: none;
+}
+
+.planElementIssueDot {
+  fill: #fff5f2;
+  stroke: #8e2f28;
+  stroke-width: 2.1;
+  pointer-events: none;
+}
+
+.planElementIssueTick {
+  stroke: #8e2f28;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+.planElementIssueTickDot {
+  fill: #8e2f28;
+  pointer-events: none;
+}
+
+.planElementIssueCount {
+  fill: #8e2f28;
+  font-size: 9px;
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+
+.planIssueRegion,
+.planIssueMeasurement {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+.planIssueRegion.selectedIssueRegion,
+.planIssueMeasurement.selectedIssueRegion {
+  opacity: 1;
+}
+
+.planIssueRegionPath {
+  fill: url(#planIssueRegionHatch);
+  stroke: none;
+}
+
+.planIssueMeasureHalo {
+  stroke: #fbfaf7;
+  stroke-width: 4.5;
+  stroke-linecap: round;
+}
+
+.planIssueMeasureLine {
+  stroke: #8e2f28;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.planIssueMeasureEnd {
+  fill: #fbfaf7;
+  stroke: #8e2f28;
+  stroke-width: 1.2;
+}
+
+.planRouteItem:hover .passRoute {
+  stroke-width: 2.3;
+  stroke-opacity: 0.96;
+  filter: drop-shadow(0 0 3px rgba(31, 102, 153, 0.34));
+}
+
+.planRouteItem:hover .planRouteDot {
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 3px rgba(31, 102, 153, 0.34));
+}
+
+.planRouteItem:hover .planRouteDoorMarker {
+  stroke-width: 2.7;
+  filter: drop-shadow(0 0 3px rgba(31, 102, 153, 0.34));
+}
+
+.planRouteItem:hover .routeIssueDot,
+.routeIssueMarker:hover .routeIssueDot {
+  stroke-width: 2.8;
+  filter: drop-shadow(0 0 3px rgba(142, 47, 40, 0.32));
+}
+
+.routeIssueMarker:hover .planIssueLeader,
+.planElementIssueMarker:hover .planIssueLeader {
+  stroke-width: 1.8;
+}
+
+.planElementIssueMarker:hover .planElementIssueDot {
+  stroke-width: 2.8;
+  filter: drop-shadow(0 0 4px rgba(142, 47, 40, 0.34));
 }
 
 .selectedPlanElement rect {
-  stroke: #1554a8;
-  stroke-width: 4;
+  stroke: #176f86;
+  stroke-width: 2.4;
   stroke-opacity: 1;
+  filter: drop-shadow(0 0 5px rgba(23, 111, 134, 0.34));
 }
 
-.selectedPlanRoute {
-  stroke: #1554a8;
-  stroke-width: 6;
+.selectedPlanElement .planDoor {
+  stroke: #176f86;
+  stroke-width: 2.2;
   stroke-opacity: 1;
+  filter: drop-shadow(0 0 5px rgba(23, 111, 134, 0.34));
+}
+
+.selectedPlanRoute .passRoute {
+  stroke-width: 2.5;
+  stroke-opacity: 1;
+  filter: drop-shadow(0 0 4px rgba(31, 102, 153, 0.42));
+}
+
+.selectedPlanRoute .planRouteDot {
+  stroke-width: 2.8;
+  filter: drop-shadow(0 0 4px rgba(31, 102, 153, 0.42));
+}
+
+.selectedPlanRoute .planRouteDoorMarker {
+  stroke-width: 3;
+  filter: drop-shadow(0 0 4px rgba(31, 102, 153, 0.42));
+}
+
+.selectedPlanRoute .routeIssueDot {
+  stroke-width: 3;
+  filter: drop-shadow(0 0 4px rgba(142, 47, 40, 0.38));
+}
+
+.selectedPlanRoute .planIssueLeader,
+.selectedPlanElement .planIssueLeader {
+  stroke-width: 2;
+}
+
+.selectedPlanElement .planElementIssueDot {
+  stroke-width: 3;
+  filter: drop-shadow(0 0 5px rgba(142, 47, 40, 0.38));
 }
 
 .planLabel {
@@ -612,6 +866,10 @@ th {
 
 .planPanel h2 {
   margin-top: 0;
+}
+
+.planPanel {
+  min-width: 0;
 }
 
 .planPanel p {
@@ -629,11 +887,98 @@ th {
 .planDetails h3 {
   margin: 0 0 10px;
   font-size: 15px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.planElementIssues {
+  border-top: 1px solid #e8ebe7;
+  margin-top: 14px;
+  padding-top: 12px;
+}
+
+.planIssueCards {
+  display: grid;
+  gap: 9px;
+}
+
+.planIssueCard {
+  min-width: 0;
+  border: 1px solid #e5b9b5;
+  border-left: 3px solid #b3261e;
+  border-radius: 6px;
+  background: #fffaf8;
+  padding: 10px;
+}
+
+.planIssueCardHeader {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+}
+
+.planIssueCardIcon {
+  display: inline-grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border: 1px solid #b3261e;
+  border-radius: 50%;
+  color: #b3261e;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.planIssueCard h4 {
+  margin: 1px 0 0;
+  color: #1f2628;
+  font-size: 14px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.planIssueLocation {
+  margin-top: 9px;
+}
+
+.planIssueLocation span {
+  display: block;
+  color: #5b6669;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.planIssueLocation p {
+  margin-top: 3px;
+  color: #263134;
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.planPanel .planIssueComparison {
+  margin: 9px 0 0;
+  border-top: 1px solid #efd8d4;
+  padding-top: 8px;
+  color: #8e2f28;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.planIssueContext {
+  border-top: 1px solid #e8ebe7;
+  margin-top: 12px;
+  padding-top: 12px;
 }
 
 .planRows {
   display: grid;
-  grid-template-columns: 92px minmax(0, 1fr);
+  grid-template-columns: 82px minmax(0, 1fr);
   gap: 6px 10px;
   margin: 0;
   font-size: 13px;
@@ -641,21 +986,17 @@ th {
 
 .planRows dt {
   color: #5b6669;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .planRows dd {
   margin: 0;
   color: #1f2628;
   overflow-wrap: anywhere;
+  white-space: normal;
 }
 
-.planIssues {
-  display: grid;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.planIssues p,
 .emptyPlan {
   background: #ffffff;
   border: 1px solid #d9ded8;
@@ -817,23 +1158,38 @@ aside {
   font-weight: 700;
 }
 
-@media (max-width: 900px) {
-  .topbar,
-  .modelUpload,
-  .modelListHeader,
-  .modelLayout,
-  .planLayout,
-  .simLayout {
-    grid-template-columns: 1fr;
-    display: grid;
-  }
-
-  .topbar {
-    align-items: start;
-  }
+.pointCoordinateControl {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 7px 9px;
+  border: 1px solid #c8d1ce;
+  border-radius: 7px;
+  background: #f8faf8;
+  color: #263134;
+  font-size: 13px;
 }
-#assistantAnswer p {
-  margin: 0 0 0.75rem;
+
+.pointCoordinateControl[hidden] {
+  display: none;
+}
+
+.pointCoordinateControl label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pointCoordinateControl input {
+  width: 78px;
+  padding: 7px 6px;
+  border: 1px solid #9aa7a3;
+  border-radius: 5px;
+}
+
+.pointCoordinateControl button {
+  padding: 8px 10px;
 }
 
 .topActions {
@@ -867,15 +1223,15 @@ aside {
 
 .pointRoute {
   fill: none;
-  stroke: #2d7d46;
-  stroke-width: 5;
+  stroke: #1f6699;
+  stroke-width: 3;
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
 }
 
 .pointRoute.blocked {
-  stroke: #b3261e;
+  stroke: #8e2f28;
 }
 
 .pointMarker {
@@ -892,12 +1248,37 @@ aside {
   fill: #6b2ca0;
 }
 
-#planViewer.pointMode {
+#planViewer.pointMode,
+#planViewer.pointMode:active {
   cursor: crosshair;
 }
 
-#planViewer.pointMode:active {
-  cursor: crosshair;
+@media (max-width: 900px) {
+  .topbar,
+  .modelUpload,
+  .modelListHeader,
+  .modelLayout,
+  .planLayout,
+  .simLayout {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+
+  .topbar {
+    align-items: start;
+  }
+
+  .planLayout {
+    height: auto;
+    min-height: 0;
+  }
+
+  .planPanel {
+    overflow: visible;
+  }
+}
+#assistantAnswer p {
+  margin: 0 0 0.75rem;
 }
 
 #assistantAnswer h3 {

@@ -7,6 +7,7 @@ The application contains:
 - IFC geometry extraction with IfcOpenShell
 - IFC-to-RDF conversion with the included IFCtoLBD 2.43.4 Java runtime
 - four-direction A* routing on a 0.10 m occupancy grid
+- Shapely-based route generation for the 2D floor plan
 - interactive point-to-point A* routing on precomputed 0.01 m floor tiles
 - shortest door-graph routes calculated with Dijkstra's algorithm
 - SHACL validation with pySHACL
@@ -189,7 +190,7 @@ The repository includes both project IFC files:
 - `AC20-Institute-Var-2.ifc`
 - `20201208DigitalHub_ARC.ifc`
 
-The repository also includes a ready-to-run DigitalHub package in `output/app_package`. A new user can skip the two preprocessing commands below and continue with step 9. Run preprocessing when changing the IFC model or the geometry and routing code.
+The repository also includes a ready-to-run DigitalHub package in `output/app_package`. A new user can skip the two preprocessing commands below and continue with step 9. Run preprocessing before reviewing changes to the IFC model, geometry, rules or routing code.
 
 Generate the AC20 browser package with:
 
@@ -205,7 +206,7 @@ python preprocess.py --ifc ".\20201208DigitalHub_ARC.ifc" --save-bin
 
 `output/app_package` contains one active package at a time. Running either command replaces that generated package with the selected model's results. The original IFC files are not modified.
 
-Preprocessing also builds the point-to-point navigation data. Each floor is divided into 5 m tiles at 0.01 m resolution. Walkable cells are packed as bits and compressed, so the browser and server load only the tiles needed for the selected floor and route. Walls, columns, stairs, inaccessible ramps, narrow doors and spaces below the 1.50 m route-width rule are blocked during this build.
+Preprocessing also builds the point-to-point navigation data. Each floor is divided into 5 m tiles at 0.01 m resolution. Walkable cells are packed as bits and compressed, so the browser and server load only the tiles needed for the selected floor and route. Walls, columns, stairs, inaccessible ramps and narrow doors are blocked during this build. Corridor-width issue regions are blocked locally instead of removing the complete IFC space from the navigation grid.
 
 To process another IFC model, use its full path:
 
@@ -219,7 +220,7 @@ Preprocessing can take several minutes. A successful run ends with lines similar
 Extracted elements: ...
 raw graph created by pinned IFCtoLBD 2.43.4 runtime
 Wrote package: ...\output\app_package
-Routes: ..., issues: ..., missing geometry: ...
+Routes: ..., plan routes: ..., issues: ..., missing geometry: ..., skipped route pairs: ...
 ```
 
 In the browser, open **Floor Plan 2D** or **Wheelchair Simulation**, change **Mode** to **Point-to-point**, then select a start and destination on the current floor. Both tabs send the same IFC coordinates to the same backend route checker. A successful result must start and end at the selected coordinates, use only 0, 90 or 180 degree segments, and pass the final collision audit before it is drawn.
@@ -302,12 +303,16 @@ python server.py --port 8771
 
 The supplied SHACL rules check:
 
-- door or opening clear width of at least 0.90 m
-- route clear width of at least 1.50 m
+- route-relevant door or opening clear width of at least 0.90 m and clear height of at least 2.05 m
+- corridor and route clear width of at least 1.50 m
+- corridor slope of at most 3 percent, or 4 percent for sections no longer than 10.00 m
+- 1.80 m by 1.80 m passing areas at intervals no greater than 15.00 m
 - turning space of at least 1.50 m by 1.50 m
-- stair intersection along a wheelchair route
+- stair, wall or column obstruction along a wheelchair route
+- disconnected route doors
 - ramp usable width of at least 1.20 m
 - ramp slope of at most 6 percent
+- ramp flight length of at most 6.00 m
 
 These checks support model review. They do not replace professional accessibility approval, fire-safety review or requirements from the responsible local authority.
 
@@ -327,7 +332,9 @@ The generated route has these properties:
 
 Dijkstra's algorithm joins passing door-to-door edges into shortest routes across the door graph. Stair approaches are stored as blocked edges so the simulation can stop before the stair.
 
-The automatic 2.5D floor check uses the same precomputed 0.01 m navigation tiles as point-to-point mode. The door graph decides which final doors are reachable, but intermediate doors are not forced into the displayed path as visual milestones. A separate four-direction A* search connects the true start and final door centres directly. The chosen green path must be collision-free, orthogonal and no longer than the audited door-graph chain. A blocked red route follows its collision-free candidate to the exact door or stair obstacle where the failure occurs.
+`backend/plan_routes.py` builds a separate 2D route network from Shapely walkable-space geometry. It removes wall, column and stair obstacles, restores controlled openings at valid doors and checks the buffered route footprint against the walkable area. A 0.20 m grid search is used when a direct candidate is not suitable.
+
+The automatic 2.5D floor check uses `planRouteEdges` as its route topology and audits the displayed paths against the precomputed 0.01 m navigation tiles. The accessible plan network selects direct door pairs, while failed physical edges remain available as blocked evidence. Cross-floor edges and disagreements between the plan network and the strict navigation grid are recorded instead of being drawn as valid floor routes.
 
 Interactive point-to-point routing uses a separate floor grid. Preprocessing divides each floor into compressed 5 m tiles containing 0.01 m cells. Solid obstacles are expanded by 0.445 m around the route centre: a 0.45 m wheelchair radius minus a 0.005 m geometry tolerance. Accessible door rectangles create controlled portals between spaces. A point request loads only the required tiles, runs four-direction A* once, restores the exact selected endpoints and performs a final geometry audit. A complete audited route is green. If the destination cannot be reached, the red candidate ends at the last collision-free cell and is never labelled accessible.
 
@@ -343,7 +350,7 @@ SHACL produces the pass or fail result. Ollama does not decide compliance. It se
 
 ## Matching 2D And 2.5D Views
 
-The 2D floor plan and wheelchair simulation use the same floor elements, route edges, door boxes, blocker boxes, route coordinates and status colours.
+The 2D floor plan renders `planRouteEdges`. The wheelchair simulation uses the same plan network as its floor-route topology and checks its displayed paths against the strict navigation grid. The Building Model continues to use the base `routeEdges` door graph.
 
 The simulation uses one uniform metres-to-scene scale. Routes are placed on one selected floor-slice surface. The wheelchair is grounded from its calculated mesh bounds so the tyre bottom touches that surface. Orbit, pan and zoom change the camera only; they do not change route coordinates.
 
@@ -372,6 +379,7 @@ server.py                                  local server, Model Library and Ollam
 requirements.txt                           exact Python dependency versions
 backend/geometry.py                        IFC geometry and bounding-box extraction
 backend/routes.py                          occupancy grid, A* and door graph
+backend/plan_routes.py                     Shapely-based 2D route network generation
 backend/navigation.py                      tiled point-route grid, A* and final audit
 backend/simulation_routes.py               strict automatic floor-check route geometry
 backend/ifc_tools.py                       pinned IFCtoLBD execution

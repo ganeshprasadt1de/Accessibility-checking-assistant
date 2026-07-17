@@ -16,17 +16,21 @@ def write_json_package(
     missing_geometry: list[str],
     shacl_summary: dict,
     ifctolbd_note: str,
+    plan_edges: list[RouteEdge] | None = None,
 ) -> None:
+    plan_edges = plan_edges or []
     doors = [e.guid for e in elements if e.ifc_type == "IfcDoor"]
-    route_index = {door: routes_from_start(edges, door) for door in doors}
-    accessible_route_index = {door: routes_from_start(edges, door, pass_only=True) for door in doors}
-    floors = _floor_summaries(elements, issues, edges)
+    door_set = set(doors)
+    route_index = {door: routes_from_start(edges, door, target_guids=door_set) for door in doors}
+    accessible_route_index = {door: routes_from_start(edges, door, pass_only=True, target_guids=door_set) for door in doors}
+    floors = _floor_summaries(elements, issues, edges, plan_edges)
     ifctolbd_failed = "ifctolbd failed" in ifctolbd_note.lower()
     data = {
         "summary": {
             "elementCount": len(elements),
             "doorCount": len(doors),
             "routeEdgeCount": len(edges),
+            "planRouteEdgeCount": len(plan_edges),
             "issueCount": len(issues),
             "missingGeometryCount": len(missing_geometry),
             "ifctolbd": ifctolbd_note,
@@ -36,7 +40,9 @@ def write_json_package(
         "rules": RULE_LIMITS.__dict__,
         "elements": [_element_dict(e) for e in elements],
         "issues": [issue.__dict__ for issue in issues],
+        "issueRegions": _issue_regions(elements, issues),
         "routeEdges": [_edge_dict(e) for e in edges],
+        "planRouteEdges": [_edge_dict(e) for e in plan_edges],
         "routesByDoor": route_index,
         "accessibleRoutesByDoor": accessible_route_index,
         "floors": floors,
@@ -44,7 +50,7 @@ def write_json_package(
         "sources": {
             "measurements": "IfcOpenShell geometry or explicit IFC properties",
             "rules": "SHACL validation report",
-            "routes": "precomputed door graph from IFC space boundaries",
+            "routes": "IFC space-boundary routes and 2D Shapely walkable-area routes",
             "ifctolbd": "failed; raw LBD RDF is not included" if ifctolbd_failed else "raw graph created by IFCtoLBD",
         },
     }
@@ -86,7 +92,27 @@ def _edge_dict(e: RouteEdge) -> dict:
     }
 
 
-def _floor_summaries(elements: list[Element], issues: list[Issue], edges: list[RouteEdge]) -> list[dict]:
+def _issue_regions(elements: list[Element], issues: list[Issue]) -> list[dict]:
+    issue_ids = {
+        (issue.element_guid, issue.rule_id, issue.evidence_id): issue.issue_id
+        for issue in issues
+    }
+    result = []
+    for element in elements:
+        for region in element.issue_regions + element.passing_area_gaps:
+            key = element.guid, region.get("rule_id"), region.get("evidence_id")
+            issue_id = issue_ids.get(key)
+            if issue_id:
+                result.append({**region, "issue_id": issue_id})
+    return result
+
+
+def _floor_summaries(
+    elements: list[Element],
+    issues: list[Issue],
+    edges: list[RouteEdge],
+    plan_edges: list[RouteEdge],
+) -> list[dict]:
     element_by_guid = {element.guid: element for element in elements}
     floor_refs = _floor_refs(elements)
     issue_count_by_guid: dict[str, int] = {}
@@ -110,6 +136,7 @@ def _floor_summaries(elements: list[Element], issues: list[Issue], edges: list[R
                 "rampGuids": [],
                 "issueCount": 0,
                 "routeEdgeIds": [],
+                "planRouteEdgeIds": [],
                 "routeStatusCounts": {},
                 "failureReasonCounts": {},
             },
@@ -129,9 +156,15 @@ def _floor_summaries(elements: list[Element], issues: list[Issue], edges: list[R
 
     for edge in edges:
         start = element_by_guid.get(edge.start_guid)
-        floor_name = start.storey if start else None
-        if not floor_name and start:
-            floor_name = _floor_from_center(start.center)
+        end = element_by_guid.get(edge.end_guid)
+        via = element_by_guid.get(edge.via_space_guid)
+        floor_name = _floor_name_for_element(start, floor_refs) if start else None
+        if not floor_name and end:
+            floor_name = _floor_name_for_element(end, floor_refs)
+        if not floor_name and via:
+            floor_name = _floor_name_for_element(via, floor_refs)
+        if not floor_name:
+            floor_name = _floor_name_for_route(edge, floor_refs)
         if not floor_name or floor_name not in floors:
             continue
         floor = floors[floor_name]
@@ -139,6 +172,22 @@ def _floor_summaries(elements: list[Element], issues: list[Issue], edges: list[R
         floor["routeStatusCounts"][edge.status] = floor["routeStatusCounts"].get(edge.status, 0) + 1
         for reason in edge.reasons:
             floor["failureReasonCounts"][reason] = floor["failureReasonCounts"].get(reason, 0) + 1
+
+    for edge in plan_edges:
+        start = element_by_guid.get(edge.start_guid)
+        end = element_by_guid.get(edge.end_guid)
+        via = element_by_guid.get(edge.via_space_guid)
+        floor_name = _floor_name_for_element(start, floor_refs) if start else None
+        if not floor_name and end:
+            floor_name = _floor_name_for_element(end, floor_refs)
+        if not floor_name and via:
+            floor_name = _floor_name_for_element(via, floor_refs)
+        if not floor_name:
+            floor_name = _floor_name_for_route(edge, floor_refs)
+        if not floor_name or floor_name not in floors:
+            continue
+        floor = floors[floor_name]
+        floor["planRouteEdgeIds"].append(edge.edge_id)
 
     visible_floors = [
         floor
@@ -171,6 +220,8 @@ def _floor_refs(elements: list[Element]) -> list[tuple[str, float]]:
 
 
 def _floor_name_for_element(element: Element, floor_refs: list[tuple[str, float]]) -> str | None:
+    if element.ifc_type in {"IfcRamp", "IfcRampFlight"} and element.extra.get("rampDisplayStorey"):
+        return str(element.extra["rampDisplayStorey"])
     if element.storey:
         return element.storey
     if not element.center:
@@ -181,3 +232,15 @@ def _floor_name_for_element(element: Element, floor_refs: list[tuple[str, float]
         if abs(ref_z - z) <= 1.8:
             return name
     return _floor_from_center(element.center)
+
+
+def _floor_name_for_route(edge: RouteEdge, floor_refs: list[tuple[str, float]]) -> str | None:
+    points = [point for point in edge.path if len(point) >= 3]
+    if not points:
+        return None
+    z = sum(float(point[2]) for point in points) / len(points)
+    if floor_refs:
+        name, ref_z = min(floor_refs, key=lambda item: abs(item[1] - z))
+        if abs(ref_z - z) <= 1.8:
+            return name
+    return _floor_from_center((0.0, 0.0, z))

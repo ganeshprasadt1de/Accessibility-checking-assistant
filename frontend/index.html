@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Wheelchair Route Checker</title>
-    <link rel="stylesheet" href="styles.css?v=20260715-point-audit-2" />
+    <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
+  <body class="homePage">
     <header class="topbar">
       <div>
         <h1>Wheelchair Route Checker</h1>
@@ -51,7 +51,6 @@
               <h2>Model Library</h2>
               <p id="modelStatus">Upload an IFC model or open a completed package.</p>
             </div>
-            <button id="modelRefresh">Refresh</button>
           </div>
           <div class="tableWrap"><table id="modelTable"></table></div>
         </div>
@@ -87,10 +86,10 @@
             <label class="floorSelectLabel">Routes
               <select id="planRouteMode">
                 <option value="issues">Issues only</option>
-                <option value="fail">Failed routes</option>
-                <option value="all">All routes</option>
+                <option value="candidate">Route network</option>
               </select>
             </label>
+            <label class="viewerToggle planAccessibleToggle"><input id="planAccessibleOnly" type="checkbox" /> Accessible only</label>
             <button id="planPointReset" type="button" hidden>Clear points</button>
             <form id="planPointCoordinates" class="pointCoordinateControl" hidden>
               <span>Coordinates (m)</span>
@@ -100,9 +99,6 @@
               <label>End Y <input id="planPointEndY" type="number" step="any" required /></label>
               <button type="submit">Check coordinates</button>
             </form>
-            <div class="planZoom">
-              <button id="planResetView">Reset</button>
-            </div>
             <div class="planLegend">
               <span><i class="legendBox roomBox"></i>room</span>
               <span><i class="legendBox corridorBox"></i>corridor</span>
@@ -110,9 +106,9 @@
               <span><i class="legendBox doorBox"></i>door</span>
               <span><i class="legendBox stairBox"></i>stair</span>
               <span><i class="legendBox rampBox"></i>ramp</span>
-              <span><i class="legendLine passLine"></i>clear route</span>
-              <span><i class="legendLine failLine"></i>blocked route</span>
-              <span><i class="legendBox issueBox"></i>issue</span>
+              <span class="legendRoute"><i class="legendLine passLine"></i>route network</span>
+              <span class="legendBlockage"><i class="legendMarker failLine"></i>route issue</span>
+              <span class="legendIssue"><i class="legendMarker issueMarker"></i>issue</span>
             </div>
           </div>
           <div class="planLayout">
@@ -199,6 +195,6 @@
         }
       }
     </script>
-    <script type="module" src="app.js?v=20260716-point-animation-3"></script>
+    <script type="module" src="app.js"></script>
   </body>
 </html>

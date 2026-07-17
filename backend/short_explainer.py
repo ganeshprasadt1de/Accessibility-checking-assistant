@@ -10,12 +10,16 @@ OLLAMA_GENERATE_TIMEOUT_SECONDS = 90
 
 RULE_LABELS = {
     "door_width": "door too narrow",
+    "door_height": "door too low",
     "corridor_width": "corridor too narrow",
+    "corridor_slope": "corridor too steep",
+    "corridor_movement_area": "passing areas spaced too far apart",
     "route_width": "route too narrow",
     "turning_space": "turning space too small",
     "stair_block": "stair blocks route",
     "ramp_slope": "ramp too steep",
     "ramp_width": "ramp too narrow",
+    "ramp_run_length": "ramp flight too long",
     "missing": "missing data",
     "unreachable": "route not connected",
 }
@@ -23,10 +27,13 @@ RULE_LABELS = {
 SUPPORTED_RULES = frozenset(RULE_LABELS)
 RULE_ALIASES = {
     "missing_door_width": "missing",
+    "missing_door_height": "missing",
     "route_door_width": "door_width",
+    "route_door_height": "door_height",
     "route_turning_space": "turning_space",
     "route_ramp_slope": "ramp_slope",
     "route_ramp_width": "ramp_width",
+    "route_ramp_run_length": "ramp_run_length",
 }
 
 POINT_ROUTE_EXPLANATIONS = {
@@ -96,9 +103,18 @@ def _allowed_actions(context: dict) -> list[dict]:
         elif rule == "door_width":
             target = name_text or start
             text = f"Increase the clear opening at {target}, then regenerate the route measurements and rerun SHACL."
+        elif rule == "door_height":
+            target = name_text or start
+            text = f"Increase the clear opening height at {target}, then regenerate the route measurements and rerun SHACL."
         elif rule == "corridor_width":
             target = name_text or floor
             text = f"Increase the measured clear width at {target}, then regenerate the package and rerun SHACL."
+        elif rule == "corridor_slope":
+            target = name_text or floor
+            text = f"Reduce the measured corridor slope at {target}, then regenerate the package and rerun SHACL."
+        elif rule == "corridor_movement_area":
+            target = name_text or floor
+            text = f"Provide a 1.80 m by 1.80 m passing area within each 15.00 m interval at {target}, then regenerate the package and rerun SHACL."
         elif rule == "route_width":
             text = f"Increase the measured clear width available along {edge} on {floor}, then regenerate the route measurement and rerun SHACL."
         elif rule == "turning_space":
@@ -109,6 +125,9 @@ def _allowed_actions(context: dict) -> list[dict]:
         elif rule == "ramp_width":
             target = name_text or edge
             text = f"Increase the measured usable width of {target}, then regenerate its ramp measurement and rerun SHACL."
+        elif rule == "ramp_run_length":
+            target = name_text or edge
+            text = f"Reduce the uninterrupted ramp flight length at {target}, then regenerate its ramp measurement and rerun SHACL."
         elif rule == "missing":
             target = name_text or "the affected IFC elements"
             text = f"Add or repair the missing IFC geometry or property data for {target}, then preprocess the model again."
@@ -211,7 +230,7 @@ def explain_question(question: str, context: dict, model: str = "qwen3:8b", host
         "For every selected action, add an evidenceReview item that links one detected issueType to one allowed action ID. "
         "Never create a new action, building element, floor, measurement, route, cause, or legal claim. "
         "A stair blocker permits only rerouting around the recorded stair geometry. It does not permit suggestions about lifts, elevators, ramps, or slopes. "
-        "Ramp advice is allowed only for ramp_slope or ramp_width facts. Door advice is allowed only for door_width. "
+        "Ramp advice is allowed only for ramp_slope, ramp_width, or ramp_run_length facts. Door advice is allowed only for door_width or door_height. "
         "Select the actions that directly answer the question. Select no more than four.\n\n"
         f"Question: {_clean(question, 'Explain the checker result.')}\n\n"
         "Detected facts:\n" + json.dumps(context, ensure_ascii=True, separators=(",", ":")) + "\n\n"

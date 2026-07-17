@@ -11,6 +11,8 @@ from collections import OrderedDict, deque
 from pathlib import Path
 
 import numpy as np
+from shapely import intersects_xy
+from shapely.geometry import shape
 
 
 FORMAT_VERSION = 1
@@ -63,7 +65,12 @@ def build_navigation_package(app_data_path: Path, output_dir: Path) -> dict:
                     if item and (_hard_obstacle(item) or item.get("ifcType") in RAMP_TYPES):
                         floor_guids.add(endpoint)
             floor_elements = [elements_by_guid[guid] for guid in sorted(floor_guids) if guid in elements_by_guid]
-            floor_index = _build_floor_package(temporary, floor, floor_elements)
+            floor_issue_regions = [
+                region
+                for region in data.get("issueRegions", [])
+                if region.get("element_guid") in floor_guids
+            ]
+            floor_index = _build_floor_package(temporary, floor, floor_elements, floor_issue_regions)
             if floor_index:
                 index["floors"][floor["name"]] = floor_index
         (temporary / "index.json").write_text(json.dumps(index, separators=(",", ":")), encoding="utf-8")
@@ -76,9 +83,19 @@ def build_navigation_package(app_data_path: Path, output_dir: Path) -> dict:
     return index
 
 
-def _build_floor_package(root: Path, floor: dict, elements: list[dict]) -> dict | None:
+def _build_floor_package(root: Path, floor: dict, elements: list[dict], issue_regions: list[dict]) -> dict | None:
     spaces = [item for item in elements if _accessible_space(item)]
-    restricted_spaces = [item for item in elements if _restricted_space(item)]
+    local_restrictions = _corridor_issue_shapes(issue_regions)
+    local_restriction_guids = {
+        region.get("element_guid")
+        for region in issue_regions
+        if region.get("rule_id") == "corridor_width" and region.get("geometry")
+    }
+    restricted_spaces = [
+        item
+        for item in elements
+        if _restricted_space(item) and item.get("guid") not in local_restriction_guids
+    ]
     if not spaces:
         return None
     accessible_doors = [item for item in elements if _accessible_door(item)]
@@ -110,7 +127,7 @@ def _build_floor_package(root: Path, floor: dict, elements: list[dict]) -> dict 
         for tx in range(tiles_x):
             width = min(TILE_CELLS, nx - tx * TILE_CELLS)
             height = min(TILE_CELLS, ny - ty * TILE_CELLS)
-            tile = _raster_tile(min_x, min_y, tx, ty, width, height, walkable_rects, blocked_rects)
+            tile = _raster_tile(min_x, min_y, tx, ty, width, height, walkable_rects, blocked_rects, local_restrictions)
             if not tile.any():
                 continue
             packed = np.packbits(tile.reshape(-1), bitorder="little").tobytes()
@@ -140,16 +157,14 @@ def _build_floor_package(root: Path, floor: dict, elements: list[dict]) -> dict 
         "tileIndex": tiles,
         "componentGraph": graph,
         "blockedRects": [list(rect) for rect in blocked_rects],
+        "localBlockedRegionCount": len(local_restrictions),
         "accessibleDoorGuids": [item["guid"] for item in accessible_doors],
         "accessibleRouteWidthM": ACCESSIBLE_ROUTE_WIDTH_M,
     }
 
 
 def _accessible_space(item: dict) -> bool:
-    if item.get("ifcType") != "IfcSpace" or not _has_plan_box(item):
-        return False
-    clear_width = _number((item.get("extra") or {}).get("derivedClearSpaceWidthM"))
-    return clear_width is None or clear_width + GEOMETRY_TOLERANCE_M >= ACCESSIBLE_ROUTE_WIDTH_M
+    return item.get("ifcType") == "IfcSpace" and _has_plan_box(item)
 
 
 def _restricted_space(item: dict) -> bool:
@@ -168,6 +183,7 @@ def _raster_tile(
     height: int,
     walkable_rects: list[tuple[float, float, float, float]],
     blocked_rects: list[tuple[float, float, float, float]],
+    blocked_shapes: list,
 ) -> np.ndarray:
     tile = np.zeros((height, width), dtype=np.bool_)
     cell_x = tx * TILE_CELLS
@@ -180,7 +196,39 @@ def _raster_tile(
         selection = _rect_slice(rect, origin_x, origin_y, cell_x, cell_y, width, height)
         if selection:
             tile[selection] = False
+    for geometry in blocked_shapes:
+        _raster_blocked_shape(tile, geometry, origin_x, origin_y, cell_x, cell_y, width, height)
     return tile
+
+
+def _corridor_issue_shapes(issue_regions: list[dict]) -> list:
+    result = []
+    for region in issue_regions:
+        if region.get("rule_id") != "corridor_width" or not region.get("geometry"):
+            continue
+        geometry = shape(region["geometry"])
+        geometry = geometry if geometry.is_valid else geometry.buffer(0)
+        if geometry.is_empty:
+            continue
+        if geometry.geom_type == "Polygon":
+            result.append(geometry)
+        else:
+            result.extend(part for part in geometry.geoms if part.geom_type == "Polygon" and not part.is_empty)
+    return result
+
+
+def _raster_blocked_shape(tile, geometry, origin_x, origin_y, cell_x, cell_y, width, height):
+    selection = _rect_slice(geometry.bounds, origin_x, origin_y, cell_x, cell_y, width, height)
+    if not selection:
+        return
+    y_slice, x_slice = selection
+    local_x = np.arange(x_slice.start, x_slice.stop)
+    local_y = np.arange(y_slice.start, y_slice.stop)
+    xs = origin_x + (cell_x + local_x + 0.5) * RESOLUTION_M
+    ys = origin_y + (cell_y + local_y + 0.5) * RESOLUTION_M
+    grid_x, grid_y = np.meshgrid(xs, ys)
+    blocked = intersects_xy(geometry, grid_x, grid_y)
+    tile[y_slice, x_slice][blocked] = False
 
 
 def _rect_slice(rect, origin_x, origin_y, cell_x, cell_y, width, height):

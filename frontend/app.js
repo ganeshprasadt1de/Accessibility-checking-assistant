@@ -41,6 +41,12 @@ let planSuppressClick = false;
 let planClickTarget = null;
 let planPick = null;
 let planControlsReady = false;
+let planInteractionMode = "inspect";
+let simInteractionMode = "automatic";
+let pointCheck = emptyPointCheck();
+let pointRequestSequence = 0;
+let simPointGesture = null;
+let simPointAnimatedRequestId = 0;
 let modelState = { models: [], activeModelId: null, defaultPackageAvailable: false };
 let pendingUploadFiles = [];
 let modelPollTimer;
@@ -58,6 +64,7 @@ window.addEventListener("hashchange", () => showPage(currentPage()));
 init();
 
 async function init() {
+  setupProjectServiceStop();
   setupModelLibrary();
   await loadModels();
   await loadAppData();
@@ -310,6 +317,9 @@ function resetLoadedViews() {
   simWorld = null;
   simChair = null;
   simScenarioData = null;
+  pointCheck = emptyPointCheck();
+  planInteractionMode = "inspect";
+  simInteractionMode = "automatic";
   document.querySelector("#viewer").innerHTML = "";
   document.querySelector("#simulationViewer").innerHTML = "";
   document.querySelector("#selectedDoor").textContent = "Click a door box in the model.";
@@ -428,7 +438,10 @@ function setupFloorPlan() {
   const select = document.querySelector("#planFloorSelect");
   if (!select) return;
   const routeMode = document.querySelector("#planRouteMode");
+  const interactionMode = document.querySelector("#planInteractionMode");
+  const pointReset = document.querySelector("#planPointReset");
   const floors = (appData.floors || []).filter((floor) => floor.elementGuids?.length);
+  setupPointCoordinateControl("plan", () => planFloorName);
   select.innerHTML = floors
     .map((floor) => `<option value="${escapeHtml(floor.name)}">${escapeHtml(floor.name)} (${floor.spaceGuids?.length || 0} spaces)</option>`)
     .join("");
@@ -437,11 +450,21 @@ function setupFloorPlan() {
   if (!planControlsReady) {
     select.addEventListener("change", () => {
       planFloorName = select.value;
+      clearPointCheck(planFloorName);
       renderFloorPlan();
     });
     routeMode?.addEventListener("change", () => {
       planRouteMode = routeMode.value;
       renderFloorPlan();
+    });
+    interactionMode?.addEventListener("change", () => {
+      planInteractionMode = interactionMode.value;
+      renderFloorPlan();
+    });
+    pointReset?.addEventListener("click", () => {
+      clearPointCheck(planFloorName);
+      renderFloorPlan();
+      if (simInteractionMode === "point" && simFloorName === planFloorName && simulationReady) loadSimulationScenario("point-reset");
     });
     document.querySelector("#planResetView")?.addEventListener("click", resetPlanView);
     setupPlanPanZoom();
@@ -477,12 +500,23 @@ function renderFloorPlan() {
   const edges = (floor.routeEdgeIds || []).map((edgeId) => edgesById.get(edgeId)).filter(Boolean);
   const geometryContract = floorGeometryContract(elements, edges);
   viewer.innerHTML = floorPlanSvg(floor, elements, edges, issueCounts);
+  viewer.classList.toggle("pointMode", planInteractionMode === "point");
+  const interactionMode = document.querySelector("#planInteractionMode");
+  const routeMode = document.querySelector("#planRouteMode");
+  const pointReset = document.querySelector("#planPointReset");
+  if (interactionMode && interactionMode.value !== planInteractionMode) interactionMode.value = planInteractionMode;
+  if (routeMode) routeMode.disabled = planInteractionMode === "point";
+  if (pointReset) pointReset.hidden = planInteractionMode !== "point";
+  updatePointCoordinateControl("plan", planInteractionMode === "point", floor.name);
   viewer.dataset.floorGeometryContract = JSON.stringify(geometryContract);
   planPick = null;
   applyPlanZoom();
   title.textContent = `${floor.name} floor plan`;
   const failedRoutes = edges.filter((edge) => edge.status === "fail").length;
-  status.textContent = `${elements.length} elements, ${edges.length} route edges, ${failedRoutes} blocked route edges.`;
+  const pointState = pointCheck.floor === floor.name ? pointCheck : null;
+  status.textContent = planInteractionMode === "point"
+    ? pointStatusText(pointState)
+    : `${elements.length} elements, ${edges.length} route edges, ${failedRoutes} blocked route edges.`;
   metrics.innerHTML = [
     ["Spaces", String(floor.spaceGuids?.length || 0), floor.spaceGuids?.length ? "pass" : "fail"],
     ["Doors", String(floor.doorGuids?.length || 0), floor.doorGuids?.length ? "pass" : "fail"],
@@ -491,11 +525,17 @@ function renderFloorPlan() {
   ]
     .map(([label, value, state]) => `<div class="simMetric ${state}"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)}</span></div>`)
     .join("");
-  details.innerHTML = planRouteMode === "issues" ? "<p>Click a room, door, stair, or ramp to inspect it. Use the Routes control to overlay route lines.</p>" : "<p>Click a room, door, stair, ramp, or route line to inspect it.</p>";
+  details.innerHTML = planInteractionMode === "point"
+    ? pointDetailsMarkup(pointState)
+    : planRouteMode === "issues" ? "<p>Click a room, door, stair, or ramp to inspect it. Use the Routes control to overlay route lines.</p>" : "<p>Click a room, door, stair, ramp, or route line to inspect it.</p>";
   viewer.onclick = (event) => {
     if (planSuppressClick) {
       planSuppressClick = false;
       planClickTarget = null;
+      return;
+    }
+    if (planInteractionMode === "point") {
+      handlePlanPointClick(event, floor, elements, edges);
       return;
     }
     const directTarget = event.target instanceof Element ? event.target.closest("[data-guid], [data-edge-id]") : null;
@@ -510,8 +550,249 @@ function renderFloorPlan() {
   };
 }
 
+function setupProjectServiceStop() {
+  const button = document.querySelector("#projectStop");
+  const status = document.querySelector("#projectStopStatus");
+  if (!button || !status) return;
+  button.onclick = async () => {
+    if (!confirm("Stop verified Wheelchair Route Checker servers and Ollama? Unrelated localhost services will be left running.")) return;
+    button.disabled = true;
+    status.textContent = "Checking process ownership before stopping services...";
+    try {
+      const response = await fetch("/api/project/stop", { method: "POST" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Project services could not be stopped.");
+      const skipped = data.skippedListeners?.length ? ` ${data.skippedListeners.length} unrelated listener(s) were left running.` : "";
+      const warnings = data.warnings?.length ? ` ${data.warnings.join(" ")}` : "";
+      status.textContent = `${data.message} Stopping ${data.projectProcesses} project process(es) and ${data.ollamaProcesses} Ollama process(es).${skipped}${warnings}`;
+    } catch (error) {
+      status.textContent = error.message || "Project services could not be stopped.";
+      button.disabled = false;
+    }
+  };
+}
+
+function emptyPointCheck(floor = "") {
+  return { floor, start: null, end: null, result: null, pending: false, error: "", explanation: null, explanationPending: false, requestId: 0 };
+}
+
+function clearPointCheck(floor = "") {
+  pointRequestSequence += 1;
+  pointCheck = emptyPointCheck(floor);
+}
+
+function setupPointCoordinateControl(prefix, floorName) {
+  const form = document.querySelector(`#${prefix}PointCoordinates`);
+  if (!form || form.dataset.ready === "true") return;
+  form.dataset.ready = "true";
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (pointCheck.pending) return;
+    const floor = floorName();
+    const values = ["StartX", "StartY", "EndX", "EndY"].map((suffix) =>
+      Number(document.querySelector(`#${prefix}Point${suffix}`)?.value),
+    );
+    if (!floor || values.some((value) => !Number.isFinite(value))) return;
+    const start = values.slice(0, 2);
+    const end = values.slice(2, 4);
+    pointCheck = { ...emptyPointCheck(floor), start, end };
+    requestPointRoute(floor, start, end);
+  });
+}
+
+function updatePointCoordinateControl(prefix, visible, floor) {
+  const form = document.querySelector(`#${prefix}PointCoordinates`);
+  if (!form) return;
+  form.hidden = !visible;
+  const state = pointCheck.floor === floor ? pointCheck : null;
+  const values = {
+    StartX: state?.start?.[0],
+    StartY: state?.start?.[1],
+    EndX: state?.end?.[0],
+    EndY: state?.end?.[1],
+  };
+  const signature = JSON.stringify([floor, visible, ...Object.values(values)]);
+  if (form.dataset.pointSignature === signature) return;
+  form.dataset.pointSignature = signature;
+  for (const [suffix, value] of Object.entries(values)) {
+    const input = document.querySelector(`#${prefix}Point${suffix}`);
+    if (input) input.value = Number.isFinite(value) ? String(Number(value)) : "";
+  }
+}
+
+function pointStatusText(state) {
+  if (!state?.start) return "Click a walkable start point, then click the destination.";
+  if (!state.end) return "Start point selected. Click the destination.";
+  if (state.pending) return "Checking the selected points against the streamed navigation tiles.";
+  if (state.error) return state.error;
+  if (state.result?.status === "pass") return `Accessible orthogonal route found. Distance: ${Number(state.result.distanceM).toFixed(2)} m.`;
+  if (state.result?.status === "blocked") {
+    const message = state.result.message || "No accessible route connects the selected points.";
+    const hasCandidate = Array.isArray(state.result.path) && state.result.path.length > 1;
+    return hasCandidate ? `${message} The red candidate stops at the last collision-free point.` : message;
+  }
+  return "The selected points have not been checked.";
+}
+
+function pointAuditState(result) {
+  const hasCandidate = Array.isArray(result?.path) && result.path.length > 1;
+  if (result?.status === "pass") {
+    const passed = result.audit?.orthogonal === true
+      && result.audit?.collisionFree === true
+      && result.audit?.endpointsExact === true;
+    return { label: "Route audit", value: passed ? "passed" : "failed", tone: passed ? "pass" : "fail" };
+  }
+  if (result?.status === "blocked") {
+    if (!hasCandidate) return { label: "Candidate audit", value: "not available", tone: "watch" };
+    const passed = result.audit?.orthogonal === true
+      && result.audit?.collisionFree === true
+      && result.audit?.reachesDestination === false;
+    return { label: "Candidate audit", value: passed ? "passed" : "failed", tone: passed ? "pass" : "fail" };
+  }
+  return { label: "Route audit", value: "not available", tone: "watch" };
+}
+
+function pointDetailsMarkup(state) {
+  if (!state?.start) return "<p>Select the start and destination directly on the floor plan. Exact click coordinates are retained.</p>";
+  const rows = [
+    ["Start", `${state.start[0].toFixed(2)}, ${state.start[1].toFixed(2)} m`],
+    ["Destination", state.end ? `${state.end[0].toFixed(2)}, ${state.end[1].toFixed(2)} m` : "not selected"],
+  ];
+  const auditState = pointAuditState(state.result);
+  if (state.result?.status === "pass") {
+    rows.push(["Distance", `${Number(state.result.distanceM).toFixed(2)} m`]);
+    rows.push(["Grid resolution", `${Number(state.result.resolutionM).toFixed(2)} m`]);
+    rows.push(["Wheelchair clearance", `${Number(state.result.clearanceM).toFixed(2)} m`]);
+    rows.push(["Accessible route width", `${Number(state.result.routeWidthM).toFixed(2)} m`]);
+    rows.push(["Tiles used", String(state.result.streamedTiles)]);
+    rows.push([auditState.label, auditState.value]);
+  } else if (state.result?.status === "blocked") {
+    rows.push(["Result", state.result.message || "blocked"]);
+    const hasCandidate = Array.isArray(state.result.path) && state.result.path.length > 1;
+    if (hasCandidate) {
+      rows.push(["Reachable candidate", `${Number(state.result.distanceM).toFixed(2)} m`]);
+      const reached = state.result.path[state.result.path.length - 1];
+      rows.push(["Last collision-free point", `${Number(reached[0]).toFixed(4)}, ${Number(reached[1]).toFixed(4)} m`]);
+    } else {
+      rows.push(["Route candidate", "not available"]);
+    }
+    rows.push([auditState.label, auditState.value]);
+  }
+  const explanation = state?.explanation?.text || (state?.explanationPending ? "Ollama is reviewing the deterministic blocking facts." : "The deterministic route result is shown above.");
+  const source = state?.explanation?.source ? `<p><small>${escapeHtml(state.explanation.source)}</small></p>` : "";
+  return `<h3>Point-to-point check</h3>${planRows(rows)}${state?.result?.status === "blocked" ? `<h3>Why it is blocked</h3><p>${escapeHtml(explanation)}</p>${source}` : ""}`;
+}
+
+function handlePlanPointClick(event, floor, elements, edges) {
+  if (pointCheck.pending) return;
+  const svg = document.querySelector("#planViewer svg");
+  const matrix = svg?.getScreenCTM();
+  const bounds = floorPlanBounds(elements, edges);
+  if (!svg || !matrix || !bounds) return;
+  const view = floorPlanView(bounds);
+  const cursor = svg.createSVGPoint();
+  cursor.x = event.clientX;
+  cursor.y = event.clientY;
+  const local = cursor.matrixTransform(matrix.inverse());
+  const selected = [
+    bounds.minX + (local.x / view.width) * (bounds.maxX - bounds.minX),
+    bounds.minY + (1 - local.y / view.height) * (bounds.maxY - bounds.minY),
+  ];
+  if (pointCheck.floor !== floor.name || !pointCheck.start || pointCheck.end) {
+    pointRequestSequence += 1;
+    pointCheck = { ...emptyPointCheck(floor.name), start: selected };
+    renderFloorPlan();
+    return;
+  }
+  pointCheck = { ...pointCheck, end: selected, result: null, error: "" };
+  renderFloorPlan();
+  requestPointRoute(floor.name, pointCheck.start, pointCheck.end);
+}
+
+async function requestPointRoute(floor, start, end) {
+  const requestId = ++pointRequestSequence;
+  pointCheck = { ...pointCheck, floor, start: [...start], end: [...end], pending: true, error: "", requestId };
+  refreshPointViews(floor);
+  try {
+    const response = await fetch("/api/point-route", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ floor, start, end }),
+    });
+    const result = await response.json();
+    if (pointCheck.requestId !== requestId) return;
+    if (!response.ok || result.error) {
+      pointCheck = { ...pointCheck, pending: false, error: result.error || `Point routing returned HTTP ${response.status}.`, result: null };
+    } else {
+      pointCheck = { ...pointCheck, pending: false, error: "", result, explanation: null, explanationPending: result.status === "blocked" };
+    }
+  } catch (error) {
+    if (pointCheck.requestId !== requestId) return;
+    pointCheck = { ...pointCheck, pending: false, error: `Point routing could not be reached: ${error.message}`, result: null };
+  }
+  refreshPointViews(floor);
+  if (pointCheck.requestId === requestId && pointCheck.result?.status === "blocked") await requestPointExplanation(floor, start, end, requestId);
+}
+
+async function requestPointExplanation(floor, start, end, requestId) {
+  try {
+    const response = await fetch("/api/point-route/explain", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ floor, start, end }),
+    });
+    const explanation = await response.json();
+    if (pointCheck.requestId !== requestId) return;
+    pointCheck = {
+      ...pointCheck,
+      explanationPending: false,
+      explanation: response.ok && !explanation.error
+        ? explanation
+        : { text: pointCheck.result?.message || "The route is blocked.", source: explanation.error || "Deterministic route facts" },
+    };
+  } catch (error) {
+    if (pointCheck.requestId !== requestId) return;
+    pointCheck = {
+      ...pointCheck,
+      explanationPending: false,
+      explanation: { text: pointCheck.result?.message || "The route is blocked.", source: `Ollama explanation unavailable: ${error.message}` },
+    };
+  }
+  if (planInteractionMode === "point" && planFloorName === floor) renderFloorPlan();
+  if (simInteractionMode === "point" && simulationReady && simFloorName === floor) {
+    configurePointSimulationScenario();
+    updateSimulationPanel();
+  }
+}
+
+function refreshPointViews(floor) {
+  if (planInteractionMode === "point" && planFloorName === floor) renderFloorPlan();
+  if (simInteractionMode === "point" && simulationReady && simFloorName === floor) loadSimulationScenario("point-result");
+}
+
+function planMaximumZoom() {
+  const viewer = document.querySelector("#planViewer");
+  const floor = (appData.floors || []).find((item) => item.name === planFloorName);
+  if (!viewer || !floor) return 12;
+  const elementsByGuid = new Map((appData.elements || []).map((element) => [element.guid, element]));
+  const edgesById = new Map((appData.routeEdges || []).map((edge) => [edge.edgeId, edge]));
+  const elements = (floor.elementGuids || []).map((guid) => elementsByGuid.get(guid)).filter(Boolean);
+  const edges = (floor.routeEdgeIds || []).map((edgeId) => edgesById.get(edgeId)).filter(Boolean);
+  const bounds = floorPlanBounds(elements, edges);
+  if (!bounds) return 12;
+  const spanX = Math.max(0.01, bounds.maxX - bounds.minX);
+  const spanY = Math.max(0.01, bounds.maxY - bounds.minY);
+  const baseWidth = Math.max(760, viewer.clientWidth || 0);
+  const baseHeight = Math.max(560, viewer.clientHeight || 0);
+  const basePixelsPerMeter = Math.min(baseWidth / spanX, baseHeight / spanY);
+  const pixelsPerGridCell = 1.25;
+  const gridResolutionM = 0.01;
+  const gridSelectableZoom = pixelsPerGridCell / (gridResolutionM * basePixelsPerMeter);
+  return Math.max(12, Math.ceil(gridSelectableZoom * 100) / 100);
+}
+
 function setPlanZoom(value) {
-  planZoom = Math.max(0.15, Math.min(12, value));
+  planZoom = Math.max(0.15, Math.min(planMaximumZoom(), value));
   applyPlanZoom();
 }
 
@@ -696,7 +977,7 @@ function floorPlanSvg(floor, elements, edges, issueCounts) {
   const walls = elements.filter((element) => ["IfcWall", "IfcColumn"].includes(element.ifcType) && element.bboxMin && element.bboxMax);
   const doors = elements.filter((element) => element.ifcType === "IfcDoor" && element.bboxMin && element.bboxMax);
   const blockers = elements.filter((element) => ["IfcStair", "IfcStairFlight", "IfcRamp", "IfcRampFlight"].includes(element.ifcType) && element.bboxMin && element.bboxMax);
-  const visibleEdges = planRouteMode === "all" ? edges : planRouteMode === "fail" ? edges.filter((edge) => edge.status === "fail") : [];
+  const visibleEdges = planInteractionMode === "point" ? [] : planRouteMode === "all" ? edges : planRouteMode === "fail" ? edges.filter((edge) => edge.status === "fail") : [];
   const routeMarkup = visibleEdges
     .filter((edge) => edge.path?.length > 1)
     .sort((a, b) => (a.status === "fail" ? 1 : 0) - (b.status === "fail" ? 1 : 0))
@@ -710,6 +991,7 @@ function floorPlanSvg(floor, elements, edges, issueCounts) {
   const blockerMarkup = blockers.map((element) => floorPlanRect(element, bounds, view, isStairType(element.ifcType) ? "planBlocker" : "planRamp", issueCounts)).join("");
   const doorMarkup = doors.map((element) => floorPlanRect(element, bounds, view, floorPlanDoorClass(element, issueCounts), issueCounts)).join("");
   const labelMarkup = spaces.map((element, index) => index < 90 ? floorPlanLabel(element, bounds, view) : "").join("");
+  const pointMarkup = floorPlanPointCheck(floor, bounds, view);
   return `<svg class="floorSvg" viewBox="0 0 ${view.width} ${view.height}" role="img" aria-label="${escapeHtml(floor.name)} floor plan">
     <rect class="planCanvas" x="0" y="0" width="${view.width}" height="${view.height}"></rect>
     <g>${spaceMarkup}</g>
@@ -718,7 +1000,22 @@ function floorPlanSvg(floor, elements, edges, issueCounts) {
     <g>${blockerMarkup}</g>
     <g>${doorMarkup}</g>
     <g>${labelMarkup}</g>
+    <g>${pointMarkup}</g>
   </svg>`;
+}
+
+function floorPlanPointCheck(floor, bounds, view) {
+  if (planInteractionMode !== "point" || pointCheck.floor !== floor.name) return "";
+  const route = pointCheck.result?.path || [];
+  const routeClass = pointCheck.result?.status === "blocked" ? "pointRoute blocked" : "pointRoute";
+  const line = route.length > 1
+    ? `<polyline class="${routeClass}" points="${route.map((point) => floorPlanPoint(point, bounds, view).map((value) => value.toFixed(2)).join(",")).join(" ")}"></polyline>`
+    : "";
+  const start = pointCheck.start ? floorPlanPoint(pointCheck.start, bounds, view) : null;
+  const end = pointCheck.end ? floorPlanPoint(pointCheck.end, bounds, view) : null;
+  return `${line}
+    ${start ? `<circle class="pointMarker start" cx="${start[0].toFixed(2)}" cy="${start[1].toFixed(2)}" r="5"></circle>` : ""}
+    ${end ? `<circle class="pointMarker end" cx="${end[0].toFixed(2)}" cy="${end[1].toFixed(2)}" r="5"></circle>` : ""}`;
 }
 
 function floorPlanBounds(elements, edges) {
@@ -1297,10 +1594,27 @@ function setupSimulation() {
   simClock = new THREE.Clock();
   setupFloorSelect();
   const runButton = document.querySelector("#simRun");
+  const interactionMode = document.querySelector("#simInteractionMode");
+  const pointReset = document.querySelector("#simPointReset");
   const speedInput = document.querySelector("#simSpeed");
   const playButton = document.querySelector("#simPlayPause");
   const resetButton = document.querySelector("#simReset");
   if (runButton) runButton.onclick = () => loadSimulationScenario("floor");
+  if (interactionMode) {
+    interactionMode.value = simInteractionMode;
+    interactionMode.onchange = () => {
+      simInteractionMode = interactionMode.value;
+      if (simInteractionMode === "point" && pointCheck.floor !== simFloorName) clearPointCheck(simFloorName);
+      loadSimulationScenario("mode");
+    };
+  }
+  if (pointReset) {
+    pointReset.onclick = () => {
+      clearPointCheck(simFloorName);
+      loadSimulationScenario("point-reset");
+      if (planInteractionMode === "point" && planFloorName === simFloorName) renderFloorPlan();
+    };
+  }
   if (speedInput) {
     speedInput.oninput = (event) => {
       simSpeed = Number(event.target.value) || 0.85;
@@ -1308,10 +1622,13 @@ function setupSimulation() {
   }
   if (playButton) {
     playButton.onclick = (event) => {
+      if (simInteractionMode === "point" && !simPath.length) return;
+      if (simInteractionMode === "point" && simProgress >= 1) simProgress = 0;
       simPlaying = !simPlaying;
       event.currentTarget.textContent = simPlaying ? "Pause" : "Play";
     };
   }
+  setupSimulationPointPicking();
   if (resetButton) {
     resetButton.onclick = () => {
       simProgress = 0;
@@ -1333,15 +1650,36 @@ function setupSimulation() {
 }
 
 function loadSimulationScenario(name) {
+  const preserveView = name.startsWith("point") && simCamera && simControls;
+  const savedView = preserveView ? {
+    position: simCamera.position.clone(),
+    target: simControls.target.clone(),
+    zoom: simCamera.zoom,
+  } : null;
   simProgress = 0;
   simRouteIndex = 0;
   simBlockedHold = 0;
-  simPlaying = true;
-  document.querySelector("#simPlayPause").textContent = "Pause";
+  simPlaying = simInteractionMode === "automatic";
+  document.querySelector("#simPlayPause").textContent = simPlaying ? "Pause" : "Play";
   simWorld.clear();
   simScenarioData = buildFloorScenario();
   simFloorTransform = simScenarioData.transform;
+  if (simInteractionMode === "point") configurePointSimulationScenario();
   simPath = currentSimulationPath();
+  const pointPathHasTravel = simulationPathHasTravel(simPath);
+  const pointResultReady = simInteractionMode === "point"
+    && pointCheck.floor === simFloorName
+    && pointCheck.result
+    && pointPathHasTravel;
+  if (pointResultReady && pointCheck.requestId !== simPointAnimatedRequestId) {
+    simPointAnimatedRequestId = pointCheck.requestId;
+    simPlaying = true;
+    document.querySelector("#simPlayPause").textContent = "Pause";
+  } else if (simInteractionMode === "point" && simPath.length && !pointPathHasTravel) {
+    simProgress = 1;
+    simPlaying = false;
+    document.querySelector("#simPlayPause").textContent = "Play";
+  }
   simScenarioData.build(simWorld);
   simChair.scale.setScalar(0.58 * simFloorTransform.scale);
   groundWheelchairModel();
@@ -1351,17 +1689,144 @@ function loadSimulationScenario(name) {
     simulationViewer.dataset.chairScale = String(simChair.scale.x);
     simulationViewer.dataset.routeTransformAudit = "passed";
     simulationViewer.dataset.floorGeometryContract = JSON.stringify(simScenarioData.geometryContract);
+    if (simInteractionMode === "point" && !simPath.length) {
+      simulationViewer.dataset.pointAnimationRequestId = String(pointCheck.requestId || 0);
+      simulationViewer.dataset.pointAnimationProgress = "0";
+      simulationViewer.dataset.pointAnimationState = "unavailable";
+      delete simulationViewer.dataset.pointAnimationX;
+      delete simulationViewer.dataset.pointAnimationZ;
+    }
   }
-  simPathLine = addSimulationPath(simWorld, simPath, currentSimulationRoute()?.status === "fail" ? 0xb3261e : 0x2d7d46, simFloorTransform);
-  fitSimulationCamera();
+  simPathLine = pointPathHasTravel ? addSimulationPath(simWorld, simPath, currentSimulationRoute()?.status === "fail" ? 0xb3261e : 0x2d7d46, simFloorTransform) : null;
+  addSimulationPointMarkers();
+  simChair.visible = simInteractionMode === "automatic" || simPath.length > 0;
+  updateSimulationModeControls();
+  if (savedView) {
+    simCamera.position.copy(savedView.position);
+    simControls.target.copy(savedView.target);
+    simCamera.zoom = savedView.zoom;
+    simCamera.updateProjectionMatrix();
+    simControls.update();
+    resizeSimulationRenderer();
+  } else {
+    fitSimulationCamera();
+  }
   updateSimulationPanel();
   updateChairPose(0, 0);
+}
+
+function configurePointSimulationScenario() {
+  const state = pointCheck.floor === simFloorName ? pointCheck : null;
+  const passed = state?.result?.status === "pass";
+  const pathLength = state?.result?.path?.length || 0;
+  const hasCandidate = passed ? pathLength > 0 : pathLength > 1;
+  const auditState = pointAuditState(state?.result);
+  const route = hasCandidate ? {
+    key: `point:${simFloorName}:${state.start.join(",")}:${state.end.join(",")}`,
+    edgeId: "Selected points",
+    status: passed ? "pass" : "fail",
+    reason: passed ? "accessible" : state.result.reason,
+    blockAt: 1,
+    path: state.result.path.map((point) => simFloorTransform.point(point)),
+  } : null;
+  simScenarioData.routePaths = route ? [route] : [];
+  simScenarioData.path = route?.path || [];
+  simScenarioData.title = `${simFloorName} point-to-point check`;
+  simScenarioData.source = state?.explanation?.source || "Precomputed 0.01 m navigation tiles, IFC floor geometry, accessible door portals, and final route validation.";
+  simScenarioData.status = `${pointStatusText(state)}${state?.result?.status === "blocked" && state?.explanation?.text ? ` ${state.explanation.text}` : ""}`;
+  simScenarioData.metrics = [
+    ["Start point", state?.start ? `${state.start[0].toFixed(2)}, ${state.start[1].toFixed(2)} m` : "not selected", state?.start ? "pass" : "watch"],
+    ["Destination", state?.end ? `${state.end[0].toFixed(2)}, ${state.end[1].toFixed(2)} m` : "not selected", state?.end ? "pass" : "watch"],
+    ["Accessible route", passed ? "found" : state?.result?.status === "blocked" ? "blocked" : "not checked", passed ? "pass" : state?.result?.status === "blocked" ? "fail" : "watch"],
+    ["Route distance", passed ? `${Number(state.result.distanceM).toFixed(2)} m` : "not available", passed ? "pass" : "watch"],
+    ["Reachable candidate", !passed && hasCandidate ? `${Number(state.result.distanceM).toFixed(2)} m` : "not applicable", !passed && hasCandidate ? "fail" : "watch"],
+    ["Accessible route width", passed ? `${Number(state.result.routeWidthM).toFixed(2)} m` : "not available", passed ? "pass" : "watch"],
+    [auditState.label, auditState.value, auditState.tone],
+  ];
+}
+
+function updateSimulationModeControls() {
+  const pointMode = simInteractionMode === "point";
+  const runButton = document.querySelector("#simRun");
+  const pointReset = document.querySelector("#simPointReset");
+  const playButton = document.querySelector("#simPlayPause");
+  const resetButton = document.querySelector("#simReset");
+  if (runButton) runButton.hidden = pointMode;
+  if (pointReset) pointReset.hidden = !pointMode;
+  updatePointCoordinateControl("sim", pointMode, simFloorName);
+  const pathHasTravel = simulationPathHasTravel(simPath);
+  if (playButton) playButton.disabled = pointMode && !pathHasTravel;
+  if (resetButton) resetButton.disabled = pointMode && !pathHasTravel;
+}
+
+function addSimulationPointMarkers() {
+  if (simInteractionMode !== "point" || pointCheck.floor !== simFloorName) return;
+  const markerData = [
+    [pointCheck.start, 0x2159a6],
+    [pointCheck.end, 0x6b2ca0],
+  ];
+  for (const [raw, color] of markerData) {
+    if (!raw) continue;
+    const point = simFloorTransform.point(raw);
+    const marker = new THREE.Mesh(
+      new THREE.SphereGeometry(simFloorTransform.length(0.13), 20, 14),
+      new THREE.MeshStandardMaterial({ color, roughness: 0.45 }),
+    );
+    marker.position.set(point.x, simFloorTransform.floorSurfaceY + simFloorTransform.length(0.13), point.z);
+    marker.castShadow = true;
+    simWorld.add(marker);
+  }
+}
+
+function setupSimulationPointPicking() {
+  const canvas = simRenderer?.domElement;
+  if (!canvas) return;
+  canvas.addEventListener("pointerdown", (event) => {
+    if (simInteractionMode !== "point" || event.button !== 0) return;
+    simPointGesture = { x: event.clientX, y: event.clientY, moved: false };
+  });
+  canvas.addEventListener("pointermove", (event) => {
+    if (!simPointGesture) return;
+    if (Math.abs(event.clientX - simPointGesture.x) + Math.abs(event.clientY - simPointGesture.y) > 5) simPointGesture.moved = true;
+  });
+  canvas.addEventListener("pointerup", (event) => {
+    if (!simPointGesture || simPointGesture.moved || simInteractionMode !== "point" || pointCheck.pending) {
+      simPointGesture = null;
+      return;
+    }
+    simPointGesture = null;
+    const rect = canvas.getBoundingClientRect();
+    const mouse = new THREE.Vector2(
+      ((event.clientX - rect.left) / rect.width) * 2 - 1,
+      -((event.clientY - rect.top) / rect.height) * 2 + 1,
+    );
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(mouse, simCamera);
+    const scenePoint = new THREE.Vector3();
+    const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -simFloorTransform.floorSurfaceY);
+    if (!raycaster.ray.intersectPlane(floorPlane, scenePoint)) return;
+    const selected = simFloorTransform.inversePoint(scenePoint);
+    if (pointCheck.floor !== simFloorName || !pointCheck.start || pointCheck.end) {
+      pointRequestSequence += 1;
+      pointCheck = { ...emptyPointCheck(simFloorName), start: selected };
+      loadSimulationScenario("point-start");
+      if (planInteractionMode === "point" && planFloorName === simFloorName) renderFloorPlan();
+      return;
+    }
+    pointCheck = { ...pointCheck, end: selected, result: null, error: "" };
+    loadSimulationScenario("point-pending");
+    requestPointRoute(simFloorName, pointCheck.start, pointCheck.end);
+  });
+  canvas.addEventListener("pointercancel", () => {
+    simPointGesture = null;
+  });
 }
 
 function setupFloorSelect() {
   const select = document.querySelector("#floorSelect");
   if (!select) return;
   const floors = appData.floors || [];
+  setupPointCoordinateControl("sim", () => simFloorName);
   select.innerHTML = floors
     .filter((floor) => floor.doorGuids?.length)
     .map((floor) => `<option value="${escapeHtml(floor.name)}">${escapeHtml(floor.name)} (${floor.doorGuids.length} doors)</option>`)
@@ -1371,6 +1836,7 @@ function setupFloorSelect() {
   select.value = simFloorName;
   select.addEventListener("change", () => {
     simFloorName = select.value;
+    if (simInteractionMode === "point") clearPointCheck(simFloorName);
     loadSimulationScenario("floor");
   });
 }
@@ -1578,6 +2044,9 @@ function createFloorTransform(elements) {
       point(point) {
         return new THREE.Vector3(point[0], this.floorSurfaceY, point[1]);
       },
+      inversePoint(point) {
+        return [point.x, point.z];
+      },
       box(element) {
         return { center: new THREE.Vector3(0, 0, 0), size: new THREE.Vector3(1, 1, 1) };
       },
@@ -1599,6 +2068,9 @@ function createFloorTransform(elements) {
     },
     point(point) {
       return new THREE.Vector3((point[0] - centerX) * scale, this.floorSurfaceY, (point[1] - centerY) * scale);
+    },
+    inversePoint(point) {
+      return [point.x / scale + centerX, point.z / scale + centerY];
     },
     box(element, flatHeight = false) {
       const mn = element.bboxMin;
@@ -1977,15 +2449,30 @@ function animateSimulation() {
   const blockAt = routeFails ? route?.blockAt || 0.72 : 1;
   const blocked = routeFails && simProgress >= blockAt;
   if (simPlaying && blocked) {
-    simBlockedHold += delta;
-    if (simBlockedHold > 1.4) {
-      advanceSimulationRoute();
+    if (simInteractionMode === "point") {
+      simProgress = blockAt;
+      simPlaying = false;
+      simBlockedHold = 0;
+      const playButton = document.querySelector("#simPlayPause");
+      if (playButton) playButton.textContent = "Play";
+    } else {
+      simBlockedHold += delta;
+      if (simBlockedHold > 1.4) {
+        advanceSimulationRoute();
+      }
     }
   } else if (simPlaying) {
     simBlockedHold = 0;
     simProgress += delta * simSpeed * 0.085;
     if (simProgress > 1) {
-      advanceSimulationRoute();
+      if (simInteractionMode === "point") {
+        simProgress = 1;
+        simPlaying = false;
+        const playButton = document.querySelector("#simPlayPause");
+        if (playButton) playButton.textContent = "Play";
+      } else {
+        advanceSimulationRoute();
+      }
     }
   }
   updateChairPose(simProgress, delta);
@@ -2000,6 +2487,10 @@ function currentSimulationRoute() {
 
 function currentSimulationPath() {
   return currentSimulationRoute()?.path || simScenarioData?.path || [];
+}
+
+function simulationPathHasTravel(path) {
+  return (path || []).some((point, index) => index > 0 && point.distanceTo(path[index - 1]) > 1e-9);
 }
 
 function advanceSimulationRoute() {
@@ -2029,6 +2520,23 @@ function updateChairPose(progress, delta) {
   const ahead = pointOnPolyline(simPath, Math.min(eased + 0.01, 1));
   simChair.position.copy(point);
   simChair.position.y = simFloorTransform.floorSurfaceY + simChair.userData.groundOffsetY;
+  if (simInteractionMode === "point") {
+    const simulationViewer = document.querySelector("#simulationViewer");
+    if (simulationViewer) {
+      const routeBlocked = route?.status === "fail" && progress >= (route.blockAt || 0.72);
+      simulationViewer.dataset.pointAnimationRequestId = String(pointCheck.requestId || 0);
+      simulationViewer.dataset.pointAnimationProgress = String(Math.max(0, Math.min(1, progress)));
+      simulationViewer.dataset.pointAnimationX = String(point.x);
+      simulationViewer.dataset.pointAnimationZ = String(point.z);
+      simulationViewer.dataset.pointAnimationState = simPlaying
+        ? "moving"
+        : routeBlocked
+          ? "blocked"
+          : progress >= 1
+            ? "complete"
+            : "ready";
+    }
+  }
   const dx = ahead.x - point.x;
   const dz = ahead.z - point.z;
   if (Math.abs(dx) + Math.abs(dz) > 0.001) {
@@ -2087,6 +2595,16 @@ function updateSimulationPanel() {
 
 function updateSimulationStatus(blocked) {
   if (!simScenarioData) return;
+  if (simInteractionMode === "point") {
+    const routeBlocked = currentSimulationRoute()?.status === "fail";
+    const status = simPath.length && simProgress >= 1
+      ? `${routeBlocked ? "Stopped at the last collision-free point." : "Destination reached."} ${simScenarioData.status}`
+      : simPlaying && simPath.length
+        ? `${routeBlocked ? "Following the collision-free candidate toward the obstruction." : "Following the selected accessible route."} ${simScenarioData.status}`
+        : simScenarioData.status;
+    document.querySelector("#simStatus").textContent = status;
+    return;
+  }
   const route = currentSimulationRoute();
   const prefix = route ? `Route ${route.edgeId}: ${route.reason}. ` : "";
   const status = blocked ? `${prefix}Blocked here. Moving to the next route in a moment.` : `${prefix}${simScenarioData.status}`;

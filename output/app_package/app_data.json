@@ -13,7 +13,15 @@
       "resultCount": 184,
       "message": "Conforms: False. Constraint violations: 184. Full report is in shacl_report.ttl."
     },
-    "ruleSource": "SHACL rules over IFCtoLBD RDF plus IFC-derived geometry measurements"
+    "ruleSource": "SHACL rules over IFCtoLBD RDF plus IFC-derived geometry measurements",
+    "pointNavigation": {
+      "formatVersion": 1,
+      "resolutionM": 0.01,
+      "tileSizeM": 5.0,
+      "wheelchairClearanceM": 0.9,
+      "accessibleRouteWidthM": 1.5,
+      "floorCount": 3
+    }
   },
   "rules": {
     "door_width_m": 0.9,
@@ -681532,6 +681540,7 @@
     "measurements": "IfcOpenShell geometry or explicit IFC properties",
     "rules": "SHACL validation report",
     "routes": "precomputed door graph from IFC space boundaries",
-    "ifctolbd": "raw graph created by IFCtoLBD"
+    "ifctolbd": "raw graph created by IFCtoLBD",
+    "pointNavigation": "precomputed tiled occupancy and component graph from IFC floor geometry"
   }
 }

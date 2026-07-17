@@ -2,11 +2,14 @@
 
 The Wheelchair Route Checker reads an IFC building model, calculates indoor door-to-door wheelchair routes, checks accessibility measurements with SHACL and shows the results in a browser.
 
+The illustrated technical manual is available as [ACC_manual.pdf](docs/ACC_manual.pdf). Its editable LaTeX source is [ACC_manual.tex](docs/ACC_manual.tex).
+
 The application contains:
 
 - IFC geometry extraction with IfcOpenShell
 - IFC-to-RDF conversion with the included IFCtoLBD 2.43.4 Java runtime
 - four-direction A* routing on a 0.10 m occupancy grid
+- interactive point-to-point A* routing on precomputed 0.01 m floor tiles
 - shortest door-graph routes calculated with Dijkstra's algorithm
 - SHACL validation with pySHACL
 - matching 2D floor plans and a 2.5D wheelchair simulation
@@ -187,7 +190,7 @@ if ($failed.Count -eq 0 -and $expected.Count -eq 170) {
 python -m unittest discover -s tests -v
 ```
 
-The tests check assistant grounding, unsupported-recommendation rejection, structured answer formatting, complete SHACL issue aggregation and balanced failed-route evidence.
+The tests check assistant grounding, unsupported-recommendation rejection, structured answer formatting, complete SHACL issue aggregation, exact point-route endpoints, wall clearance, door width, route width, stair blocking, tile streaming and navigation-file integrity.
 
 ## 9. Prepare An IFC Model
 
@@ -195,6 +198,8 @@ The repository includes both project IFC files:
 
 - `AC20-Institute-Var-2.ifc`
 - `20201208DigitalHub_ARC.ifc`
+
+The repository also includes a ready-to-run DigitalHub package in `output/app_package`. A new user can skip the two preprocessing commands below and start at step 10. Run preprocessing when changing the IFC model or the geometry and routing code.
 
 Generate the AC20 browser package with:
 
@@ -210,6 +215,8 @@ python preprocess.py --ifc ".\20201208DigitalHub_ARC.ifc" --save-bin
 
 `output/app_package` contains one active package at a time. Running either command replaces that generated package with the selected model's results. The original IFC files are not modified.
 
+Preprocessing also builds the point-to-point navigation data. Each floor is divided into 5 m tiles at 0.01 m resolution. Walkable cells are packed as bits and compressed, so the browser and server load only the tiles needed for the selected floor and route. Walls, columns, stairs, inaccessible ramps, narrow doors and spaces below the 1.50 m route-width rule are blocked during this build.
+
 To process another IFC model, use its full path:
 
 ```powershell
@@ -224,6 +231,8 @@ raw graph created by pinned IFCtoLBD 2.43.4 runtime
 Wrote package: ...\output\app_package
 Routes: ..., issues: ..., missing geometry: ...
 ```
+
+In the browser, open **Floor Plan 2D** or **Wheelchair Simulation**, change **Mode** to **Point-to-point**, then select a start and destination on the current floor. Both tabs send the same IFC coordinates to the same backend route checker. A successful result must start and end at the selected coordinates, use only 0, 90 or 180 degree segments, and pass the final collision audit before it is drawn.
 
 If preprocessing reports that Java is missing, close PowerShell, open it again and rerun `java -version`.
 
@@ -248,32 +257,32 @@ Keep that window open.
 Return to the project PowerShell window. Make sure the virtual environment is active, then run:
 
 ```powershell
-python server.py --port 8767
+python server.py --port 8771
 ```
 
 Open this address in a browser:
 
 ```text
-http://127.0.0.1:8767
+http://127.0.0.1:8771
 ```
 
 Keep the server window open. Stop the server with `Ctrl+C`.
 
-If port 8767 is already occupied, stop the old local server:
+If port 8771 is already occupied, stop the old local server:
 
 ```powershell
-Get-NetTCPConnection -LocalPort 8767 -State Listen -ErrorAction SilentlyContinue |
+Get-NetTCPConnection -LocalPort 8771 -State Listen -ErrorAction SilentlyContinue |
     ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }
 ```
 
-Then run `python server.py --port 8767` again.
+Then run `python server.py --port 8771` again.
 
 ## Running Without Ollama
 
 If you do not want generated explanations, start the website with:
 
 ```powershell
-python server.py --yes --port 8767
+python server.py --yes --port 8771
 ```
 
 The assistant area then returns SHACL report data. All building extraction, route generation, validation and visualisation features remain available.
@@ -290,11 +299,13 @@ The website contains:
 
 The Check Results page includes `Restart Ollama`. It stops verified Ollama processes, starts one clean Ollama service, waits for the API and warms the selected model. It refuses to stop an unrelated program if another executable owns port 11434.
 
+The header also includes `Stop Project Services`. It stops verified Wheelchair Route Checker servers on ports 8765, 8766, 8767 and 8771, then stops verified Ollama processes on port 11434. It checks the executable, command line and project API response before stopping a server. Other localhost listeners are reported and left running. Because the current website server is stopped last, the page disconnects after showing the result.
+
 The server prefers `qwen3:8b`. To select another installed model before starting the server:
 
 ```powershell
 $env:OLLAMA_MODEL = "qwen3:8b"
-python server.py --port 8767
+python server.py --port 8771
 ```
 
 ## Accessibility Checks
@@ -326,6 +337,8 @@ The generated route has these properties:
 
 Dijkstra's algorithm joins passing door-to-door edges into shortest routes across the door graph. Stair approaches are stored as blocked edges so the simulation can stop before the stair.
 
+Interactive point-to-point routing uses a separate floor grid. Preprocessing divides each floor into compressed 5 m tiles containing 0.01 m cells. Solid obstacles are expanded by 0.445 m around the route centre: a 0.45 m wheelchair radius minus a 0.005 m geometry tolerance. Accessible door rectangles create controlled portals between spaces. A point request loads only the required tiles, runs four-direction A* once, restores the exact selected endpoints and performs a final geometry audit. A complete audited route is green. If the destination cannot be reached, the red candidate ends at the last collision-free cell and is never labelled accessible.
+
 ## RDF, SHACL And Ollama
 
 IFCtoLBD converts IFC meaning into RDF Turtle. The application adds geometry measurements and route measurements to the RDF graph. pySHACL then runs the constraints in:
@@ -353,6 +366,8 @@ output/app_package/route_model.glb       compact browser model
 output/app_package/route_graph.bin       saved route graph when --save-bin is used
 output/app_package/ifc_route_audit.json  machine-readable route audit
 output/app_package/ifc_route_audit.md    readable route audit
+output/app_package/navigation/index.json floor extents, tile metadata and hashes
+output/app_package/navigation/*/*.bin    compressed 0.01 m walkability tiles
 ```
 
 Uploaded Model Library entries have separate generated packages. After changing preprocessing or route code, select `Regenerate`, wait for `Complete`, then select `Open`.
@@ -365,6 +380,7 @@ server.py                                  local server, Model Library and Ollam
 requirements.txt                           exact Python dependency versions
 backend/geometry.py                        IFC geometry and bounding-box extraction
 backend/routes.py                          occupancy grid, A* and door graph
+backend/navigation.py                      tiled point-route grid, A* and final audit
 backend/ifc_tools.py                       pinned IFCtoLBD execution
 backend/shacl_runner.py                    SHACL validation and issue extraction
 backend/package_writer.py                  browser package generation
@@ -377,6 +393,8 @@ frontend/vendor/three/                     included Three.js 0.165.0 browser mod
 rules/accessibility_rules.shacl.ttl        accessibility constraints
 tests/                                     route, context and assistant regression tests
 tools/ifctolbd/java_libraries/             complete unzipped IFCtoLBD Java runtime
+docs/ACC_manual.pdf                        illustrated technical manual
+docs/ACC_manual.tex                        editable manual source
 ```
 
 ## Troubleshooting

@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Wheelchair Route Checker</title>
-    <link rel="stylesheet" href="styles.css?v=20260711-final-floor-parity-1" />
+    <link rel="stylesheet" href="styles.css?v=20260715-point-audit-2" />
   </head>
   <body>
     <header class="topbar">
@@ -12,13 +12,19 @@
         <h1>Wheelchair Route Checker</h1>
         <p>IFC geometry, IFCtoLBD RDF, SHACL checks, and precomputed door routes.</p>
       </div>
-      <nav>
-        <button data-page="models" class="active">Home</button>
-        <button data-page="results">Check Results</button>
-        <button data-page="plan">Floor Plan 2D</button>
-        <button data-page="model">Building Model</button>
-        <button data-page="simulation">Wheelchair Simulation</button>
-      </nav>
+      <div class="topActions">
+        <nav>
+          <button data-page="models" class="active">Home</button>
+          <button data-page="results">Check Results</button>
+          <button data-page="plan">Floor Plan 2D</button>
+          <button data-page="model">Building Model</button>
+          <button data-page="simulation">Wheelchair Simulation</button>
+        </nav>
+        <div class="serviceStopControl">
+          <button id="projectStop" type="button">Stop Project Services</button>
+          <span id="projectStopStatus" aria-live="polite"></span>
+        </div>
+      </div>
     </header>
 
     <main>
@@ -72,6 +78,12 @@
         <div class="planShell">
           <div class="planToolbar">
             <label class="floorSelectLabel">Floor <select id="planFloorSelect"></select></label>
+            <label class="floorSelectLabel">Mode
+              <select id="planInteractionMode">
+                <option value="inspect">Inspect</option>
+                <option value="point">Point-to-point</option>
+              </select>
+            </label>
             <label class="floorSelectLabel">Routes
               <select id="planRouteMode">
                 <option value="issues">Issues only</option>
@@ -79,6 +91,15 @@
                 <option value="all">All routes</option>
               </select>
             </label>
+            <button id="planPointReset" type="button" hidden>Clear points</button>
+            <form id="planPointCoordinates" class="pointCoordinateControl" hidden>
+              <span>Coordinates (m)</span>
+              <label>Start X <input id="planPointStartX" type="number" step="any" required /></label>
+              <label>Start Y <input id="planPointStartY" type="number" step="any" required /></label>
+              <label>End X <input id="planPointEndX" type="number" step="any" required /></label>
+              <label>End Y <input id="planPointEndY" type="number" step="any" required /></label>
+              <button type="submit">Check coordinates</button>
+            </form>
             <div class="planZoom">
               <button id="planResetView">Reset</button>
             </div>
@@ -132,7 +153,22 @@
         <div class="simulationShell">
           <div class="simToolbar">
             <label class="floorSelectLabel">Floor <select id="floorSelect"></select></label>
+            <label class="floorSelectLabel">Mode
+              <select id="simInteractionMode">
+                <option value="automatic">Floor check</option>
+                <option value="point">Point-to-point</option>
+              </select>
+            </label>
             <button id="simRun">Run Check</button>
+            <button id="simPointReset" type="button" hidden>Clear points</button>
+            <form id="simPointCoordinates" class="pointCoordinateControl" hidden>
+              <span>Coordinates (m)</span>
+              <label>Start X <input id="simPointStartX" type="number" step="any" required /></label>
+              <label>Start Y <input id="simPointStartY" type="number" step="any" required /></label>
+              <label>End X <input id="simPointEndX" type="number" step="any" required /></label>
+              <label>End Y <input id="simPointEndY" type="number" step="any" required /></label>
+              <button type="submit">Check coordinates</button>
+            </form>
             <label class="speedControl">Speed <input id="simSpeed" type="range" min="0.35" max="2.4" step="0.05" value="0.85" /></label>
             <button id="simPlayPause">Pause</button>
             <button id="simReset">Reset</button>
@@ -163,6 +199,6 @@
         }
       }
     </script>
-    <script type="module" src="app.js?v=20260711-final-floor-parity-1"></script>
+    <script type="module" src="app.js?v=20260716-point-animation-3"></script>
   </body>
 </html>

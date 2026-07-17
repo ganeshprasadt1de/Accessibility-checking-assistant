@@ -21,3 +21,9 @@ sample_models/
 output/app_package/_work/
 output/app_package/*.ifc
 output/model_library/
+output/pdf/
+tmp/
+docs/*.aux
+docs/*.log
+docs/*.out
+docs/*.toc

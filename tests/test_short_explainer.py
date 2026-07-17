@@ -2,7 +2,7 @@ import json
 import unittest
 from unittest.mock import patch
 
-from backend.short_explainer import _allowed_actions, _summary, explain_question
+from backend.short_explainer import _allowed_actions, _summary, explain_point_route, explain_question
 
 
 STAIR_CONTEXT = {
@@ -31,6 +31,21 @@ class FakeResponse:
 
 
 class ShortExplainerTests(unittest.TestCase):
+    @patch("backend.short_explainer.urllib.request.urlopen")
+    def test_point_route_explanation_cannot_change_deterministic_reason(self, urlopen):
+        urlopen.return_value = FakeResponse({"response": json.dumps({"acceptedReason": "destination_not_walkable"})})
+        result = explain_point_route("destination_not_walkable")
+        self.assertTrue(result["llmReviewed"])
+        self.assertEqual(result["reason"], "destination_not_walkable")
+        self.assertIn("last collision-free point", result["text"])
+        self.assertNotIn("grid point", result["text"])
+
+    @patch("backend.short_explainer.urllib.request.urlopen")
+    def test_point_route_explanation_rejects_changed_reason(self, urlopen):
+        urlopen.return_value = FakeResponse({"response": json.dumps({"acceptedReason": "no_accessible_connection"})})
+        with self.assertRaisesRegex(RuntimeError, "does not match"):
+            explain_point_route("destination_not_walkable")
+
     def test_stair_action_does_not_offer_ramp_lift_elevator_or_slope(self):
         text = " ".join(item["text"] for item in _allowed_actions(STAIR_CONTEXT)).lower()
         for unsupported in ("ramp", "lift", "elevator", "slope"):

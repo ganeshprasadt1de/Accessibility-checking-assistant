@@ -1,6 +1,8 @@
 # Preserve vendored third-party browser modules exactly as published.
 frontend/vendor/three/** binary
 
-# JAR and IFC files are binary assets.
+# JAR, IFC, PDF, and compressed navigation-tile files are binary assets.
 tools/ifctolbd/java_libraries/*.jar binary
 *.ifc binary
+*.pdf binary
+*.nav binary

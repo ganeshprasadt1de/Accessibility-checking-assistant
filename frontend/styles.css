@@ -422,6 +422,40 @@ th {
   padding: 8px 10px;
 }
 
+.pointCoordinateControl {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 7px 9px;
+  border: 1px solid #c8d1ce;
+  border-radius: 7px;
+  background: #f8faf8;
+  color: #263134;
+  font-size: 13px;
+}
+
+.pointCoordinateControl[hidden] {
+  display: none;
+}
+
+.pointCoordinateControl label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pointCoordinateControl input {
+  width: 78px;
+  padding: 7px 6px;
+  border: 1px solid #9aa7a3;
+  border-radius: 5px;
+}
+
+.pointCoordinateControl button {
+  padding: 8px 10px;
+}
+
 .legendLine {
   display: inline-block;
   width: 26px;
@@ -800,6 +834,70 @@ aside {
 }
 #assistantAnswer p {
   margin: 0 0 0.75rem;
+}
+
+.topActions {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.serviceStopControl {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+#projectStop {
+  border-color: #a5453f;
+  color: #8f2822;
+}
+
+#projectStop:hover {
+  background: #8f2822;
+  color: #ffffff;
+}
+
+#projectStopStatus {
+  max-width: 360px;
+  color: #5b6669;
+  font-size: 12px;
+}
+
+.pointRoute {
+  fill: none;
+  stroke: #2d7d46;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.pointRoute.blocked {
+  stroke: #b3261e;
+}
+
+.pointMarker {
+  stroke: #ffffff;
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.pointMarker.start {
+  fill: #2159a6;
+}
+
+.pointMarker.end {
+  fill: #6b2ca0;
+}
+
+#planViewer.pointMode {
+  cursor: crosshair;
+}
+
+#planViewer.pointMode:active {
+  cursor: crosshair;
 }
 
 #assistantAnswer h3 {

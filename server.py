@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -16,7 +17,8 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
-from backend.short_explainer import explain_question
+from backend.short_explainer import POINT_ROUTE_EXPLANATIONS, explain_point_route, explain_question
+from backend.navigation import NavigationError, NavigationPackage
 
 ROOT = Path(__file__).resolve().parent
 FRONTEND = ROOT / "frontend"
@@ -30,6 +32,11 @@ OLLAMA_PORT = 11434
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "").strip()
 OLLAMA_LOCK = threading.Lock()
 MODEL_LOCK = threading.Lock()
+NAVIGATION_LOCK = threading.Lock()
+NAVIGATION_CACHE: dict[str, tuple[int, NavigationPackage]] = {}
+POINT_EXPLANATION_CACHE: dict[tuple[str, str], dict] = {}
+PROJECT_PORTS = {8765, 8766, 8767, 8771}
+ACTIVE_SERVER: ThreadingHTTPServer | None = None
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -72,12 +79,56 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_POST(self) -> None:
         parsed = urlparse(self.path)
+        if parsed.path == "/api/point-route":
+            payload = self._body_json()
+            try:
+                package = current_package()
+                navigator = navigation_package(package)
+                result = navigator.route(str(payload.get("floor", "")), payload.get("start"), payload.get("end"))
+                self._json(result)
+            except NavigationError as exc:
+                self._json({"error": str(exc)}, 400)
+            except Exception as exc:
+                self._json({"error": f"Point routing failed: {exc}"}, 500)
+            return
+        if parsed.path == "/api/point-route/explain":
+            payload = self._body_json()
+            try:
+                navigator = navigation_package(current_package())
+                result = navigator.route(str(payload.get("floor", "")), payload.get("start"), payload.get("end"))
+                if result.get("status") != "blocked":
+                    self._json({"error": "Only a blocked point route requires a blocking explanation."}, 409)
+                    return
+                reason = str(result.get("reason", ""))
+                text = POINT_ROUTE_EXPLANATIONS.get(reason, result.get("message", "The route is blocked."))
+                if not OLLAMA_AVAILABLE:
+                    self._json({"text": text, "source": "Deterministic point-route facts; Ollama is not running", "reason": reason, "llmReviewed": False})
+                    return
+                cache_key = (reason, OLLAMA_MODEL)
+                explanation = POINT_EXPLANATION_CACHE.get(cache_key)
+                if explanation is None:
+                    explanation = explain_point_route(reason, model=OLLAMA_MODEL, host=OLLAMA_HOST)
+                    POINT_EXPLANATION_CACHE[cache_key] = explanation
+                self._json(explanation)
+            except NavigationError as exc:
+                self._json({"error": str(exc)}, 400)
+            except Exception as exc:
+                self._json({"error": f"Point-route explanation failed: {exc}"}, 503)
+            return
         if parsed.path == "/api/ollama/restart":
             if not local_maintenance_request(self):
                 self._json({"error": "Ollama maintenance requires a same-origin request from this computer."}, 403)
                 return
             result, status = restart_ollama()
             self._json(result, status)
+            return
+        if parsed.path == "/api/project/stop":
+            if not local_maintenance_request(self):
+                self._json({"error": "Project maintenance requires a same-origin request from this computer."}, 403)
+                return
+            result = stop_project_services(os.getpid())
+            self._json(result)
+            schedule_current_server_stop()
             return
         if parsed.path == "/api/models/upload":
             self._json(upload_model(self))
@@ -191,6 +242,21 @@ def current_package() -> Path:
         if (package / "app_data.json").exists():
             return package
     return PACKAGE
+
+
+def navigation_package(package: Path) -> NavigationPackage:
+    index_path = package / "navigation" / "index.json"
+    if not index_path.exists():
+        raise NavigationError("Point-navigation data is missing. Regenerate this model.")
+    key = str(package.resolve())
+    modified = index_path.stat().st_mtime_ns
+    with NAVIGATION_LOCK:
+        cached = NAVIGATION_CACHE.get(key)
+        if cached and cached[0] == modified:
+            return cached[1]
+        navigator = NavigationPackage(package)
+        NAVIGATION_CACHE[key] = (modified, navigator)
+        return navigator
 
 
 def package_file(relative: str) -> Path:
@@ -489,6 +555,8 @@ def progress_from_line(line: str) -> tuple[int, str]:
         return 46, "Converting IFC to RDF"
     if "raw graph created" in lower:
         return 62, "Preparing rule graph"
+    if "building tiled point-navigation" in lower:
+        return 88, "Building point navigation"
     if "routes:" in lower:
         return 94, "Writing package"
     if "wrote package" in lower:
@@ -787,8 +855,97 @@ def restart_ollama() -> tuple[dict, int]:
         OLLAMA_LOCK.release()
 
 
+def project_listener_processes() -> list[dict]:
+    ports = ",".join(str(port) for port in sorted(PROJECT_PORTS))
+    command = (
+        f"$ports = @({ports}); "
+        "$connections = Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | "
+        "Where-Object { $_.LocalAddress -in @('127.0.0.1','::1') -and $_.LocalPort -in $ports }; "
+        "$items = foreach ($connection in $connections) { "
+        "$process = Get-CimInstance Win32_Process -Filter ('ProcessId = ' + $connection.OwningProcess) -ErrorAction SilentlyContinue; "
+        "if ($process) { [pscustomobject]@{ pid=[int]$process.ProcessId; port=[int]$connection.LocalPort; "
+        "name=[string]$process.Name; path=[string]$process.ExecutablePath; command=[string]$process.CommandLine } } }; "
+        "$items | Sort-Object pid,port -Unique | ConvertTo-Json -Compress"
+    )
+    completed = subprocess.run(
+        ["powershell", "-NoProfile", "-Command", command],
+        capture_output=True,
+        text=True,
+        timeout=15,
+        check=False,
+    )
+    if completed.returncode != 0:
+        raise RuntimeError(completed.stderr.strip() or "Project listener inspection failed.")
+    output = completed.stdout.strip()
+    if not output:
+        return []
+    payload = json.loads(output)
+    return payload if isinstance(payload, list) else [payload]
+
+
+def project_server_signature(port: int) -> bool:
+    try:
+        with urllib.request.urlopen(f"http://127.0.0.1:{port}/api/models", timeout=2) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+        return response.status == 200 and isinstance(payload.get("models"), list) and "activeModelId" in payload and "defaultPackageAvailable" in payload
+    except (OSError, ValueError, urllib.error.URLError, TimeoutError):
+        return False
+
+
+def verified_project_listener(item: dict) -> bool:
+    try:
+        port = int(item.get("port"))
+    except (TypeError, ValueError):
+        return False
+    name = str(item.get("name", "")).lower()
+    command = str(item.get("command", "")).lower()
+    server_command = re.search(r"(?:^|[\\/\s\"'])server\.py(?:$|[\s\"'])", command) is not None
+    return port in PROJECT_PORTS and name in {"python.exe", "pythonw.exe"} and server_command and project_server_signature(port)
+
+
+def stop_project_services(current_pid: int) -> dict:
+    listeners = project_listener_processes()
+    verified = [item for item in listeners if verified_project_listener(item)]
+    skipped = [item for item in listeners if item not in verified]
+    stopped = []
+    for item in verified:
+        pid = int(item["pid"])
+        if pid == current_pid or pid in stopped:
+            continue
+        subprocess.run(
+            ["powershell", "-NoProfile", "-Command", f"Stop-Process -Id {pid} -Force -ErrorAction Stop"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=True,
+        )
+        stopped.append(pid)
+    warnings = []
+    try:
+        ollama_stopped = stop_ollama_processes()
+    except Exception as exc:
+        ollama_stopped = 0
+        warnings.append(str(exc))
+    return {
+        "status": "stopping",
+        "projectProcesses": len(stopped) + 1,
+        "ollamaProcesses": ollama_stopped,
+        "skippedListeners": [{"port": item.get("port"), "name": item.get("name")} for item in skipped],
+        "warnings": warnings,
+        "message": "Verified project services are stopping. This page will disconnect from its server.",
+    }
+
+
+def schedule_current_server_stop() -> None:
+    def stop() -> None:
+        if ACTIVE_SERVER is not None:
+            ACTIVE_SERVER.shutdown()
+
+    threading.Timer(1.0, stop).start()
+
+
 def main() -> None:
-    global MODEL_HOME, MODEL_FILE, ACTIVE_MODEL_FILE, OLLAMA_AVAILABLE, OLLAMA_MODEL
+    global MODEL_HOME, MODEL_FILE, ACTIVE_MODEL_FILE, OLLAMA_AVAILABLE, OLLAMA_MODEL, ACTIVE_SERVER
     parser = argparse.ArgumentParser(description="Start the wheelchair route checker website.")
     parser.add_argument("--yes", action="store_true", help="Continue without Ollama and use SHACL report output for assistant requests.")
     parser.add_argument("--port", type=int, default=8765, help="Local port for the website.")
@@ -812,8 +969,13 @@ def main() -> None:
             raise SystemExit(2)
         print("Continuing because --yes was provided. Assistant requests will return SHACL report data.")
     server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
+    ACTIVE_SERVER = server
     print(f"Serving http://127.0.0.1:{args.port}")
-    server.serve_forever()
+    try:
+        server.serve_forever()
+    finally:
+        server.server_close()
+        ACTIVE_SERVER = None
 
 
 if __name__ == "__main__":

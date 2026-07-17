@@ -29,6 +29,12 @@ RULE_ALIASES = {
     "route_ramp_width": "ramp_width",
 }
 
+POINT_ROUTE_EXPLANATIONS = {
+    "start_not_walkable": "The selected start point is not a walkable grid cell, so a collision-free route cannot begin there.",
+    "destination_not_walkable": "The destination is outside the accessible walking area or inside an obstacle. The red candidate ends at the last collision-free point before that blocked area.",
+    "no_accessible_connection": "The start and destination belong to disconnected walkable regions. The red candidate stops before the first blocking boundary and does not claim to reach the destination.",
+}
+
 
 def rule_label(rule_id: str) -> str:
     return RULE_LABELS.get(rule_id, "access issue found")
@@ -258,3 +264,45 @@ def explain_question(question: str, context: dict, model: str = "qwen3:8b", host
     answer = summary + "\n\nRecommended changes\n\n" + "\n".join(f"- {item['text']}" for item in selected)
     source = "SHACL-grounded fallback; incomplete Ollama output was rejected" if used_fallback else f"Ollama {model}, grounded by SHACL facts"
     return {"answer": answer, "source": source, "blocks": blocks, "groundedFallback": used_fallback}
+
+
+def explain_point_route(reason: str, model: str = "qwen3:8b", host: str = "http://localhost:11434") -> dict:
+    text = POINT_ROUTE_EXPLANATIONS.get(reason)
+    if not text:
+        raise ValueError("The point-route reason is not supported.")
+    schema = {
+        "type": "object",
+        "properties": {"acceptedReason": {"type": "string", "enum": [reason]}},
+        "required": ["acceptedReason"],
+    }
+    prompt = (
+        "Review one deterministic wheelchair-routing result. Return JSON only. "
+        "Accept the supplied reason only when the fixed explanation states the same cause. "
+        "Do not add a building element, measurement, route, remedy, law, or alternative cause.\n\n"
+        f"Reason ID: {reason}\nFixed explanation: {text}"
+    )
+    payload = json.dumps(
+        {
+            "model": model,
+            "prompt": prompt,
+            "stream": False,
+            "format": schema,
+            "keep_alive": "10m",
+            "options": {"temperature": 0, "num_predict": 80},
+        }
+    ).encode("utf-8")
+    request = urllib.request.Request(
+        f"{host}/api/generate",
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=OLLAMA_GENERATE_TIMEOUT_SECONDS) as response:
+            data = json.loads(response.read().decode("utf-8"))
+        reviewed = json.loads(str(data.get("response", "")))
+    except (TimeoutError, urllib.error.URLError, json.JSONDecodeError, TypeError) as exc:
+        raise RuntimeError("Ollama did not return a valid grounded point-route review.") from exc
+    if reviewed.get("acceptedReason") != reason:
+        raise RuntimeError("Ollama returned a reason that does not match the deterministic route result.")
+    return {"text": text, "source": f"Ollama {model}, restricted to deterministic point-route facts", "reason": reason, "llmReviewed": True}

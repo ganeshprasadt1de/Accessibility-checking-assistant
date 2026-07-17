@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -15,6 +16,7 @@ from backend.ifc_tools import (
     run_ifctolbd_exe,
 )
 from backend.package_writer import write_json_package
+from backend.navigation import build_navigation_package
 from backend.routes import add_routes_to_graph, build_route_edges, save_route_binary
 from backend.shacl_runner import issues_from_shacl_report, run_shacl
 from backend.audit import write_audit_report
@@ -78,6 +80,20 @@ def main() -> int:
     graph.serialize(destination=lbd_ttl, format="turtle")
 
     write_json_package(output, elements, issues, edges, missing_geometry, shacl_summary, ifctolbd_note)
+    print("Building tiled point-navigation package at 0.01 m resolution")
+    navigation_index = build_navigation_package(output / "app_data.json", output)
+    app_data_path = output / "app_data.json"
+    app_data = json.loads(app_data_path.read_text(encoding="utf-8"))
+    app_data["summary"]["pointNavigation"] = {
+        "formatVersion": navigation_index["formatVersion"],
+        "resolutionM": navigation_index["resolutionM"],
+        "tileSizeM": navigation_index["tileSizeM"],
+        "wheelchairClearanceM": navigation_index["wheelchairClearanceM"],
+        "accessibleRouteWidthM": navigation_index["accessibleRouteWidthM"],
+        "floorCount": len(navigation_index["floors"]),
+    }
+    app_data["sources"]["pointNavigation"] = "precomputed tiled occupancy and component graph from IFC floor geometry"
+    app_data_path.write_text(json.dumps(app_data, indent=2), encoding="utf-8")
     write_audit_report(ifc_path, output, {"routeEdges": [
         {
             "startGuid": edge.start_guid,

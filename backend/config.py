@@ -20,7 +20,6 @@ class RuleLimits:
     corridor_movement_interval_m: float = 15.0
     corridor_movement_space_m: float = 1.80
     route_door_width_m: float = 0.90
-    route_door_height_m: float = 2.05
     ramp_slope_percent: float = 6.0
     ramp_width_m: float = 1.20
     ramp_run_length_m: float = 6.00

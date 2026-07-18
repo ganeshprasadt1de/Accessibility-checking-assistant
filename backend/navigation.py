@@ -12,11 +12,10 @@ from pathlib import Path
 
 import numpy as np
 from shapely import intersects_xy
-from shapely.geometry import shape
+from shapely.geometry import LineString, Point, box, shape
 
 from .config import RULE_LIMITS
 from .resource_control import low_end_throttle
-
 
 FORMAT_VERSION = 1
 RESOLUTION_M = 0.01
@@ -31,6 +30,19 @@ TILE_CACHE_LIMIT = 64
 WALL_TYPES = {"IfcWall"}
 HARD_OBSTACLE_TYPES = {"IfcColumn", "IfcStair", "IfcStairFlight"}
 RAMP_TYPES = {"IfcRamp", "IfcRampFlight"}
+POINT_RULES = {
+    "door_width",
+    "missing",
+    "missing_door_width",
+    "corridor_width",
+    "corridor_slope",
+    "corridor_movement_area",
+    "turning_space",
+    "stair_block",
+    "ramp_slope",
+    "ramp_width",
+    "ramp_run_length",
+}
 
 
 class NavigationError(RuntimeError):
@@ -521,11 +533,43 @@ class NavigationPackage:
         self.index = json.loads(index_path.read_text(encoding="utf-8"))
         if self.index.get("formatVersion") != FORMAT_VERSION:
             raise NavigationError("Point-navigation data has an unsupported format. Regenerate this model.")
+        data_path = package_dir / "app_data.json"
+        if not data_path.exists():
+            raise NavigationError("Point-navigation evidence is missing. Regenerate this model.")
+        data = json.loads(data_path.read_text(encoding="utf-8"))
+        self.elements = {item.get("guid"): item for item in data.get("elements", []) if item.get("guid")}
+        self.issues = [issue for issue in data.get("issues", []) if issue.get("rule_id") in POINT_RULES]
+        self.issue_regions = {}
+        for region in data.get("issueRegions", []):
+            geometry = _valid_shape(region.get("geometry"))
+            if region.get("issue_id") and geometry is not None:
+                self.issue_regions[region["issue_id"]] = geometry
+        self.floor_guids = {
+            floor.get("name"): (
+                set(floor.get("elementGuids", []))
+                | set(floor.get("stairGuids", []))
+                | set(floor.get("rampGuids", []))
+            )
+            for floor in data.get("floors", [])
+            if floor.get("name")
+        }
+        assigned_guids = set().union(*self.floor_guids.values()) if self.floor_guids else set()
+        edges = {edge.get("edgeId"): edge for edge in data.get("routeEdges", []) if edge.get("edgeId")}
+        for floor in data.get("floors", []):
+            floor_guids = self.floor_guids.get(floor.get("name"))
+            if floor_guids is None:
+                continue
+            for edge_id in floor.get("routeEdgeIds", []):
+                edge = edges.get(edge_id) or {}
+                for guid in (edge.get("startGuid"), edge.get("endGuid")):
+                    element = self.elements.get(guid)
+                    if element and guid not in assigned_guids and (_hard_obstacle(element) or element.get("ifcType") in RAMP_TYPES):
+                        floor_guids.add(guid)
         self.tile_cache: OrderedDict[tuple[str, str], np.ndarray] = OrderedDict()
         self.tile_cache_lock = threading.Lock()
         self.request_state = threading.local()
 
-    def route(self, floor_name: str, start, end) -> dict:
+    def route(self, floor_name: str, start, end, classify_issues: bool = False) -> dict:
         self.request_state.touched = set()
         floor = self.index.get("floors", {}).get(floor_name)
         if not floor:
@@ -535,15 +579,17 @@ class NavigationPackage:
         start_cell = self._point_cell(floor, start_point)
         end_cell = self._point_cell(floor, end_point)
         if start_cell is None or not self._walkable(floor, *start_cell):
-            return _blocked("start_not_walkable", "The start point is outside the accessible walking area or inside an obstacle.")
+            result = _blocked("start_not_walkable", "The start point is outside the accessible walking area or inside an obstacle.")
+            return self._attach_point_issues(result, floor_name, [start_point]) if classify_issues else result
         if end_cell is None or not self._walkable(floor, *end_cell):
-            return self._blocked_candidate(
+            result = self._blocked_candidate(
                 floor,
                 start_point,
                 end_point,
                 "destination_not_walkable",
                 "The destination point is outside the accessible walking area or inside an obstacle.",
             )
+            return self._attach_point_issues(result, floor_name, _blocked_issue_path(result, end_point)) if classify_issues else result
 
         start_node = self._cell_component(floor, start_cell)
         end_node = self._cell_component(floor, end_cell)
@@ -561,13 +607,14 @@ class NavigationPackage:
 
         component_path = self._component_path(floor, search_start_node, search_end_node)
         if not component_path:
-            return self._blocked_candidate(
+            result = self._blocked_candidate(
                 floor,
                 start_point,
                 end_point,
                 "no_accessible_connection",
                 "No wheelchair-accessible connection exists between the selected points.",
             )
+            return self._attach_point_issues(result, floor_name, _blocked_issue_path(result, end_point)) if classify_issues else result
         allowed_tiles = {node.rsplit(":", 1)[0] for node in component_path}
         cells, visited = self._astar_cells(floor, search_start_cell, search_end_cell, allowed_tiles)
         if not cells:
@@ -582,7 +629,11 @@ class NavigationPackage:
         if not all(audit.values()):
             raise NavigationError(f"Generated point route failed final validation: {audit}.")
         distance = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(path, path[1:]))
-        return {
+        issues = self._path_issues(floor_name, path) if classify_issues else []
+        if classify_issues:
+            audit["rulesChecked"] = True
+            audit["issueCount"] = len(issues)
+        result = {
             "status": "pass",
             "reason": "accessible_route_found",
             "floor": floor_name,
@@ -597,6 +648,51 @@ class NavigationPackage:
             "visitedCells": visited,
             "audit": audit,
         }
+        if issues:
+            issue_text = "issue applies" if len(issues) == 1 else "issues apply"
+            result.update({
+                "status": "reachable_with_issues",
+                "reason": issues[0]["ruleId"],
+                "message": f"The destination is reachable, but {len(issues)} accessibility {issue_text} to this route.",
+                "issues": issues,
+            })
+        return result
+
+    def _attach_point_issues(self, result, floor_name, points):
+        path = [(float(point[0]), float(point[1])) for point in points if isinstance(point, (list, tuple)) and len(point) >= 2]
+        issues = self._path_issues(floor_name, path)
+        result["issues"] = issues
+        result.setdefault("audit", {})["rulesChecked"] = True
+        result["audit"]["issueCount"] = len(issues)
+        return result
+
+    def _path_issues(self, floor_name, path):
+        geometry = _path_geometry(path)
+        if geometry is None:
+            return []
+        floor_guids = self.floor_guids.get(floor_name)
+        turns = _turn_points(path)
+        result = []
+        for issue in self.issues:
+            guid = issue.get("element_guid")
+            if floor_guids is not None and guid not in floor_guids:
+                continue
+            element = self.elements.get(guid)
+            if not element or not _issue_applies(issue, element, self.issue_regions.get(issue.get("issue_id")), geometry, turns):
+                continue
+            result.append({
+                "issueId": issue.get("issue_id"),
+                "ruleId": issue.get("rule_id"),
+                "elementGuid": guid,
+                "elementLabel": issue.get("element_label") or element.get("label") or element.get("name") or guid,
+                "elementType": issue.get("element_type") or element.get("ifcType"),
+                "measured": issue.get("measured"),
+                "required": issue.get("required"),
+                "unit": issue.get("unit") or "",
+                "severity": issue.get("severity"),
+                "source": issue.get("source"),
+            })
+        return result
 
     def _blocked_candidate(self, floor, start, end, reason, message):
         start_cell = self._point_cell(floor, start)
@@ -630,7 +726,7 @@ class NavigationPackage:
         reaches_destination = math.hypot(path[-1][0] - end[0], path[-1][1] - end[1]) <= 1e-9
         if reaches_destination:
             raise NavigationError("A blocked route had a complete collision-free orthogonal candidate.")
-        simplified = _simplify(path)
+        simplified = self._shorten_orthogonal_path(floor, path)
         audit = {
             "endpointsExact": False,
             "orthogonal": all(abs(a[0] - b[0]) <= 1e-8 or abs(a[1] - b[1]) <= 1e-8 for a, b in zip(simplified, simplified[1:])),
@@ -922,7 +1018,7 @@ class NavigationPackage:
                     break
             shortened.append(points[next_index])
             anchor = next_index
-        return _simplify(shortened)
+        return shortened
 
     def _connector(self, floor, endpoint, centre):
         candidates = [
@@ -963,6 +1059,84 @@ class NavigationPackage:
         orthogonal = all(abs(a[0] - b[0]) <= 1e-8 or abs(a[1] - b[1]) <= 1e-8 for a, b in zip(path, path[1:]))
         collision_free = orthogonal and self._path_walkable(floor, path)
         return {"endpointsExact": endpoints_exact, "orthogonal": orthogonal, "collisionFree": collision_free}
+
+
+def _path_geometry(path):
+    points = _dedupe([(float(point[0]), float(point[1])) for point in path if len(point) >= 2])
+    if not points:
+        return None
+    if len(points) == 1:
+        return Point(points[0])
+    return LineString(points)
+
+
+def _turn_points(path):
+    points = _dedupe([(float(point[0]), float(point[1])) for point in path if len(point) >= 2])
+    result = []
+    for first, middle, last in zip(points, points[1:], points[2:]):
+        first_horizontal = abs(first[1] - middle[1]) <= 1e-8
+        second_horizontal = abs(middle[1] - last[1]) <= 1e-8
+        if first_horizontal != second_horizontal:
+            result.append(middle)
+    return result
+
+
+def _issue_applies(issue, element, region, route_geometry, turns):
+    rule = issue.get("rule_id")
+    kind = element.get("ifcType")
+    if region is not None:
+        return route_geometry.intersects(region.buffer(0.02))
+    if not _has_plan_box(element):
+        return False
+    element_geometry = box(*_rect(element))
+    if kind == "IfcDoor":
+        return (
+            rule in {"door_width", "missing", "missing_door_width"}
+            and route_geometry.intersects(element_geometry.buffer(0.03))
+        )
+    if kind in RAMP_TYPES:
+        return rule in {"ramp_slope", "ramp_width", "ramp_run_length", "missing"} and _route_enters(route_geometry, element_geometry)
+    if kind in {"IfcStair", "IfcStairFlight"}:
+        return rule == "stair_block" and route_geometry.intersects(element_geometry.buffer(0.03))
+    if kind != "IfcSpace":
+        return False
+    if rule == "turning_space":
+        return any(element_geometry.buffer(0.02).covers(Point(point)) for point in turns)
+    if rule == "corridor_movement_area":
+        return False
+    return rule in {"corridor_width", "corridor_slope", "missing"} and _route_enters(route_geometry, element_geometry)
+
+
+def _route_enters(route_geometry, area):
+    interior = area.buffer(-0.01)
+    if interior.is_empty:
+        interior = area
+    if route_geometry.geom_type == "Point":
+        return interior.buffer(0.02).covers(route_geometry)
+    return route_geometry.intersection(interior).length > 1e-6
+
+
+def _blocked_issue_path(result, end):
+    points = [tuple(point[:2]) for point in result.get("path", [])]
+    if not points:
+        return [end]
+    last = points[-1]
+    if len(points) < 2:
+        return _dedupe([last, end])
+    previous = points[-2]
+    if abs(previous[0] - last[0]) >= abs(previous[1] - last[1]):
+        bend = end[0], last[1]
+    else:
+        bend = last[0], end[1]
+    return _dedupe([*points, bend, end])
+
+
+def _valid_shape(value):
+    if not value:
+        return None
+    geometry = shape(value)
+    geometry = geometry if geometry.is_valid else geometry.buffer(0)
+    return geometry if not geometry.is_empty else None
 
 
 def _valid_point(value, label):

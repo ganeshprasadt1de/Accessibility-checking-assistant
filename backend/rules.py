@@ -15,6 +15,7 @@ def make_issue(
     source: str,
     details: str,
     evidence_id: str | None = None,
+    severity: str | None = None,
 ) -> None:
     issues.append(
         Issue(
@@ -23,7 +24,7 @@ def make_issue(
             element_label=element.label,
             element_type=element.ifc_type,
             rule_id=rule_id,
-            severity="fail" if measured is not None else "missing",
+            severity=severity or ("fail" if measured is not None else "missing"),
             measured=measured,
             required=required,
             unit=unit,
@@ -46,9 +47,9 @@ def evaluate_value_rules(elements: list[Element]) -> list[Issue]:
             elif width < RULE_LIMITS.door_width_m:
                 make_issue(issues, element, "door_width", width, RULE_LIMITS.door_width_m, "m", "IFC model geometry", "Door clear width is below the rule target.")
             if height is None:
-                make_issue(issues, element, "missing_door_height", None, RULE_LIMITS.door_height_m, "m", "IFC model data", "Door clear height could not be calculated.")
+                make_issue(issues, element, "missing_door_height", None, RULE_LIMITS.door_height_m, "m", "IFC model data", "Door clear height could not be calculated.", severity="info")
             elif height < RULE_LIMITS.door_height_m:
-                make_issue(issues, element, "door_height", height, RULE_LIMITS.door_height_m, "m", "IFC model geometry", "Door clear height is below the rule target.")
+                make_issue(issues, element, "door_height", height, RULE_LIMITS.door_height_m, "m", "IFC model geometry", "Door clear height is below the rule target.", severity="info")
         elif element.ifc_type == "IfcSpace":
             if _skip_space_rules(element):
                 continue

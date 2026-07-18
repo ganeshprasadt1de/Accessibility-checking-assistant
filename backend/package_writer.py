@@ -19,6 +19,7 @@ def write_json_package(
     plan_edges: list[RouteEdge] | None = None,
 ) -> None:
     plan_edges = plan_edges or []
+    violations = [issue for issue in issues if issue.severity != "info"]
     doors = [e.guid for e in elements if e.ifc_type == "IfcDoor"]
     door_set = set(doors)
     route_index = {door: routes_from_start(edges, door, target_guids=door_set) for door in doors}
@@ -31,7 +32,8 @@ def write_json_package(
             "doorCount": len(doors),
             "routeEdgeCount": len(edges),
             "planRouteEdgeCount": len(plan_edges),
-            "issueCount": len(issues),
+            "issueCount": len(violations),
+            "advisoryCount": len(issues) - len(violations),
             "missingGeometryCount": len(missing_geometry),
             "ifctolbd": ifctolbd_note,
             "shacl": shacl_summary,
@@ -114,9 +116,16 @@ def _floor_summaries(
     plan_edges: list[RouteEdge],
 ) -> list[dict]:
     element_by_guid = {element.guid: element for element in elements}
+    route_door_guids = {
+        element.guid
+        for element in elements
+        if element.ifc_type == "IfcDoor" and not element.extra.get("isExcludedRouteDoor")
+    }
     floor_refs = _floor_refs(elements)
     issue_count_by_guid: dict[str, int] = {}
     for issue in issues:
+        if issue.severity == "info":
+            continue
         issue_count_by_guid[issue.element_guid] = issue_count_by_guid.get(issue.element_guid, 0) + 1
 
     floors: dict[str, dict] = {}
@@ -192,7 +201,12 @@ def _floor_summaries(
     visible_floors = [
         floor
         for floor in floors.values()
-        if floor["doorGuids"] or floor["routeEdgeIds"] or floor["issueCount"]
+        if (
+            any(guid in route_door_guids for guid in floor["doorGuids"])
+            or floor["routeEdgeIds"]
+            or floor["planRouteEdgeIds"]
+            or floor["issueCount"]
+        )
     ]
     return sorted(
         visible_floors,

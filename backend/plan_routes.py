@@ -2604,7 +2604,6 @@ def _unreachable_markers(elements: list[Element], connected: set[str]) -> list[R
 def _measurement_reasons(measurements: dict) -> list[str]:
     reasons = []
     width = _number(measurements.get("routeDoorWidthMinM"))
-    height = _number(measurements.get("routeDoorHeightMinM"))
     clear = _number(measurements.get("routeClearWidthM"))
     turn = _number(measurements.get("routeTurningSpaceM"))
     slope = _number(measurements.get("routeRampSlopePercent"))
@@ -2612,8 +2611,6 @@ def _measurement_reasons(measurements: dict) -> list[str]:
     ramp_run_length = _number(measurements.get("routeRampRunLengthM"))
     if width is not None and width < RULE_LIMITS.route_door_width_m:
         reasons.append("door_width")
-    if height is not None and height < RULE_LIMITS.route_door_height_m:
-        reasons.append("door_height")
     if clear is not None and clear < RULE_LIMITS.corridor_width_m:
         reasons.append("route_width")
     if measurements.get("routeHasTurn") and turn is not None and turn < RULE_LIMITS.turning_space_m:

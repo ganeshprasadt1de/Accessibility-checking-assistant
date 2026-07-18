@@ -367,6 +367,7 @@ function scheduleModelPolling() {
   } else if (!running && modelPollTimer) {
     clearInterval(modelPollTimer);
     modelPollTimer = null;
+    setModelStatus("");
   }
 }
 
@@ -388,7 +389,7 @@ function renderSummary() {
     ["Elements", appData.summary.elementCount],
     ["Doors", appData.summary.doorCount],
     ["Route edges", appData.summary.routeEdgeCount],
-    ["Issues", appData.summary.issueCount],
+    ["Issues", appData.issues.filter((issue) => !isDoorHeightAdvisory(issue) && issue.severity !== "info").length],
     ["Missing geometry", appData.summary.missingGeometryCount],
     ["IFCtoLBD", String(appData.summary.ifctolbd || "").toLowerCase().includes("ifctolbd failed") ? "failed" : "ok"],
     ["SHACL conforms", appData.summary.shacl.conforms === true ? "yes" : appData.summary.shacl.conforms === false ? "no" : "unknown"],
@@ -428,7 +429,7 @@ function renderTables() {
       e.source,
     ]);
   fillTable("#elementTable", ["Type", "Name", "Width m", "Depth m", "Height m", "Source"], elementRows);
-  const issueRows = appData.issues.map((i) => [
+  const issueRows = appData.issues.filter((i) => !isDoorHeightAdvisory(i) && i.severity !== "info").map((i) => [
     i.element_type,
     i.element_label,
     i.short_text,
@@ -834,7 +835,7 @@ function floorPlanSvg(floor, elements, edges, issueCounts, elementsByGuid) {
   const routeMarkup = floorPlanRouteMarkup(visibleEdges, bounds, view, elementsByGuid);
   const routeIssueMarkup = floorPlanRouteIssueMarkup(routeIssueEdges, bounds, view, elementsByGuid, issueReserved);
   const regionMarkup = floorPlanIssueRegionMarkup(issueRegions, bounds, view);
-  const markerEdges = pointMode ? [] : (planRouteMode === "candidate" ? visibleEdges : visibleEdges.filter((edge) => edge.status === "pass")).concat(hiddenPassEdges);
+  const markerEdges = pointMode ? [] : (planRouteMode === "candidate" ? visibleEdges : visibleEdges.filter(routePassesChecks)).concat(hiddenPassEdges);
   const connectedDoorMarkup = floorPlanConnectedDoorMarkers(markerEdges, bounds, view, elementsByGuid, walls);
   const wallMarkup = floorPlanWallMarkup(walls, doorOpenings, bounds, view, issueCounts);
   const spaceFillMarkup = floorPlanSpaceFillMarkup(spaces, bounds, view);
@@ -867,9 +868,12 @@ function planVisibleEdges(edges, elementsByGuid) {
   const hasPlanNetwork = edges.some((edge) => edge.measurements?.planNetworkRole);
   if (planRouteMode === "accessible") {
     if (hasPlanNetwork) {
-      return edges.filter((edge) => String(edge.measurements?.planNetworkRole || "").split(" ").includes("accessible"));
+      return edges.filter((edge) => {
+        const roles = String(edge.measurements?.planNetworkRole || "").split(" ");
+        return roles.includes("accessible") || (roles.includes("physical") && edge.status === "fail" && routePassesChecks(edge));
+      });
     }
-    const passed = edges.filter((edge) => edge.status === "pass");
+    const passed = edges.filter(routePassesChecks);
     return planAccessibleSpanningForest(passed, elementsByGuid);
   }
   if (planRouteMode === "candidate" && hasPlanNetwork) {
@@ -1764,7 +1768,7 @@ function routeIssueGroups(edges, elementsByGuid) {
 }
 
 function routeIssueLocations(edge, elementsByGuid) {
-  const reasons = edge.reasons || [];
+  const reasons = routeReasons(edge);
   const locations = [];
   if (reasons.includes("unreachable")) {
     const door = routeEndpointElements(edge, elementsByGuid).find((element) => element.ifcType === "IfcDoor");
@@ -1773,11 +1777,6 @@ function routeIssueLocations(edge, elementsByGuid) {
   if (reasons.includes("door_width")) {
     for (const door of narrowRouteDoors(edge, elementsByGuid)) {
       locations.push({ reason: "door_width", key: `door:${door.guid}`, point: elementPoint(door), name: elementName(door) });
-    }
-  }
-  if (reasons.includes("door_height")) {
-    for (const door of lowRouteDoors(edge, elementsByGuid)) {
-      locations.push({ reason: "door_height", key: `door:${door.guid}`, point: elementPoint(door), name: elementName(door) });
     }
   }
   if (reasons.includes("wall_block")) {
@@ -1905,12 +1904,20 @@ function uniqueRoutePoints(points) {
 }
 
 function pathBlockingRoute(edge) {
-  const pathReasons = new Set(["door_width", "door_height", "route_width", "turning_space", "stair_block", "ramp_slope", "ramp_width", "ramp_run_length", "unreachable"]);
-  return edge.status === "fail" && (edge.reasons || []).some((reason) => pathReasons.has(reason));
+  const pathReasons = new Set(["door_width", "route_width", "turning_space", "stair_block", "ramp_slope", "ramp_width", "ramp_run_length", "unreachable"]);
+  return routeHasIssue(edge) && routeReasons(edge).some((reason) => pathReasons.has(reason));
 }
 
 function routeHasIssue(edge) {
-  return edge.status === "fail" && Boolean(edge.reasons?.length);
+  return edge.status === "fail" && Boolean(routeReasons(edge).length);
+}
+
+function routePassesChecks(edge) {
+  return edge.status === "pass" || (edge.status === "fail" && Boolean(edge.reasons?.length) && !routeReasons(edge).length);
+}
+
+function routeReasons(edge) {
+  return (edge.reasons || []).filter((reason) => reason !== "door_height");
 }
 
 function floorPlanSpaceFillClass(element) {
@@ -1946,7 +1953,15 @@ function buildingIssues() {
     "route_ramp_width",
     "route_ramp_run_length",
   ]);
-  return (appData.issues || []).filter((issue) => !routeRules.has(issue.rule_id));
+  return (appData.issues || []).filter((issue) => !isDoorHeightAdvisory(issue) && issue.severity !== "info" && !routeRules.has(issue.rule_id));
+}
+
+function buildingAdvisories() {
+  return (appData.issues || []).filter((issue) => isDoorHeightAdvisory(issue));
+}
+
+function isDoorHeightAdvisory(issue) {
+  return issue.rule_id === "door_height" || issue.rule_id === "missing_door_height" || issue.rule_id === "route_door_height";
 }
 
 function showPlanElement(guid, elementsByGuid, regionId = null, areaId = null) {
@@ -1958,11 +1973,10 @@ function showPlanElement(guid, elementsByGuid, regionId = null, areaId = null) {
   const issues = planRouteMode === "issues"
     ? buildingIssues().filter((issue) => issue.element_guid === guid && (!region || issue.issue_id === region.issue_id))
     : [];
+  const advisories = planRouteMode === "issues"
+    ? buildingAdvisories().filter((issue) => issue.element_guid === guid)
+    : [];
   const summary = `<h3>${escapeHtml(elementName(element))}</h3>${planRows(planElementRows(element))}`;
-  if (!issues.length) {
-    document.querySelector("#planDetails").innerHTML = summary;
-    return;
-  }
   const checks = issues.map((issue) => ({
     label: sentenceText(planReasonText(issue.rule_id)),
     comparison: selectedRegion && issue.issue_id === selectedRegion.issue_id
@@ -1972,7 +1986,9 @@ function showPlanElement(guid, elementsByGuid, regionId = null, areaId = null) {
   const cards = checks.map((check) => ({ ...check, locations: [elementName(element)] }));
   const rows = [];
   if (region?.area_count > 1) rows.push(["Affected areas", String(region.area_count)]);
-  document.querySelector("#planDetails").innerHTML = `${summary}<div class="planElementIssues">${planIssueCards(cards, rows)}</div>`;
+  const issueMarkup = cards.length ? `<div class="planElementIssues">${planIssueCards(cards, rows)}</div>` : "";
+  const advisoryMarkup = advisories.length ? planAdvisoryCards(advisories) : "";
+  document.querySelector("#planDetails").innerHTML = `${summary}${issueMarkup}${advisoryMarkup}`;
 }
 
 function planElementRows(element) {
@@ -1991,6 +2007,8 @@ function planElementRows(element) {
   }
   const issueCount = buildingIssues().filter((issue) => issue.element_guid === element.guid).length;
   rows.push(["Building issues", String(issueCount)]);
+  const advisoryCount = buildingAdvisories().filter((issue) => issue.element_guid === element.guid).length;
+  if (advisoryCount) rows.push(["Advisories", String(advisoryCount)]);
   return rows;
 }
 
@@ -2013,7 +2031,7 @@ function showPlanRoute(edgeId, edgesById, elementsByGuid) {
   const start = elementsByGuid.get(edge.startGuid);
   const end = elementsByGuid.get(edge.endGuid);
   const connection = `${routeEndpointName(edge.startGuid, start)} to ${routeEndpointName(edge.endGuid, end)}`;
-  if (edge.status === "pass") {
+  if (routePassesChecks(edge)) {
     const rows = [["Connection", connection]];
     if (edge.viaSpaceLabel) rows.push(["Through", planElementName(edge.viaSpaceLabel)]);
     rows.push(["Distance", valueWithUnit(edge.distanceM, "m")]);
@@ -2050,7 +2068,7 @@ function routeIssueCardData(edges, elementsByGuid, checks, routeIssues = []) {
     });
   }
   return checks.map((check) => {
-    const affected = edges.filter((edge) => edge.reasons?.includes(check.reason));
+    const affected = edges.filter((edge) => routeReasons(edge).includes(check.reason));
     const locations = uniqueText(affected.flatMap((edge) => routeIssueLocationNames({ ...edge, reasons: [check.reason] }, elementsByGuid)));
     return {
       ...check,
@@ -2073,21 +2091,31 @@ function planIssueCards(cards, rows = []) {
   return `<h3>${title}</h3><div class="planIssueCards">${cardMarkup}</div>${context}`;
 }
 
+function planAdvisoryCards(advisories) {
+  const cards = advisories.map((advisory) => {
+    const label = advisory.rule_id === "missing_door_height" ? "Door height not available" : "Door height advisory";
+    return `<article class="planAdvisoryCard">
+      <div class="planAdvisoryCardHeader"><span class="planAdvisoryCardIcon" aria-hidden="true">i</span><h4>${label}</h4></div>
+      <p class="planAdvisoryComparison">${escapeHtml(issueComparisonText(advisory))}</p>
+      <p>Advisory only. Review the clear height for this door.</p>
+    </article>`;
+  }).join("");
+  return `<div class="planElementAdvisories"><h3>Advisory</h3><div class="planAdvisoryCards">${cards}</div></div>`;
+}
+
 function routeEndpointElements(edge, elementsByGuid) {
   return [elementsByGuid.get(edge.startGuid), elementsByGuid.get(edge.endGuid)].filter(Boolean);
 }
 
 function routeIssueLocationNames(edge, elementsByGuid) {
-  const reasons = edge.reasons || [];
+  const reasons = routeReasons(edge);
   const locations = [];
   if (reasons.includes("unreachable")) {
     const door = routeEndpointElements(edge, elementsByGuid).find((element) => element.ifcType === "IfcDoor");
     if (door) locations.push(elementName(door));
   }
-  if (reasons.includes("door_width") || reasons.includes("door_height")) {
-    const narrow = reasons.includes("door_width") ? narrowRouteDoors(edge, elementsByGuid) : [];
-    const low = reasons.includes("door_height") ? lowRouteDoors(edge, elementsByGuid) : [];
-    const doors = uniqueElements(narrow.concat(low));
+  if (reasons.includes("door_width")) {
+    const doors = narrowRouteDoors(edge, elementsByGuid);
     locations.push(...(doors.length ? doors : routeEndpointElements(edge, elementsByGuid).filter((element) => element.ifcType === "IfcDoor")).map(elementName));
   }
   if (reasons.includes("route_width") || reasons.includes("turning_space")) {
@@ -2115,12 +2143,6 @@ function narrowRouteDoors(edge, elementsByGuid) {
     .filter((element) => element?.ifcType === "IfcDoor" && doorAssessedWidth(element) && doorAssessedWidth(element) < limit);
 }
 
-function lowRouteDoors(edge, elementsByGuid) {
-  const limit = routeDoorHeightLimit();
-  return [elementsByGuid.get(edge.startGuid), elementsByGuid.get(edge.endGuid)]
-    .filter((element) => element?.ifcType === "IfcDoor" && doorAssessedHeight(element) && doorAssessedHeight(element) < limit);
-}
-
 function routeAlternativeText(edge) {
   const route = accessibleRouteBetween(edge.startGuid, edge.endGuid) || accessibleRouteBetween(edge.endGuid, edge.startGuid);
   if (route) return `Available (${valueWithUnit(route.distance_m, "m")})`;
@@ -2141,9 +2163,10 @@ function routeObstacleElements(edge, elementsByGuid, predicate) {
 function planRouteEvidenceElements(edges, elementsByGuid) {
   const elements = [];
   for (const edge of edges.filter(routeHasIssue)) {
-    if (edge.reasons?.includes("stair_block")) elements.push(...routeIssueElements(edge, elementsByGuid, isStairType));
-    if (edge.reasons?.includes("wall_block")) elements.push(...routeIssueElements(edge, elementsByGuid, isWallType));
-    if (edge.reasons?.some((reason) => ["ramp_slope", "ramp_width", "ramp_run_length"].includes(reason))) {
+    const reasons = routeReasons(edge);
+    if (reasons.includes("stair_block")) elements.push(...routeIssueElements(edge, elementsByGuid, isStairType));
+    if (reasons.includes("wall_block")) elements.push(...routeIssueElements(edge, elementsByGuid, isWallType));
+    if (reasons.some((reason) => ["ramp_slope", "ramp_width", "ramp_run_length"].includes(reason))) {
       elements.push(...routeIssueElements(edge, elementsByGuid, isRampType));
     }
   }
@@ -2214,10 +2237,6 @@ function doorAssessedHeight(door) {
 
 function routeDoorWidthLimit() {
   return Number(appData.rules?.route_door_width_m || appData.rules?.door_width_m || 0.9);
-}
-
-function routeDoorHeightLimit() {
-  return Number(appData.rules?.route_door_height_m || appData.rules?.door_height_m || 2.05);
 }
 
 function elementName(element) {
@@ -2350,6 +2369,10 @@ function pointStatusText(state) {
   if (state.pending) return "Checking the selected points against the streamed navigation tiles.";
   if (state.error) return state.error;
   if (state.result?.status === "pass") return `Accessible orthogonal route found. Distance: ${Number(state.result.distanceM).toFixed(2)} m.`;
+  if (state.result?.status === "reachable_with_issues") {
+    const count = state.result.issues?.length || 0;
+    return `The destination is reachable, but ${count} accessibility issue${count === 1 ? " applies" : "s apply"} to this route. Distance: ${Number(state.result.distanceM).toFixed(2)} m.`;
+  }
   if (state.result?.status === "blocked") {
     const message = state.result.message || "No accessible route connects the selected points.";
     const hasCandidate = Array.isArray(state.result.path) && state.result.path.length > 1;
@@ -2360,10 +2383,14 @@ function pointStatusText(state) {
 
 function pointAuditState(result) {
   const hasCandidate = Array.isArray(result?.path) && result.path.length > 1;
-  if (result?.status === "pass") {
+  if (result?.status === "pass" || result?.status === "reachable_with_issues") {
     const passed = result.audit?.orthogonal === true
       && result.audit?.collisionFree === true
       && result.audit?.endpointsExact === true;
+    if (passed && result.status === "reachable_with_issues") {
+      const count = result.issues?.length || 0;
+      return { label: "Route audit", value: `${count} issue${count === 1 ? "" : "s"} found`, tone: "watch" };
+    }
     return { label: "Route audit", value: passed ? "passed" : "failed", tone: passed ? "pass" : "fail" };
   }
   if (result?.status === "blocked") {
@@ -2383,11 +2410,13 @@ function pointDetailsMarkup(state) {
     ["Destination", state.end ? `${state.end[0].toFixed(2)}, ${state.end[1].toFixed(2)} m` : "not selected"],
   ];
   const auditState = pointAuditState(state.result);
-  if (state.result?.status === "pass") {
+  const reached = state.result?.status === "pass" || state.result?.status === "reachable_with_issues";
+  if (reached) {
+    rows.push(["Result", state.result.status === "pass" ? "accessible" : "reachable with issues"]);
     rows.push(["Distance", `${Number(state.result.distanceM).toFixed(2)} m`]);
     rows.push(["Grid resolution", `${Number(state.result.resolutionM).toFixed(2)} m`]);
     rows.push(["Wheelchair clearance", `${Number(state.result.clearanceM).toFixed(2)} m`]);
-    rows.push(["Accessible route width", `${Number(state.result.routeWidthM).toFixed(2)} m`]);
+    rows.push(["Route width requirement", `${Number(state.result.routeWidthM).toFixed(2)} m`]);
     rows.push(["Tiles used", String(state.result.streamedTiles)]);
     rows.push([auditState.label, auditState.value]);
   } else if (state.result?.status === "blocked") {
@@ -2404,7 +2433,17 @@ function pointDetailsMarkup(state) {
   }
   const explanation = state?.explanation?.text || (state?.explanationPending ? "Ollama is reviewing the deterministic blocking facts." : "The deterministic route result is shown above.");
   const source = state?.explanation?.source ? `<p><small>${escapeHtml(state.explanation.source)}</small></p>` : "";
-  return `<h3>Point-to-point check</h3>${planRows(rows)}${state?.result?.status === "blocked" ? `<h3>Why it is blocked</h3><p>${escapeHtml(explanation)}</p>${source}` : ""}`;
+  const cards = pointIssueCards(state?.result?.issues || []);
+  const issues = cards.length ? `<div class="planElementIssues">${planIssueCards(cards)}</div>` : "";
+  return `<h3>Point-to-point check</h3>${planRows(rows)}${issues}${state?.result?.status === "blocked" ? `<h3>Why it is blocked</h3><p>${escapeHtml(explanation)}</p>${source}` : ""}`;
+}
+
+function pointIssueCards(issues) {
+  return issues.map((issue) => ({
+    label: sentenceText(planReasonText(issue.ruleId)),
+    comparison: comparisonText(issue.ruleId, issue.measured, issue.required, issue.unit),
+    locations: [issue.elementLabel || issue.elementGuid || "Not identified"],
+  }));
 }
 
 function handlePlanPointClick(event, floor, elements, edges) {
@@ -2518,7 +2557,9 @@ function planMaximumZoom() {
 function floorPlanPointCheck(floor, bounds, view) {
   if (planInteractionMode !== "point" || pointCheck.floor !== floor.name) return "";
   const route = pointCheck.result?.path || [];
-  const routeClass = pointCheck.result?.status === "blocked" ? "pointRoute blocked" : "pointRoute";
+  const routeClass = pointCheck.result?.status === "blocked"
+    ? "pointRoute blocked"
+    : pointCheck.result?.status === "reachable_with_issues" ? "pointRoute issues" : "pointRoute";
   const line = route.length > 1
     ? `<polyline class="${routeClass}" points="${route.map((point) => floorPlanPoint(point, bounds, view).map((value) => value.toFixed(2)).join(",")).join(" ")}"></polyline>`
     : "";
@@ -3086,7 +3127,12 @@ function loadSimulationScenario(name) {
     }
   }
   simPathLine = pointPathHasTravel
-    ? addCurrentSimulationPath(simWorld, simPath, currentSimulationRoute()?.status === "fail" ? 0xb3261e : 0x2d7d46, simFloorTransform)
+    ? addCurrentSimulationPath(
+      simWorld,
+      simPath,
+      currentSimulationRoute()?.status === "fail" ? 0xb3261e : currentSimulationRoute()?.status === "watch" ? 0xa66516 : 0x2d7d46,
+      simFloorTransform,
+    )
     : null;
   addSimulationPointMarkers();
   simChair.visible = simInteractionMode === "automatic" || simPath.length > 0;
@@ -3127,13 +3173,15 @@ function disposeObjectTree(root) {
 function configurePointSimulationScenario() {
   const state = pointCheck.floor === simFloorName ? pointCheck : null;
   const passed = state?.result?.status === "pass";
+  const issues = state?.result?.status === "reachable_with_issues";
+  const reached = passed || issues;
   const pathLength = state?.result?.path?.length || 0;
-  const hasCandidate = passed ? pathLength > 0 : pathLength > 1;
+  const hasCandidate = reached ? pathLength > 0 : pathLength > 1;
   const auditState = pointAuditState(state?.result);
   const route = hasCandidate ? {
     key: `point:${simFloorName}:${state.start.join(",")}:${state.end.join(",")}`,
     edgeId: "Selected points",
-    status: passed ? "pass" : "fail",
+    status: passed ? "pass" : issues ? "watch" : "fail",
     reason: passed ? "accessible" : state.result.reason,
     blockAt: 1,
     path: state.result.path.map((point) => simFloorTransform.point(point)),
@@ -3146,10 +3194,14 @@ function configurePointSimulationScenario() {
   simScenarioData.metrics = [
     ["Start point", state?.start ? `${state.start[0].toFixed(2)}, ${state.start[1].toFixed(2)} m` : "not selected", state?.start ? "pass" : "watch"],
     ["Destination", state?.end ? `${state.end[0].toFixed(2)}, ${state.end[1].toFixed(2)} m` : "not selected", state?.end ? "pass" : "watch"],
-    ["Accessible route", passed ? "found" : state?.result?.status === "blocked" ? "blocked" : "not checked", passed ? "pass" : state?.result?.status === "blocked" ? "fail" : "watch"],
-    ["Route distance", passed ? `${Number(state.result.distanceM).toFixed(2)} m` : "not available", passed ? "pass" : "watch"],
-    ["Reachable candidate", !passed && hasCandidate ? `${Number(state.result.distanceM).toFixed(2)} m` : "not applicable", !passed && hasCandidate ? "fail" : "watch"],
-    ["Accessible route width", passed ? `${Number(state.result.routeWidthM).toFixed(2)} m` : "not available", passed ? "pass" : "watch"],
+    [
+      "Accessible route",
+      passed ? "found" : issues ? "issues found" : state?.result?.status === "blocked" ? "blocked" : "not checked",
+      passed ? "pass" : issues ? "watch" : state?.result?.status === "blocked" ? "fail" : "watch",
+    ],
+    ["Route distance", reached ? `${Number(state.result.distanceM).toFixed(2)} m` : "not available", passed ? "pass" : "watch"],
+    ["Reachable candidate", !reached && hasCandidate ? `${Number(state.result.distanceM).toFixed(2)} m` : "not applicable", !reached && hasCandidate ? "fail" : "watch"],
+    ["Route width requirement", reached ? `${Number(state.result.routeWidthM).toFixed(2)} m` : "not available", passed ? "pass" : "watch"],
     [auditState.label, auditState.value, auditState.tone],
   ];
 }
@@ -3405,11 +3457,11 @@ function buildSimulationRoutesFromStarts(startDoors, floorEdges, transform, floo
   const routes = [];
   const seen = new Set();
   for (const startDoor of startDoors) {
-    const failedEdges = floorEdges.filter((edge) => edge.status === "fail" && (edge.startGuid === startDoor.guid || edge.endGuid === startDoor.guid));
+    const failedEdges = floorEdges.filter((edge) => routeHasIssue(edge) && (edge.startGuid === startDoor.guid || edge.endGuid === startDoor.guid));
     for (const edge of failedEdges) {
       const startGuid = edge.startGuid === startDoor.guid ? edge.startGuid : edge.endGuid;
       const targetGuid = edge.startGuid === startDoor.guid ? edge.endGuid : edge.startGuid;
-      const item = routePathFromEdgeIds(startGuid, [edge.edgeId], edgeById, transform, "fail", edge.reasons?.map(reasonText).join(", ") || "blocked", targetGuid);
+      const item = routePathFromEdgeIds(startGuid, [edge.edgeId], edgeById, transform, "fail", routeReasons(edge).map(reasonText).join(", ") || "blocked", targetGuid);
       if (item && !seen.has(item.key)) {
         seen.add(item.key);
         routes.push(item);
@@ -3633,13 +3685,14 @@ function floorCheckEdge(edge) {
   const navigationReasons = navigationRoutes
     .map((route) => route.reason)
     .filter(Boolean);
-  const failed = edge.status === "fail" || !navigationPasses;
+  const reasons = routeReasons(edge);
+  const failed = !routePassesChecks(edge) || !navigationPasses;
   return {
     ...edge,
     status: failed ? "fail" : "pass",
     reasons: failed
-      ? edge.reasons?.length
-        ? edge.reasons
+      ? reasons.length
+        ? reasons
         : [...new Set(navigationReasons.length ? navigationReasons : ["no_accessible_connection"])]
       : [],
   };
@@ -3779,7 +3832,7 @@ function combinedFloorBox(elements, transform) {
 function countReasons(edges) {
   const counts = {};
   for (const edge of edges) {
-    for (const reason of edge.reasons || []) {
+    for (const reason of routeReasons(edge)) {
       counts[reason] = (counts[reason] || 0) + 1;
     }
   }
@@ -4036,7 +4089,7 @@ function advanceSimulationRoute() {
     }
   }
   const route = currentSimulationRoute();
-  simPathLine = addCurrentSimulationPath(simWorld, simPath, route?.status === "fail" ? 0xb3261e : 0x2d7d46, simFloorTransform);
+  simPathLine = addCurrentSimulationPath(simWorld, simPath, route?.status === "fail" ? 0xb3261e : route?.status === "watch" ? 0xa66516 : 0x2d7d46, simFloorTransform);
 }
 
 function updateChairPose(progress, delta) {
@@ -4123,11 +4176,13 @@ function updateSimulationPanel() {
 function updateSimulationStatus(blocked) {
   if (!simScenarioData) return;
   if (simInteractionMode === "point") {
-    const routeBlocked = currentSimulationRoute()?.status === "fail";
+    const routeStatus = currentSimulationRoute()?.status;
+    const routeBlocked = routeStatus === "fail";
+    const routeIssues = routeStatus === "watch";
     const status = simPath.length && simProgress >= 1
-      ? `${routeBlocked ? "Stopped at the last collision-free point." : "Destination reached."} ${simScenarioData.status}`
+      ? `${routeBlocked ? "Stopped at the last collision-free point." : routeIssues ? "Destination reached with accessibility issues." : "Destination reached."} ${simScenarioData.status}`
       : simPlaying && simPath.length
-        ? `${routeBlocked ? "Following the collision-free candidate toward the obstruction." : "Following the selected accessible route."} ${simScenarioData.status}`
+        ? `${routeBlocked ? "Following the collision-free candidate toward the obstruction." : routeIssues ? "Following the selected route with accessibility issues." : "Following the selected accessible route."} ${simScenarioData.status}`
         : simScenarioData.status;
     document.querySelector("#simStatus").textContent = status;
     return;
@@ -4201,10 +4256,11 @@ function issueComparisonText(issue) {
 }
 
 function routeIssueChecks(edges, selectedReasons = null) {
-  const reasons = selectedReasons ? uniqueText(selectedReasons) : uniqueText(edges.flatMap((edge) => edge.reasons || []));
+  const reasons = (selectedReasons ? uniqueText(selectedReasons) : uniqueText(edges.flatMap(routeReasons)))
+    .filter((reason) => reason !== "door_height");
   return reasons.map((reason) => {
     const values = edges
-      .filter((edge) => edge.reasons?.includes(reason))
+      .filter((edge) => routeReasons(edge).includes(reason))
       .map((edge) => routeCheckValues(edge, reason));
     const measured = values.filter((value) => value[0] !== null && value[0] !== undefined && value[0] !== "" && Number.isFinite(Number(value[0])));
     const selected = measured.reduce((best, value) => {
@@ -4224,7 +4280,6 @@ function routeCheckValues(edge, reason) {
   const rules = appData.rules || {};
   return {
     door_width: [edge.measurements?.routeDoorWidthMinM, rules.route_door_width_m ?? rules.door_width_m, "m"],
-    door_height: [edge.measurements?.routeDoorHeightMinM, rules.route_door_height_m ?? rules.door_height_m, "m"],
     route_width: [edge.measurements?.routeClearWidthM, rules.corridor_width_m, "m"],
     turning_space: [edge.measurements?.routeTurningSpaceM, rules.turning_space_m, "m"],
     wall_block: [edge.measurements?.routeHitsWall ?? true, false, "bool"],
@@ -4343,6 +4398,8 @@ function reasonText(code) {
   return {
     door_width: "door too narrow",
     door_height: "door too low",
+    missing_door_width: "door width is missing",
+    missing_door_height: "door height is missing",
     corridor_width: "corridor too narrow",
     corridor_slope: "corridor too steep",
     corridor_movement_area: "passing areas spaced too far apart",

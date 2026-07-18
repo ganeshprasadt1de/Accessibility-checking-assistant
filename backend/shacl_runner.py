@@ -17,25 +17,29 @@ def run_shacl(data_graph: Path, shapes_graph: Path, report_ttl: Path) -> dict:
         from pyshacl import validate
     except Exception as exc:
         raise RuntimeError(f"pySHACL is not installed or could not be imported: {exc}") from exc
-    conforms, report_graph, report_text = validate(
+    conforms, report_graph, _report_text = validate(
         str(data_graph),
         shacl_graph=str(shapes_graph),
         data_graph_format="turtle",
         shacl_graph_format="turtle",
         advanced=True,
         inference="rdfs",
+        allow_infos=True,
         serialize_report_graph=True,
     )
     report = Graph()
     report.parse(data=report_graph if isinstance(report_graph, str) else report_graph.decode("utf-8"), format="turtle")
     _write_report(report, bool(conforms), report_ttl)
-    result_count = str(report_text).count("Constraint Violation")
+    rows = _validation_results(report)
+    advisory_count = sum(severity == str(SH.Info) for _, _, _, _, severity in rows)
+    result_count = len(rows) - advisory_count
     return {
         "available": True,
         "conforms": bool(conforms),
         "source": "SHACL SPARQL constraints through pySHACL",
         "resultCount": result_count,
-        "message": f"Conforms: {bool(conforms)}. Constraint violations: {result_count}. Full report is in shacl_report.ttl.",
+        "advisoryCount": advisory_count,
+        "message": f"Conforms: {bool(conforms)}. Constraint violations: {result_count}. Advisories: {advisory_count}. Full report is in shacl_report.ttl.",
     }
 
 
@@ -64,7 +68,7 @@ def issues_from_shacl_report(
     issue_keys = set()
     failed_route_reasons: dict[str, set[str]] = {uri: set() for uri in edges_by_uri}
 
-    for focus_text, message, _source_shape, _source_component in _validation_results(report):
+    for focus_text, message, _source_shape, _source_component, severity in _validation_results(report):
         rule_id, readable = _split_message(message)
         edge = edges_by_uri.get(focus_text)
         element = elements_by_uri.get(focus_text)
@@ -91,7 +95,7 @@ def issues_from_shacl_report(
                 element_label=element.label,
                 element_type=element.ifc_type,
                 rule_id=rule_id,
-                severity="fail",
+                severity="info" if severity == str(SH.Info) else "fail",
                 measured=measured,
                 required=required,
                 unit=unit,
@@ -118,13 +122,14 @@ def issues_from_shacl_report(
     return issues
 
 
-def _validation_results(report: Graph) -> list[tuple[str, str, str | None, str | None]]:
-    rows: list[tuple[str, str, str | None, str | None]] = []
+def _validation_results(report: Graph) -> list[tuple[str, str, str | None, str | None, str]]:
+    rows: list[tuple[str, str, str | None, str | None, str]] = []
     for result in report.subjects(RDF.type, SH.ValidationResult):
         focus = report.value(result, SH.focusNode)
         message = report.value(result, SH.resultMessage)
         source_shape = report.value(result, SH.sourceShape)
         source_component = report.value(result, SH.sourceConstraintComponent)
+        severity = report.value(result, SH.resultSeverity) or SH.Violation
         if focus is not None and message is not None:
             rows.append(
                 (
@@ -132,6 +137,7 @@ def _validation_results(report: Graph) -> list[tuple[str, str, str | None, str |
                     str(message),
                     source_shape.n3(report.namespace_manager) if source_shape is not None else None,
                     source_component.n3(report.namespace_manager) if source_component is not None else None,
+                    str(severity),
                 )
             )
     return sorted(rows, key=lambda item: (item[0], item[1]))
@@ -146,13 +152,13 @@ def _write_report(report: Graph, conforms: bool, report_ttl: Path) -> None:
         "[] a sh:ValidationReport ;",
         f"    sh:conforms {'true' if conforms else 'false'}" + (" ." if not rows else " ;"),
     ]
-    for index, (focus, message, source_shape, source_component) in enumerate(rows):
+    for index, (focus, message, source_shape, source_component, severity) in enumerate(rows):
         suffix = " ." if index == len(rows) - 1 else " ;"
         result_lines = [
             "    sh:result [ a sh:ValidationResult ;",
             f"            sh:focusNode <{focus}> ;",
             f"            sh:resultMessage {Literal(message).n3()} ;",
-            "            sh:resultSeverity sh:Violation ;",
+            f"            sh:resultSeverity {URIRef(severity).n3(report.namespace_manager)} ;",
         ]
         if source_component:
             result_lines.append(f"            sh:sourceConstraintComponent {source_component} ;")
@@ -173,7 +179,6 @@ def _split_message(message: str) -> tuple[str, str]:
 def _route_reason(rule_id: str) -> str:
     return {
         "route_door_width": "door_width",
-        "route_door_height": "door_height",
         "route_width": "route_width",
         "route_turning_space": "turning_space",
         "route_wall_block": "wall_block",
@@ -198,7 +203,6 @@ def _short_text(rule_id: str) -> str:
         "ramp_width": "ramp too narrow",
         "ramp_run_length": "ramp flight too long",
         "route_door_width": "route uses narrow door",
-        "route_door_height": "route uses low door",
         "route_width": "route too narrow",
         "route_turning_space": "route turn too small",
         "route_wall_block": "route intersects wall",
@@ -252,7 +256,6 @@ def _measured_value(data: Graph, focus, rule_id: str) -> float | None:
         "ramp_width": ACC.rampUsableWidthM,
         "ramp_run_length": ACC.rampRunLengthM,
         "route_door_width": ACC.routeDoorWidthMinM,
-        "route_door_height": ACC.routeDoorHeightMinM,
         "route_width": ACC.routeClearWidthM,
         "route_turning_space": ACC.routeTurningSpaceM,
         "route_wall_block": ACC.routeHitsWall,

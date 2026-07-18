@@ -197,9 +197,11 @@ def main() -> int:
     export_box_glb(elements, edges, output / "route_model.glb")
     if args.save_bin:
         save_route_binary(edges, output / "route_graph.bin")
+    violations = sum(issue.severity != "info" for issue in issues)
+    advisories = len(issues) - violations
     print(f"Wrote package: {output}")
     print(
-        f"Routes: {len(edges)}, plan routes: {len(plan_edges)}, issues: {len(issues)}, "
+        f"Routes: {len(edges)}, plan routes: {len(plan_edges)}, violations: {violations}, advisories: {advisories}, "
         f"missing geometry: {len(missing_geometry)}, skipped route pairs: {len(skipped_route_pairs)}"
     )
     return 0

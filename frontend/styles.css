@@ -898,7 +898,18 @@ th {
   padding-top: 12px;
 }
 
+.planElementAdvisories {
+  border-top: 1px solid #e8ebe7;
+  margin-top: 14px;
+  padding-top: 12px;
+}
+
 .planIssueCards {
+  display: grid;
+  gap: 9px;
+}
+
+.planAdvisoryCards {
   display: grid;
   gap: 9px;
 }
@@ -912,7 +923,23 @@ th {
   padding: 10px;
 }
 
+.planAdvisoryCard {
+  min-width: 0;
+  border: 1px solid #dec98d;
+  border-left: 3px solid #8b6508;
+  border-radius: 6px;
+  background: #fffdf5;
+  padding: 10px;
+}
+
 .planIssueCardHeader {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+}
+
+.planAdvisoryCardHeader {
   display: grid;
   grid-template-columns: 20px minmax(0, 1fr);
   gap: 8px;
@@ -932,12 +959,48 @@ th {
   line-height: 1;
 }
 
+.planAdvisoryCardIcon {
+  display: inline-grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border: 1px solid #8b6508;
+  border-radius: 50%;
+  color: #8b6508;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
 .planIssueCard h4 {
   margin: 1px 0 0;
   color: #1f2628;
   font-size: 14px;
   line-height: 1.35;
   overflow-wrap: anywhere;
+}
+
+.planAdvisoryCard h4 {
+  margin: 1px 0 0;
+  color: #1f2628;
+  font-size: 14px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.planAdvisoryCard p {
+  margin: 8px 0 0;
+  color: #4d4a3c;
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.planPanel .planAdvisoryComparison {
+  border-top: 1px solid #eadcae;
+  padding-top: 8px;
+  color: #765707;
+  font-weight: 700;
 }
 
 .planIssueLocation {
@@ -1232,6 +1295,10 @@ aside {
 
 .pointRoute.blocked {
   stroke: #8e2f28;
+}
+
+.pointRoute.issues {
+  stroke: #a66516;
 }
 
 .pointMarker {

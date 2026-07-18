@@ -29,7 +29,6 @@ RULE_ALIASES = {
     "missing_door_width": "missing",
     "missing_door_height": "missing",
     "route_door_width": "door_width",
-    "route_door_height": "door_height",
     "route_turning_space": "turning_space",
     "route_ramp_slope": "ramp_slope",
     "route_ramp_width": "ramp_width",

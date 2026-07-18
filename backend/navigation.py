@@ -70,6 +70,7 @@ def build_navigation_package(app_data_path: Path, output_dir: Path) -> dict:
         "geometryToleranceM": GEOMETRY_TOLERANCE_M,
         "floors": {},
     }
+    navigation_regions = data.get("navigationRegions", data.get("issueRegions", []))
     try:
         for floor in data.get("floors", []):
             floor_guids = set(floor.get("elementGuids", []))
@@ -92,7 +93,7 @@ def build_navigation_package(app_data_path: Path, output_dir: Path) -> dict:
             floor_elements = [elements_by_guid[guid] for guid in sorted(floor_guids) if guid in elements_by_guid]
             floor_issue_regions = [
                 region
-                for region in data.get("issueRegions", [])
+                for region in navigation_regions
                 if region.get("element_guid") in floor_guids
             ]
             floor_index = _build_floor_package(temporary, floor, floor_elements, floor_issue_regions)

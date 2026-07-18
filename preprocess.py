@@ -93,7 +93,16 @@ def main() -> int:
         "resultCount": 0,
         "message": "SHACL runs after strict tiled route generation.",
     }
-    write_json_package(output, elements, [], edges, missing_geometry, provisional_shacl, ifctolbd_note)
+    write_json_package(
+        output,
+        elements,
+        [],
+        edges,
+        missing_geometry,
+        provisional_shacl,
+        ifctolbd_note,
+        include_navigation_regions=True,
+    )
     print("Building tiled navigation package at 0.01 m resolution")
     navigation_index = build_navigation_package(output / "app_data.json", output)
     print("Replacing provisional route candidates with audited 0.01 m routes")

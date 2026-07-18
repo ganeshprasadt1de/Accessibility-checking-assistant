@@ -17,6 +17,7 @@ def write_json_package(
     shacl_summary: dict,
     ifctolbd_note: str,
     plan_edges: list[RouteEdge] | None = None,
+    include_navigation_regions: bool = False,
 ) -> None:
     plan_edges = plan_edges or []
     violations = [issue for issue in issues if issue.severity != "info"]
@@ -56,6 +57,13 @@ def write_json_package(
             "ifctolbd": "failed; raw LBD RDF is not included" if ifctolbd_failed else "raw graph created by IFCtoLBD",
         },
     }
+    if include_navigation_regions:
+        data["navigationRegions"] = [
+            region
+            for element in elements
+            for region in element.issue_regions
+            if region.get("rule_id") == "corridor_width"
+        ]
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "app_data.json").write_text(json.dumps(data, indent=2), encoding="utf-8")
 

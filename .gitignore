@@ -1,4 +1,5 @@
 __pycache__/
+.pytest_cache/
 server*.log
 *.pyc
 .venv/
@@ -20,6 +21,8 @@ sample_models/
 .service_state.json
 output/app_package/_work/
 output/app_package/*.ifc
+output/app_package/ifc_route_audit.json
+output/app_package/ifc_route_audit.md
 output/model_library/
 output/pdf/
 tmp/

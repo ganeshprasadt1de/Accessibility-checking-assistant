@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Wheelchair Route Checker</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=20260719-plan-inspect-8" />
   </head>
-  <body class="homePage">
+  <body>
     <header class="topbar">
       <div>
         <h1>Wheelchair Route Checker</h1>
@@ -51,6 +51,7 @@
               <h2>Model Library</h2>
               <p id="modelStatus">Upload an IFC model or open a completed package.</p>
             </div>
+            <button id="modelRefresh">Refresh</button>
           </div>
           <div class="tableWrap"><table id="modelTable"></table></div>
         </div>
@@ -86,10 +87,10 @@
             <label class="floorSelectLabel">Routes
               <select id="planRouteMode">
                 <option value="issues">Issues only</option>
-                <option value="candidate">Route network</option>
+                <option value="fail">Failed routes</option>
+                <option value="all">All routes</option>
               </select>
             </label>
-            <label class="viewerToggle planAccessibleToggle"><input id="planAccessibleOnly" type="checkbox" /> Accessible only</label>
             <button id="planPointReset" type="button" hidden>Clear points</button>
             <form id="planPointCoordinates" class="pointCoordinateControl" hidden>
               <span>Coordinates (m)</span>
@@ -98,7 +99,11 @@
               <label>End X <input id="planPointEndX" type="number" step="any" required /></label>
               <label>End Y <input id="planPointEndY" type="number" step="any" required /></label>
               <button type="submit">Check coordinates</button>
+              <output id="planPointCursorCoordinates" class="pointCursorCoordinates">Mouse coordinates: move over the floor plan</output>
             </form>
+            <div class="planZoom">
+              <button id="planResetView">Reset</button>
+            </div>
             <div class="planLegend">
               <span><i class="legendBox roomBox"></i>room</span>
               <span><i class="legendBox corridorBox"></i>corridor</span>
@@ -106,9 +111,9 @@
               <span><i class="legendBox doorBox"></i>door</span>
               <span><i class="legendBox stairBox"></i>stair</span>
               <span><i class="legendBox rampBox"></i>ramp</span>
-              <span class="legendRoute"><i class="legendLine passLine"></i>route network</span>
-              <span class="legendBlockage"><i class="legendMarker failLine"></i>route issue</span>
-              <span class="legendIssue"><i class="legendMarker issueMarker"></i>issue</span>
+              <span><i class="legendLine passLine"></i>clear route</span>
+              <span><i class="legendLine failLine"></i>blocked route</span>
+              <span><i class="legendBox issueBox"></i>issue</span>
             </div>
           </div>
           <div class="planLayout">
@@ -164,6 +169,7 @@
               <label>End X <input id="simPointEndX" type="number" step="any" required /></label>
               <label>End Y <input id="simPointEndY" type="number" step="any" required /></label>
               <button type="submit">Check coordinates</button>
+              <output id="simPointCursorCoordinates" class="pointCursorCoordinates">Mouse coordinates: move over the floor view</output>
             </form>
             <label class="speedControl">Speed <input id="simSpeed" type="range" min="0.35" max="2.4" step="0.05" value="0.85" /></label>
             <button id="simPlayPause">Pause</button>
@@ -195,6 +201,6 @@
         }
       }
     </script>
-    <script type="module" src="app.js"></script>
+    <script type="module" src="app.js?v=20260719-plan-inspect-12"></script>
   </body>
 </html>

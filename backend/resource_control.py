@@ -4,6 +4,7 @@ import os
 import sys
 import time
 
+
 LOW_END_ENV = "ACC_LOW_END_MODE"
 
 
@@ -12,7 +13,7 @@ def low_end_enabled() -> bool:
 
 
 def low_end_environment(base: dict[str, str] | None = None) -> dict[str, str]:
-    """Return an environment that keeps preprocessing useful on weaker laptops."""
+    """Return an environment that limits CPU and Java pressure without changing checks."""
     env = dict(base or os.environ)
     env[LOW_END_ENV] = "1"
     for key in (
@@ -25,12 +26,13 @@ def low_end_environment(base: dict[str, str] | None = None) -> dict[str, str]:
         env.setdefault(key, "1")
     java_options = env.get("JAVA_TOOL_OPTIONS", "").strip()
     additions = "-XX:ActiveProcessorCount=2 -Xmx2g"
-    env["JAVA_TOOL_OPTIONS"] = f"{java_options} {additions}".strip() if java_options else additions
+    if additions not in java_options:
+        env["JAVA_TOOL_OPTIONS"] = f"{java_options} {additions}".strip() if java_options else additions
     return env
 
 
 def configure_current_process_low_end() -> None:
-    """Lower this process priority where the operating system allows it."""
+    """Lower this process priority where the operating system permits it."""
     if not low_end_enabled():
         return
     if sys.platform.startswith("win"):
@@ -39,8 +41,12 @@ def configure_current_process_low_end() -> None:
 
             below_normal_priority_class = 0x00004000
             kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+            kernel32.GetCurrentProcess.restype = ctypes.c_void_p
+            kernel32.SetPriorityClass.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+            kernel32.SetPriorityClass.restype = ctypes.c_int
             handle = kernel32.GetCurrentProcess()
-            kernel32.SetPriorityClass(handle, below_normal_priority_class)
+            if not kernel32.SetPriorityClass(handle, below_normal_priority_class):
+                raise ctypes.WinError(ctypes.get_last_error())
         except Exception:
             return
     else:

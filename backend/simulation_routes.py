@@ -2,12 +2,51 @@ from __future__ import annotations
 
 import json
 import math
+import os
+from concurrent.futures import ProcessPoolExecutor
+from copy import deepcopy
 from pathlib import Path
 
 from .navigation import NavigationPackage
 from .model import Element, RouteEdge
-from .resource_control import low_end_throttle
+from .resource_control import low_end_enabled, low_end_throttle
 from .routes import apply_navigation_result_to_edge
+
+
+_STRICT_ROUTE_WORKER_NAVIGATION: NavigationPackage | None = None
+
+
+def _initialize_strict_route_worker(package_dir: str) -> None:
+    global _STRICT_ROUTE_WORKER_NAVIGATION
+    _STRICT_ROUTE_WORKER_NAVIGATION = NavigationPackage(Path(package_dir))
+
+
+def _strict_route_worker(request: tuple[str, tuple[tuple[str, list[float], list[float]], ...]]):
+    if _STRICT_ROUTE_WORKER_NAVIGATION is None:
+        raise RuntimeError("Strict route worker was not initialized.")
+    floor_name, directions = request
+    return _calculate_directional_routes(_STRICT_ROUTE_WORKER_NAVIGATION, floor_name, directions)
+
+
+def _direct_route_worker(request: tuple[str, list[float], list[float]]) -> dict:
+    if _STRICT_ROUTE_WORKER_NAVIGATION is None:
+        raise RuntimeError("Direct route worker was not initialized.")
+    return _STRICT_ROUTE_WORKER_NAVIGATION.route(*request)
+
+
+def _calculate_directional_routes(
+    navigation: NavigationPackage,
+    floor_name: str,
+    directions: tuple[tuple[str, list[float], list[float]], ...],
+) -> list[tuple[str, dict, dict | None]]:
+    directional: list[tuple[str, dict, dict | None]] = []
+    for start_guid, start_point, end_point in directions:
+        result = navigation.route(floor_name, start_point, end_point)
+        result.setdefault("resolutionM", navigation.index["resolutionM"])
+        result.setdefault("clearanceM", navigation.index["wheelchairClearanceM"])
+        result.setdefault("routeWidthM", navigation.index["accessibleRouteWidthM"])
+        directional.append((start_guid, result, _record(result, navigation, floor_name)))
+    return directional
 
 
 def apply_strict_navigation_to_edges(
@@ -28,6 +67,7 @@ def apply_strict_navigation_to_edges(
     records_by_edge: dict[str, dict] = {}
     passed = blocked = unavailable = swapped = 0
 
+    route_requests: list[tuple[str, tuple[tuple[str, list[float], list[float]], ...]]] = []
     for edge_index, edge in enumerate(edges):
         low_end_throttle(edge_index, interval=4, delay_s=0.003)
         floor_name = floor_by_edge.get(edge.edge_id)
@@ -35,23 +75,38 @@ def apply_strict_navigation_to_edges(
         end = element_by_guid.get(edge.end_guid)
         if not floor_name or not start or not end or not start.center or not end.center:
             raise RuntimeError(f"Route {edge.edge_id} lacks a floor or exact IFC endpoint geometry.")
+        route_requests.append((
+            floor_name,
+            (
+                (
+                    edge.start_guid,
+                    [float(start.center[0]), float(start.center[1])],
+                    [float(end.center[0]), float(end.center[1])],
+                ),
+                (
+                    edge.end_guid,
+                    [float(end.center[0]), float(end.center[1])],
+                    [float(start.center[0]), float(start.center[1])],
+                ),
+            ),
+        ))
 
-        directional: list[tuple[str, dict, dict | None]] = []
-        for start_guid, start_element, end_element in (
-            (edge.start_guid, start, end),
-            (edge.end_guid, end, start),
-        ):
-            result = navigation.route(
-                floor_name,
-                [float(start_element.center[0]), float(start_element.center[1])],
-                [float(end_element.center[0]), float(end_element.center[1])],
-            )
-            result.setdefault("resolutionM", navigation.index["resolutionM"])
-            result.setdefault("clearanceM", navigation.index["wheelchairClearanceM"])
-            result.setdefault("routeWidthM", navigation.index["accessibleRouteWidthM"])
-            record = _record(result, navigation, floor_name)
-            directional.append((start_guid, result, record))
+    if low_end_enabled() or len(route_requests) < 2:
+        directional_results = [
+            _calculate_directional_routes(navigation, floor_name, directions)
+            for floor_name, directions in route_requests
+        ]
+    else:
+        worker_count = min(8, max(1, os.cpu_count() or 1), len(route_requests))
+        with ProcessPoolExecutor(
+            max_workers=worker_count,
+            initializer=_initialize_strict_route_worker,
+            initargs=(str(package_dir),),
+        ) as executor:
+            directional_results = list(executor.map(_strict_route_worker, route_requests, chunksize=1))
 
+    for edge, directional in zip(edges, directional_results, strict=True):
+        floor_name = floor_by_edge[edge.edge_id]
         statuses = {result.get("status") for _guid, result, _record_value in directional}
         if "pass" in statuses and statuses != {"pass"}:
             raise RuntimeError(f"Strict navigation became directional for undirected edge {edge.edge_id}: {statuses}")
@@ -118,31 +173,26 @@ def add_floor_check_routes(
     data = json.loads(app_data_path.read_text(encoding="utf-8"))
     navigation = NavigationPackage(package_dir)
     element_by_guid = {element["guid"]: element for element in data.get("elements", [])}
-    for key in ("routeEdges", "planRouteEdges"):
-        for edge in data.get(key, []):
-            edge.pop("floorCheckRoutes", None)
-            edge.pop("floorCheckExcludedReason", None)
-    floor_check_edges, floor_edge_key, edge_source = _floor_check_edge_source(data)
     floor_by_edge = {
         edge_id: floor["name"]
         for floor in data.get("floors", [])
-        for edge_id in floor.get(floor_edge_key, [])
-    }
-    floor_by_element = {
-        guid: floor["name"]
-        for floor in data.get("floors", [])
-        for guid in floor.get("elementGuids", [])
+        for edge_id in floor.get("routeEdgeIds", [])
     }
     generated = 0
     unavailable = 0
     blocked = 0
-    cross_floor = 0
 
-    for edge_index, edge in enumerate(floor_check_edges):
+    for edge_index, edge in enumerate(data.get("routeEdges", [])):
         low_end_throttle(edge_index, interval=4, delay_s=0.003)
         floor_name = floor_by_edge.get(edge.get("edgeId"))
         if precomputed_records is not None:
-            edge["floorCheckRoutes"] = precomputed_records.get(edge.get("edgeId"), {})
+            edge["floorCheckRoutes"] = _floor_check_records(
+                edge,
+                deepcopy(precomputed_records.get(edge.get("edgeId"), {})),
+                navigation,
+                floor_name,
+                element_by_guid,
+            )
             generated += len(edge["floorCheckRoutes"])
             blocked += sum(
                 route["navigationStatus"] == "blocked"
@@ -153,10 +203,6 @@ def add_floor_check_routes(
             continue
         endpoints = _edge_endpoints(edge, element_by_guid)
         edge["floorCheckRoutes"] = {}
-        if _cross_floor_edge(edge, floor_by_element):
-            edge["floorCheckExcludedReason"] = "cross_floor"
-            cross_floor += 1
-            continue
         if not floor_name or not endpoints:
             unavailable += 1
             continue
@@ -185,45 +231,122 @@ def add_floor_check_routes(
         if not edge["floorCheckRoutes"]:
             unavailable += 1
 
-    direct_routes, direct_route_mismatches = _direct_door_routes(
-        data,
-        navigation,
-        element_by_guid,
-        floor_by_edge,
-        floor_by_element,
-    )
+    direct_routes = _direct_door_routes(data, navigation, element_by_guid, floor_by_edge)
     data["floorCheckDirectRoutes"] = direct_routes
-    data["floorCheckDirectRouteMismatches"] = direct_route_mismatches
 
     summary = {
-        "edgeCount": len(floor_check_edges),
-        "edgeSource": edge_source,
+        "edgeCount": len(data.get("routeEdges", [])),
         "directionalRouteCount": generated,
         "blockedCandidateCount": blocked,
         "unavailableEdgeCount": unavailable,
-        "crossFloorExcludedEdgeCount": cross_floor,
         "directDoorRouteCount": len(direct_routes),
-        "directDoorRouteMismatchCount": len(direct_route_mismatches),
         "resolutionM": navigation.index["resolutionM"],
         "wheelchairClearanceM": navigation.index["wheelchairClearanceM"],
     }
     data.setdefault("summary", {})["floorCheckNavigation"] = summary
     data.setdefault("sources", {})["floorCheckNavigation"] = (
-        f"strict 2.5D floor-check routes over {edge_source} from the precomputed point-navigation occupancy tiles"
+        "strict 2.5D floor-check routes from the precomputed point-navigation occupancy tiles"
     )
     app_data_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
     return summary
 
 
-def _floor_check_edge_source(data: dict) -> tuple[list[dict], str, str]:
-    plan_edges = [
-        edge
-        for edge in data.get("planRouteEdges", [])
-        if not (edge.get("measurements") or {}).get("planMarkerOnly")
+def _floor_check_records(
+    edge: dict,
+    records: dict[str, dict],
+    navigation: NavigationPackage,
+    floor_name: str | None,
+    element_by_guid: dict[str, dict],
+) -> dict[str, dict]:
+    """Prepare automatic-floor-check geometry without changing graph routes.
+
+    A stair centre is intentionally blocked.  General point routing therefore
+    searches for the reachable cell nearest to that centre, which can be on the
+    far side of a stair enclosure.  That candidate is correct for an arbitrary
+    point query but visually wrong for a local stair approach.  Automatic floor
+    checks instead make a direct, one-turn attempt from the door to the stair and
+    stop at the first blocked cell.
+    """
+    if not floor_name:
+        return records
+    endpoints = {edge.get("startGuid"), edge.get("endGuid")}
+    for start_guid, record in records.items():
+        if record.get("navigationStatus") != "blocked" or start_guid not in endpoints:
+            continue
+        target_guid = edge.get("endGuid") if start_guid == edge.get("startGuid") else edge.get("startGuid")
+        start = element_by_guid.get(start_guid) or {}
+        target = element_by_guid.get(target_guid) or {}
+        if target.get("ifcType") not in {"IfcStair", "IfcStairFlight"}:
+            continue
+        if not start.get("center") or not target.get("center"):
+            raise RuntimeError(f"A stair floor-check route lacks endpoint geometry: {edge.get('edgeId')}")
+        record.update(
+            _direct_stair_collision_attempt(
+                navigation,
+                floor_name,
+                start["center"],
+                target["center"],
+            )
+        )
+        record["displayGeometrySource"] = "direct orthogonal stair collision attempt"
+    return records
+
+
+def _direct_stair_collision_attempt(
+    navigation: NavigationPackage,
+    floor_name: str,
+    start,
+    destination,
+) -> dict:
+    floor = navigation.index.get("floors", {}).get(floor_name)
+    if not floor:
+        raise RuntimeError(f"Stair collision attempt has no floor package: {floor_name}")
+
+    source = (float(start[0]), float(start[1]))
+    target = (float(destination[0]), float(destination[1]))
+    connectors = [
+        _dedupe_plan_points([source, (target[0], source[1]), target]),
+        _dedupe_plan_points([source, (source[0], target[1]), target]),
     ]
-    if plan_edges:
-        return plan_edges, "planRouteEdgeIds", "planRouteEdges"
-    return data.get("routeEdges", []), "routeEdgeIds", "routeEdges"
+    ranked = []
+    for index, connector in enumerate(connectors):
+        prefix = navigation._walkable_prefix(floor, connector)
+        safe_distance = _plan_distance(prefix)
+        total_distance = _plan_distance(connector)
+        reaches_target = math.hypot(prefix[-1][0] - target[0], prefix[-1][1] - target[1]) <= 1e-9
+        if total_distance <= 0 or reaches_target or safe_distance >= total_distance - 1e-9:
+            continue
+        ranked.append((safe_distance, -index, connector, prefix, total_distance))
+    if not ranked:
+        raise RuntimeError("A blocked stair has no direct orthogonal collision attempt.")
+
+    safe_distance, _index, connector, prefix, total_distance = max(ranked, key=lambda item: item[:2])
+    elevation = float(floor.get("elevation", 0.0))
+    collision_path = [[point[0], point[1], elevation] for point in connector]
+    collision_progress = safe_distance / total_distance
+    if collision_progress <= 0 or collision_progress >= 1:
+        raise RuntimeError("A direct stair collision attempt has an invalid stop position.")
+    return {
+        "collisionPath": collision_path,
+        "collisionDistanceM": round(total_distance, 4),
+        "collisionProgress": collision_progress,
+        "collisionStopPoint": [prefix[-1][0], prefix[-1][1], elevation],
+        "collisionAudit": {
+            "endpointsExact": True,
+            "orthogonal": True,
+            "safePrefixCollisionFree": True,
+            "collisionEncountered": True,
+            "maximumTurnCount": 1,
+        },
+    }
+
+
+def _dedupe_plan_points(points):
+    result = []
+    for point in points:
+        if not result or math.hypot(point[0] - result[-1][0], point[1] - result[-1][1]) > 1e-9:
+            result.append(point)
+    return result
 
 
 def _direct_door_routes(
@@ -231,55 +354,78 @@ def _direct_door_routes(
     navigation: NavigationPackage,
     element_by_guid: dict[str, dict],
     floor_by_edge: dict[str, str],
-    floor_by_element: dict[str, str],
-) -> tuple[list[dict], list[dict]]:
+) -> list[dict]:
     """Build one visual floor-check path per reachable door pair.
 
     The door graph still decides reachability.  Its intermediate doors are not
     forced into the displayed geometry; the navigation grid calculates one
     collision-free path between the selected start and final doors instead.
     """
-    requests = _direct_route_requests(data, element_by_guid, floor_by_edge, floor_by_element)
+    requests: dict[tuple[str, str], dict] = {}
+    for start_guid, routes in data.get("accessibleRoutesByDoor", {}).items():
+        start = element_by_guid.get(start_guid)
+        if not start or start.get("ifcType") != "IfcDoor":
+            continue
+        for route in routes:
+            target_guid = route.get("target_guid")
+            target = element_by_guid.get(target_guid)
+            edge_ids = route.get("edge_ids") or []
+            if not target or target.get("ifcType") != "IfcDoor" or not edge_ids:
+                continue
+            pair = tuple(sorted((start_guid, target_guid)))
+            floor_name = floor_by_edge.get(edge_ids[0])
+            if not floor_name:
+                raise RuntimeError(f"A direct floor-check door route has no floor: {pair}")
+            previous = requests.get(pair)
+            if previous and previous["floor"] != floor_name:
+                raise RuntimeError(f"A door pair was assigned to multiple floors: {pair}")
+            request = {"floor": floor_name, "startGuid": start_guid, "edgeIds": edge_ids}
+            if not previous or start_guid == pair[0]:
+                requests[pair] = request
 
-    records = []
-    mismatches = []
-    edge_by_id = {edge["edgeId"]: edge for edge in data.get("routeEdges", [])}
-    for request_index, ((start_guid, end_guid), request) in enumerate(sorted(requests.items())):
+    request_items = sorted(requests.items())
+    route_jobs = []
+    for request_index, ((start_guid, end_guid), request) in enumerate(request_items):
         low_end_throttle(request_index, interval=4, delay_s=0.003)
-        floor_name = request["floor"]
         start = element_by_guid[start_guid].get("center")
         end = element_by_guid[end_guid].get("center")
         if not start or not end:
             raise RuntimeError(f"A direct floor-check door route has no endpoint geometry: {(start_guid, end_guid)}")
-        result = navigation.route(
-            floor_name,
+        route_jobs.append((
+            request["floor"],
             [float(start[0]), float(start[1])],
             [float(end[0]), float(end[1])],
-        )
+        ))
+
+    if low_end_enabled() or len(route_jobs) < 2:
+        route_results = [navigation.route(*job) for job in route_jobs]
+    else:
+        worker_count = min(8, max(1, os.cpu_count() or 1), len(route_jobs))
+        with ProcessPoolExecutor(
+            max_workers=worker_count,
+            initializer=_initialize_strict_route_worker,
+            initargs=(str(navigation.root.parent),),
+        ) as executor:
+            route_results = list(executor.map(_direct_route_worker, route_jobs, chunksize=1))
+
+    records = []
+    edge_by_id = {edge["edgeId"]: edge for edge in data.get("routeEdges", [])}
+    for ((start_guid, end_guid), request), result in zip(request_items, route_results, strict=True):
+        floor_name = request["floor"]
         audit = result.get("audit") or {}
         if result.get("status") != "pass" or not all(
             audit.get(key) is True
             for key in ("endpointsExact", "orthogonal", "collisionFree")
         ):
-            mismatches.append({
-                "startGuid": start_guid,
-                "endGuid": end_guid,
-                "floor": floor_name,
-                "edgeIds": request["edgeIds"],
-                "reason": result.get("reason"),
-                "audit": audit,
-            })
-            continue
+            raise RuntimeError(
+                f"The accessible door graph disagrees with strict navigation for "
+                f"{start_guid} -> {end_guid}: {result.get('reason')}, {audit}"
+            )
         direct_path = result["path"]
         direct_distance = _plan_distance([(point[0], point[1]) for point in direct_path])
-        chain_edge_ids = request.get("chainEdgeIds") or []
-        if chain_edge_ids:
-            ordered_chain = chain_edge_ids if request["startGuid"] == start_guid else list(reversed(chain_edge_ids))
-            chain_path = _composed_pass_path(start_guid, end_guid, ordered_chain, edge_by_id)
-            chain_distance = _plan_distance([(point[0], point[1]) for point in chain_path])
-        else:
-            chain_path = []
-            chain_distance = math.inf
+        chain_edge_ids = request["edgeIds"] if request["startGuid"] == start_guid else list(reversed(request["edgeIds"]))
+        chain_path = _composed_pass_path(start_guid, end_guid, chain_edge_ids, edge_by_id)
+        chain_distance = _plan_distance([(point[0], point[1]) for point in chain_path])
         if chain_distance + 1e-9 < direct_distance:
             chosen_path = _simplify_collinear(chain_path)
             chosen_distance = chain_distance
@@ -292,7 +438,6 @@ def _direct_door_routes(
             "startGuid": start_guid,
             "endGuid": end_guid,
             "floor": floor_name,
-            "edgeIds": request["edgeIds"],
             "path": chosen_path,
             "distanceM": round(chosen_distance, 4),
             "geometrySource": geometry_source,
@@ -302,87 +447,7 @@ def _direct_door_routes(
             "streamedTiles": result.get("streamedTiles", 0),
             "audit": audit,
         })
-    return records, mismatches
-
-
-def _direct_route_requests(
-    data: dict,
-    element_by_guid: dict[str, dict],
-    floor_by_edge: dict[str, str],
-    floor_by_element: dict[str, str],
-) -> dict[tuple[str, str], dict]:
-    requests: dict[tuple[str, str], dict] = {}
-    plan_edges = [
-        edge
-        for edge in data.get("planRouteEdges", [])
-        if edge.get("status") == "pass"
-        and "accessible" in str((edge.get("measurements") or {}).get("planNetworkRole", "")).split()
-    ]
-    if plan_edges:
-        for edge in plan_edges:
-            start_guid = edge.get("startGuid")
-            target_guid = edge.get("endGuid")
-            start = element_by_guid.get(start_guid)
-            target = element_by_guid.get(target_guid)
-            if not start or not target or start.get("ifcType") != "IfcDoor" or target.get("ifcType") != "IfcDoor":
-                continue
-            floor_name = _single_floor_route(start_guid, target_guid, [], floor_by_element, floor_by_edge)
-            if not floor_name:
-                continue
-            pair = tuple(sorted((start_guid, target_guid)))
-            requests[pair] = {
-                "floor": floor_name,
-                "startGuid": start_guid,
-                "edgeIds": [edge["edgeId"]],
-                "chainEdgeIds": [],
-            }
-        return requests
-
-    for start_guid, routes in data.get("accessibleRoutesByDoor", {}).items():
-        start = element_by_guid.get(start_guid)
-        if not start or start.get("ifcType") != "IfcDoor":
-            continue
-        for route in routes:
-            target_guid = route.get("target_guid")
-            target = element_by_guid.get(target_guid)
-            edge_ids = route.get("edge_ids") or []
-            if not target or target.get("ifcType") != "IfcDoor" or not edge_ids:
-                continue
-            pair = tuple(sorted((start_guid, target_guid)))
-            floor_name = _single_floor_route(start_guid, target_guid, edge_ids, floor_by_element, floor_by_edge)
-            if not floor_name:
-                continue
-            previous = requests.get(pair)
-            request = {
-                "floor": floor_name,
-                "startGuid": start_guid,
-                "edgeIds": edge_ids,
-                "chainEdgeIds": edge_ids,
-            }
-            if not previous or start_guid == pair[0]:
-                requests[pair] = request
-    return requests
-
-
-def _cross_floor_edge(edge: dict, floor_by_element: dict[str, str]) -> bool:
-    start_floor = floor_by_element.get(edge.get("startGuid"))
-    end_floor = floor_by_element.get(edge.get("endGuid"))
-    return bool(start_floor and end_floor and start_floor != end_floor)
-
-
-def _single_floor_route(
-    start_guid: str,
-    target_guid: str,
-    edge_ids: list[str],
-    floor_by_element: dict[str, str],
-    floor_by_edge: dict[str, str],
-) -> str | None:
-    floor_name = floor_by_element.get(start_guid)
-    if not floor_name or floor_by_element.get(target_guid) != floor_name:
-        return None
-    if any(floor_by_edge.get(edge_id) != floor_name for edge_id in edge_ids):
-        return None
-    return floor_name
+    return records
 
 
 def _composed_pass_path(start_guid: str, end_guid: str, edge_ids: list[str], edge_by_id: dict[str, dict]) -> list[list[float]]:

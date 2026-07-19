@@ -31,35 +31,6 @@ acc:DoorWidthShape
         """ ;
     ] .
 
-acc:DoorHeightAdvisoryShape
-    a sh:NodeShape ;
-    sh:targetClass acc:IfcDoor ;
-    sh:severity sh:Info ;
-    sh:sparql [
-        a sh:SPARQLConstraint ;
-        sh:message "door_height|Door clear height is below 2.05 m." ;
-        sh:select """
-            PREFIX acc: <https://example.org/wheelchair-accessibility#>
-            PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-            SELECT $this WHERE {
-                $this acc:isRouteRelevantDoor true ;
-                      acc:derivedDoorHeightM ?height .
-                FILTER(xsd:decimal(?height) < 2.05)
-            }
-        """ ;
-    ] ;
-    sh:sparql [
-        a sh:SPARQLConstraint ;
-        sh:message "missing_door_height|Door clear height is missing." ;
-        sh:select """
-            PREFIX acc: <https://example.org/wheelchair-accessibility#>
-            SELECT $this WHERE {
-                $this acc:isRouteRelevantDoor true .
-                FILTER NOT EXISTS { $this acc:derivedDoorHeightM ?height . }
-            }
-        """ ;
-    ] .
-
 acc:CorridorWidthShape
     a sh:NodeShape ;
     sh:targetClass acc:IfcSpace ;
@@ -74,40 +45,6 @@ acc:CorridorWidthShape
                       acc:derivedClearSpaceWidthM ?width .
                 FILTER NOT EXISTS { $this acc:isExcludedSpace true . }
                 FILTER(xsd:decimal(?width) < 1.50)
-            }
-        """ ;
-    ] ;
-    sh:sparql [
-        a sh:SPARQLConstraint ;
-        sh:message "corridor_slope|Corridor slope exceeds the allowed limit." ;
-        sh:select """
-            PREFIX acc: <https://example.org/wheelchair-accessibility#>
-            PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-            SELECT $this WHERE {
-                $this acc:isCorridorLike true ;
-                      acc:derivedCorridorLengthM ?length ;
-                      acc:derivedCorridorSlopePercent ?slope .
-                FILTER NOT EXISTS { $this acc:isExcludedSpace true . }
-                FILTER(
-                    (xsd:decimal(?length) <= 10.0 && xsd:decimal(?slope) > 4.0) ||
-                    (xsd:decimal(?length) > 10.0 && xsd:decimal(?slope) > 3.0)
-                )
-            }
-        """ ;
-    ] .
-
-acc:CorridorPassingAreaGapShape
-    a sh:NodeShape ;
-    sh:targetClass acc:CorridorPassingAreaGap ;
-    sh:sparql [
-        a sh:SPARQLConstraint ;
-        sh:message "corridor_movement_area|Passing-area spacing exceeds 15.00 m." ;
-        sh:select """
-            PREFIX acc: <https://example.org/wheelchair-accessibility#>
-            PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-            SELECT $this WHERE {
-                $this acc:passingAreaGapLengthM ?gap .
-                FILTER(xsd:decimal(?gap) > 15.0)
             }
         """ ;
     ] .
@@ -136,18 +73,6 @@ acc:RampShape
             SELECT $this WHERE {
                 $this acc:rampUsableWidthM ?width .
                 FILTER(xsd:decimal(?width) < 1.20)
-            }
-        """ ;
-    ] ;
-    sh:sparql [
-        a sh:SPARQLConstraint ;
-        sh:message "ramp_run_length|Ramp flight length is above 6.00 m." ;
-        sh:select """
-            PREFIX acc: <https://example.org/wheelchair-accessibility#>
-            PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-            SELECT $this WHERE {
-                $this acc:rampRunLengthM ?length .
-                FILTER(xsd:decimal(?length) > 6.00)
             }
         """ ;
     ] .
@@ -214,7 +139,7 @@ acc:RouteShape
     ] ;
     sh:sparql [
         a sh:SPARQLConstraint ;
-        sh:message "route_turning_space|Route turn does not provide a clear area of 1.50 m by 1.50 m." ;
+        sh:message "route_turning_space|Route turn has less than 1.50 m turning space." ;
         sh:select """
             PREFIX acc: <https://example.org/wheelchair-accessibility#>
             PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
@@ -256,18 +181,6 @@ acc:RouteShape
             SELECT $this WHERE {
                 $this acc:routeRampUsableWidthM ?width .
                 FILTER(xsd:decimal(?width) < 1.20)
-            }
-        """ ;
-    ] ;
-    sh:sparql [
-        a sh:SPARQLConstraint ;
-        sh:message "route_ramp_run_length|Route ramp flight length is above 6.00 m." ;
-        sh:select """
-            PREFIX acc: <https://example.org/wheelchair-accessibility#>
-            PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-            SELECT $this WHERE {
-                $this acc:routeRampRunLengthM ?length .
-                FILTER(xsd:decimal(?length) > 6.00)
             }
         """ ;
     ] .

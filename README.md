@@ -6,8 +6,9 @@ The application contains:
 
 - IFC geometry extraction with IfcOpenShell
 - IFC-to-RDF conversion with the included IFCtoLBD 2.43.4 Java runtime
-- four-direction A* routing on precomputed 0.01 m floor tiles for door routes and point-to-point checks
-- Shapely-based plan-route generation for 2D floor routing and visual route topology
+- four-direction A* routing on precomputed 0.01 m floor tiles
+- interactive point-to-point checks using the same 0.01 m navigation data
+- 2D Inspect cards for door, corridor, turning-area, passing-area and ramp measurements
 - shortest door-graph routes calculated with Dijkstra's algorithm
 - SHACL validation with pySHACL
 - matching 2D floor plans and a 2.5D wheelchair simulation
@@ -102,14 +103,6 @@ git clone https://github.com/ganeshprasadt1de/Accessibility-checking-assistant.g
 cd Accessibility-checking-assistant
 ```
 
-Confirm that you are on the main branch:
-
-```powershell
-git branch --show-current
-```
-
-The result should be `main`.
-
 ## 6. Create An Isolated Python Environment
 
 A virtual environment prevents this project's packages from changing other Python projects on the computer.
@@ -189,7 +182,7 @@ The repository includes both project IFC files:
 - `AC20-Institute-Var-2.ifc`
 - `20201208DigitalHub_ARC.ifc`
 
-The repository also includes a ready-to-run DigitalHub package in `output/app_package`. A new user can skip the two preprocessing commands below and continue with step 9. Run preprocessing before reviewing changes to the IFC model, geometry, rules or routing code.
+The repository also includes a ready-to-run DigitalHub package in `output/app_package`. A new user can skip the two preprocessing commands below and continue with step 9. Run preprocessing when changing the IFC model or the geometry and routing code.
 
 Generate the AC20 browser package with:
 
@@ -203,17 +196,17 @@ Generate the DigitalHub browser package with:
 python preprocess.py --ifc ".\20201208DigitalHub_ARC.ifc" --save-bin
 ```
 
-For weaker laptops, add `--low-end`:
+For a laptop with limited cooling or fewer CPU cores, add `--low-end`:
 
 ```powershell
 python preprocess.py --ifc ".\20201208DigitalHub_ARC.ifc" --save-bin --low-end
 ```
 
-Low-end mode uses the same IFC extraction, RDF conversion, 0.01 m navigation tiles, route audits and SHACL checks. It does not loosen the route rules and should produce the same accessibility results as the normal run. It only changes how the computer spends CPU time: the preprocessing process gets lower priority, native math and Java worker threads are limited, and short pauses are added inside heavy tile and route loops. The laptop should stay more responsive, but preprocessing can take longer.
+Normal mode uses parallel IFC geometry extraction and parallel floor and route workers. It is intended for a workstation or a well-cooled laptop. Low-end mode runs the same IFC extraction, RDF conversion, 0.01 m navigation, route audits and SHACL rules using one worker for the heavy routing stages. It also lowers process priority, limits native and Java worker threads, and inserts short pauses in heavy loops. Both profiles use the same geometry, accessibility limits and deterministic checks. Only processing time and CPU pressure change.
 
 `output/app_package` contains one active package at a time. Running either command replaces that generated package with the selected model's results. The original IFC files are not modified.
 
-Preprocessing also builds the point-to-point navigation data. Each floor is divided into 5 m tiles at 0.01 m resolution. Walkable cells are packed as bits and compressed, so the browser and server load only the tiles needed for the selected floor and route. Walls, columns, stairs, inaccessible ramps and narrow doors are blocked during this build. Corridor-width issue regions are blocked locally instead of removing the complete IFC space from the navigation grid.
+Preprocessing also builds the point-to-point navigation data. Each floor is divided into 5 m tiles at 0.01 m resolution. Walkable cells are packed as bits and compressed, so the browser and server load only the tiles needed for the selected floor and route. Walls, columns, stairs, inaccessible ramps, narrow doors and spaces below the 1.50 m route-width rule are blocked during this build.
 
 To process another IFC model, use its full path:
 
@@ -227,7 +220,7 @@ Preprocessing can take several minutes. A successful run ends with lines similar
 Extracted elements: ...
 raw graph created by pinned IFCtoLBD 2.43.4 runtime
 Wrote package: ...\output\app_package
-Routes: ..., plan routes: ..., issues: ..., missing geometry: ..., skipped route pairs: ...
+Routes: ..., issues: ..., missing geometry: ...
 ```
 
 In the browser, open **Floor Plan 2D** or **Wheelchair Simulation**, change **Mode** to **Point-to-point**, then select a start and destination on the current floor. Both tabs send the same IFC coordinates to the same backend route checker. A successful result must start and end at the selected coordinates, use only 0, 90 or 180 degree segments, and pass the final collision audit before it is drawn.
@@ -291,11 +284,11 @@ The website contains:
 
 - `Home`: upload IFC files and manage generated model packages
 - `Check Results`: inspect extracted elements, SHACL results and grounded explanations
-- `Floor Plan 2D`: inspect floor geometry and route overlays
+- `Floor Plan 2D`: inspect a large floor drawing with issue bubbles, measurement cards, route overlays and point-to-point checks
 - `Building Model`: inspect the compact GLB model
 - `Wheelchair Simulation`: play clear and blocked routes on a 2.5D floor slice
 
-In the Model Library, `Generate` uses the normal full-speed preprocessing run. `Generate low-end` runs the same checks with reduced CPU pressure. Use it when a laptop becomes noisy, hot or slow during IFC preprocessing. The result package still uses the same 0.01 m routing data and the same SHACL rules.
+The Model Library places generation requests in one FIFO queue. One model is processed at a time and later requests remain labelled `Queued`. If one model fails, the worker records that failure and continues with the next model. If the server stops during generation, the interrupted entry becomes retryable after the server starts again. `Generate` uses the parallel normal profile. `Generate low-end` uses the reduced-pressure profile. Regenerating a model replaces its package automatically; manual deletion is not required.
 
 The Check Results page includes `Restart Ollama`. It stops verified Ollama processes, starts one clean Ollama service, waits for the API and warms the selected model. It refuses to stop an unrelated program if another executable owns port 11434.
 
@@ -312,26 +305,24 @@ python server.py --port 8771
 
 The supplied SHACL rules check:
 
-- route-relevant door or opening clear width of at least 0.90 m and clear height of at least 2.05 m
-- corridor and route clear width of at least 1.50 m
-- corridor slope of at most 3 percent, or 4 percent for sections no longer than 10.00 m
-- 1.80 m by 1.80 m passing areas at intervals no greater than 15.00 m
+- door or opening clear width of at least 0.90 m
+- route clear width of at least 1.50 m
 - turning space of at least 1.50 m by 1.50 m
-- stair, wall or column obstruction along a wheelchair route
-- disconnected route doors
+- stair intersection along a wheelchair route
 - ramp usable width of at least 1.20 m
 - ramp slope of at most 6 percent
-- ramp flight length of at most 6.00 m
 
 These checks support model review. They do not replace professional accessibility approval, fire-safety review or requirements from the responsible local authority.
 
+The 2D Inspect mode also reports element-level measurements without changing the SHACL result or route status. It covers door width and height, corridor width and slope, 1.50 m turning space, 1.80 m by 1.80 m passing areas at intervals no greater than 15 m, and ramp width, slope and flight length. Missing or low door-height data is shown as advisory because it is not one of the supplied SHACL compliance constraints.
+
+Issue bubbles are placed over the related IFC element. Selecting a bubble opens the measured value, rule limit, status, evidence source and any linked SHACL issue. The Inspect presentation is separate from point-to-point routing, so these cards do not alter route generation or compliance results.
+
 ## Route Construction
 
-Routes use `IfcRelSpaceBoundary` door-to-space relationships to decide which doors may form an edge in the door graph. This relationship creates only the candidate pair. It does not prove that the space between the doors is accessible.
+Routes use `IfcRelSpaceBoundary` door-to-space relationships.
 
-Preprocessing divides each floor into compressed 5 m tiles containing 0.01 m cells. Walls, columns and stairs are included when their IFC bounding boxes enter the floor's 2.05 m vertical clearance volume. In plan view, solid obstacles are expanded by 0.445 m around the route centre: a 0.45 m wheelchair radius minus a 0.005 m geometry tolerance. Accessible door rectangles create controlled portals through wall openings.
-
-Every candidate door pair is then checked by four-direction A* on these tiles. The strict result replaces the provisional candidate before RDF measurements, SHACL validation, Dijkstra indexes, audit files or browser data are written. The same tiled geometry and clearance rules are therefore used by the door graph, the floor-check simulation and interactive point-to-point mode.
+IFC space boundaries decide which door pairs belong to the same space. The final geometry for every published edge is then calculated on the precomputed 0.01 m floor tiles. Walls, columns, stairs and inaccessible ramps are tested in the floor's vertical clearance band. Solid obstacles are expanded by 0.445 m around the route centre: a 0.45 m wheelchair radius minus the 0.005 m grid tolerance. A door portal uses the door's actual IFC bounding-box overlap with its wall. A four-direction A* search connects exact door centres with horizontal and vertical movement.
 
 The generated route has these properties:
 
@@ -339,15 +330,12 @@ The generated route has these properties:
 - route endpoints match the selected door centres
 - a route is rejected when no collision-free grid connection exists
 - a route intersecting a blocked wall cell is never accepted
-- every accepted path is audited again for exact endpoints, orthogonal segments and collision-free cells
 
 Dijkstra's algorithm joins passing door-to-door edges into shortest routes across the door graph. Stair approaches are stored as blocked edges so the simulation can stop before the stair.
 
-`backend/plan_routes.py` builds a separate 2D route network from Shapely walkable-space geometry. It removes wall, column and stair obstacles, restores controlled openings at valid doors and checks the buffered route footprint against the walkable area. A 0.20 m grid search is used when a direct candidate is not suitable.
+The automatic 2.5D floor check uses the audited directional records already produced for the door graph. The door graph decides which final doors are reachable, but intermediate doors are not forced into the displayed path as visual milestones. A separate four-direction A* search connects the true start and final door centres directly. The chosen green path must be collision-free, orthogonal and no longer than the audited door-graph chain. A blocked red route follows its collision-free candidate to the exact door or stair obstacle where the failure occurs.
 
-The automatic 2.5D floor check uses `planRouteEdges` as its visual route topology and audits the displayed paths against the strict precomputed 0.01 m navigation tiles. Passing routes must be collision-free, orthogonal and consistent with the strict grid. Failed physical edges remain available as blocked evidence. A blocked red route follows its collision-free prefix to the exact door or stair obstacle where the failure occurs. Cross-floor edges and disagreements between the plan network and the strict navigation grid are recorded instead of being drawn as valid floor routes.
-
-Interactive point-to-point routing reads the shared floor package. A request loads only the required tiles, runs four-direction A*, restores the exact selected endpoints and performs a final geometry audit. Tiles from other floors remain on disk, and the in-memory tile cache has a fixed limit. A complete audited route is green. If the destination cannot be reached, the red candidate ends at the last collision-free cell and is never labelled accessible.
+Interactive point-to-point routing reads the same floor package. Preprocessing divides each floor into compressed 5 m tiles containing 0.01 m cells. A point request loads only the required tiles, runs four-direction A* once, restores the exact selected endpoints and performs a final geometry audit. A complete audited route is green. If the destination cannot be reached, the red candidate ends at the last collision-free cell and is never labelled accessible.
 
 ## RDF, SHACL And Ollama
 
@@ -361,26 +349,28 @@ SHACL produces the pass or fail result. Ollama does not decide compliance. It se
 
 ## Matching 2D And 2.5D Views
 
-The 2D floor plan renders `planRouteEdges`. The wheelchair simulation uses the same plan network as its floor-route topology and checks its displayed paths against the strict navigation grid. The Building Model continues to use the base `routeEdges` door graph.
+The 2D floor plan and wheelchair simulation use the same floor elements, route edges, door boxes, blocker boxes, route coordinates and status colours.
+
+In Point-to-point mode, both views show the current mouse position in IFC floor coordinates below the coordinate fields. The 2.5D readout is calculated by intersecting the camera ray with the selected floor plane, so it stays aligned after orbiting or panning the view.
+
+The selected start and destination use small point markers with labelled bubbles in both views. The 2.5D labels face the active camera and use high-resolution canvas textures, so they remain readable after orbiting. Stair and ramp blocker boards use the same high-resolution texture method. Precomputed candidate lines remain available in the package but are not drawn in the 2.5D foreground; only the selected point route or the thick automatic floor-check route is displayed.
 
 The simulation uses one uniform metres-to-scene scale. Routes are placed on one selected floor-slice surface. The wheelchair is grounded from its calculated mesh bounds so the tyre bottom touches that surface. Orbit, pan and zoom change the camera only; they do not change route coordinates.
 
 ## Generated Package Files
 
 ```text
-output/app_package/app_data.json         browser data, elements, issues and routes
+output/app_package/app_data.json         browser data, elements, inspection checks, issues and routes
 output/app_package/raw_lbd_graph.ttl     IFCtoLBD RDF graph
 output/app_package/lbd_graph.ttl         RDF with derived measurements and routes
 output/app_package/shacl_report.ttl      complete SHACL report
 output/app_package/route_model.glb       compact browser model
 output/app_package/route_graph.bin       saved route graph when --save-bin is used
-output/app_package/ifc_route_audit.json  machine-readable route audit
-output/app_package/ifc_route_audit.md    readable route audit
 output/app_package/navigation/index.json floor extents, tile metadata and hashes
 output/app_package/navigation/tiles/*/*.nav compressed 0.01 m walkability tiles
 ```
 
-Uploaded Model Library entries have separate generated packages. After changing preprocessing or route code, select `Regenerate`, wait for `Complete`, then select `Open`.
+Uploaded Model Library entries have separate generated packages. `Generate` uses parallel normal processing. `Generate low-end` runs the same checks with reduced CPU pressure. Requests are processed in submission order. After changing preprocessing or route code, regenerate the package, wait for `Complete`, then select `Open`.
 
 ## Main Project Files
 
@@ -389,10 +379,11 @@ preprocess.py                              preprocessing entry point
 server.py                                  local server, Model Library and Ollama control
 requirements.txt                           exact Python dependency versions
 backend/geometry.py                        IFC geometry and bounding-box extraction
-backend/routes.py                          IFC door graph candidates and route measurements
-backend/plan_routes.py                     Shapely-based 2D route network generation
-backend/navigation.py                      compressed 0.01 m navigation tiles, A* and final audit
+backend/inspection.py                      2D element inspection measurements and evidence
+backend/routes.py                          IFC door candidates, route facts and door graph
+backend/navigation.py                      shared 0.01 m tiled grid, A* and final audit
 backend/simulation_routes.py               strict automatic floor-check route geometry
+backend/resource_control.py                low-end process and thread controls
 backend/ifc_tools.py                       pinned IFCtoLBD execution
 backend/shacl_runner.py                    SHACL validation and issue extraction
 backend/package_writer.py                  browser package generation

@@ -12,10 +12,9 @@ import time
 import urllib.error
 import urllib.request
 import uuid
-from collections import Counter
+from collections import Counter, deque
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from queue import Queue
 from urllib.parse import parse_qs, unquote, urlparse
 
 from backend.short_explainer import POINT_ROUTE_EXPLANATIONS, explain_point_route, explain_question
@@ -34,11 +33,11 @@ OLLAMA_PORT = 11434
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "").strip()
 OLLAMA_LOCK = threading.Lock()
 MODEL_LOCK = threading.Lock()
+GENERATION_QUEUE_LOCK = threading.Lock()
+GENERATION_QUEUE: deque[tuple[str, str]] = deque()
+GENERATION_WORKER: threading.Thread | None = None
 NAVIGATION_LOCK = threading.Lock()
 NAVIGATION_CACHE: dict[str, tuple[int, NavigationPackage]] = {}
-GENERATION_QUEUE: Queue[tuple[str, str]] = Queue()
-GENERATION_WORKER_LOCK = threading.Lock()
-GENERATION_WORKER: threading.Thread | None = None
 POINT_EXPLANATION_CACHE: dict[tuple[str, str], dict] = {}
 PROJECT_PORTS = {8765, 8766, 8767, 8771}
 ACTIVE_SERVER: ThreadingHTTPServer | None = None
@@ -89,7 +88,7 @@ class Handler(SimpleHTTPRequestHandler):
             try:
                 package = current_package()
                 navigator = navigation_package(package)
-                result = navigator.route(str(payload.get("floor", "")), payload.get("start"), payload.get("end"), classify_issues=True)
+                result = navigator.route(str(payload.get("floor", "")), payload.get("start"), payload.get("end"))
                 self._json(result)
             except NavigationError as exc:
                 self._json({"error": str(exc)}, 400)
@@ -100,7 +99,7 @@ class Handler(SimpleHTTPRequestHandler):
             payload = self._body_json()
             try:
                 navigator = navigation_package(current_package())
-                result = navigator.route(str(payload.get("floor", "")), payload.get("start"), payload.get("end"), classify_issues=True)
+                result = navigator.route(str(payload.get("floor", "")), payload.get("start"), payload.get("end"))
                 if result.get("status") != "blocked":
                     self._json({"error": "Only a blocked point route requires a blocking explanation."}, 409)
                     return
@@ -291,98 +290,6 @@ def save_model_state(data: dict) -> None:
     temp.replace(MODEL_FILE)
 
 
-def windows_processes() -> list[dict]:
-    if not sys.platform.startswith("win"):
-        return []
-    command = (
-        "Get-CimInstance Win32_Process | ForEach-Object { "
-        "Write-Output ($_.ProcessId.ToString() + '|' + $_.ParentProcessId.ToString() + '|' + $_.Name + '|' + $_.CommandLine) }"
-    )
-    completed = subprocess.run(
-        ["powershell", "-NoProfile", "-Command", command],
-        capture_output=True,
-        text=True,
-        timeout=15,
-        check=False,
-    )
-    processes = []
-    for line in completed.stdout.splitlines():
-        parts = line.strip().split("|", 3)
-        if len(parts) != 4 or not parts[0].isdigit() or not parts[1].isdigit():
-            continue
-        processes.append({"pid": int(parts[0]), "parent": int(parts[1]), "name": parts[2], "command": parts[3]})
-    return processes
-
-
-def stop_interrupted_preprocessing() -> int:
-    with MODEL_LOCK:
-        data = load_model_state()
-        packages = {
-            str(Path(model["packagePath"]).resolve()).lower()
-            for model in data["models"]
-            if model.get("status") == "running" and model.get("packagePath")
-        }
-    if not packages:
-        return 0
-    script = str((ROOT / "preprocess.py").resolve()).lower()
-    processes = windows_processes()
-    matches = [
-        process
-        for process in processes
-        if process["name"].lower() in {"python.exe", "pythonw.exe"}
-        and script in process["command"].lower()
-        and "--output" in process["command"].lower()
-        and any(package in process["command"].lower() for package in packages)
-    ]
-    matched_ids = {process["pid"] for process in matches}
-    roots = [process for process in matches if process["parent"] not in matched_ids]
-    stopped = 0
-    for process in roots:
-        completed = subprocess.run(
-            ["taskkill", "/PID", str(process["pid"]), "/T", "/F"],
-            capture_output=True,
-            text=True,
-            timeout=15,
-            check=False,
-        )
-        if completed.returncode == 0:
-            stopped += 1
-    return stopped
-
-
-def recover_interrupted_generations() -> None:
-    with MODEL_LOCK:
-        data = load_model_state()
-        changed = False
-        for model in data["models"]:
-            if model.get("status") != "running":
-                continue
-            message = "Preprocessing was interrupted. Generate the package again."
-            package = Path(str(model.get("packagePath", "")))
-            data_path = package / "app_data.json"
-            if model.get("stage") == "Queued" and data_path.is_file():
-                try:
-                    model["summary"] = json.loads(data_path.read_text(encoding="utf-8")).get("summary", {})
-                    model["status"] = "complete"
-                    model["progress"] = 100
-                    model["stage"] = "Complete"
-                    message = "Queued regeneration was interrupted. The previous package is still available."
-                except (OSError, json.JSONDecodeError):
-                    model["status"] = "failed"
-                    model["stage"] = "Failed"
-            else:
-                model["status"] = "failed"
-                model["stage"] = "Failed"
-            model["message"] = message
-            model["updatedAt"] = int(time.time())
-            log = list(model.get("log", []))
-            log.append(message)
-            model["log"] = log[-80:]
-            changed = True
-        if changed:
-            save_model_state(data)
-
-
 def active_model_id() -> str | None:
     if not ACTIVE_MODEL_FILE.exists():
         return None
@@ -472,7 +379,7 @@ def delete_model(model_id: str) -> dict:
         model = find_model(data, model_id)
         if not model:
             return {"error": "Model was not found."}
-        if model.get("status") == "running":
+        if model.get("status") in {"queued", "running"}:
             return {"error": "Model is still generating."}
         data["models"] = [item for item in data["models"] if item.get("id") != model_id]
         save_model_state(data)
@@ -507,105 +414,120 @@ def generation_profile(parsed) -> str:
     return "low-end" if requested == "low-end" else "full"
 
 
-def generation_paths(model: dict) -> tuple[Path, Path]:
-    ifc_value = str(model.get("ifcPath", "")).strip()
-    if not ifc_value:
-        raise ValueError("Source IFC file is not registered for this model.")
-    ifc_path = Path(ifc_value)
-    if not ifc_path.is_file():
-        raise ValueError(f"Source IFC file was not found: {ifc_path}")
-    package_value = str(model.get("packagePath", "")).strip()
-    if not package_value:
-        raise ValueError("Package output path is not registered for this model.")
-    return ifc_path, Path(package_value)
-
-
 def start_model_generation(model_id: str, profile: str = "full") -> dict:
     with MODEL_LOCK:
         data = load_model_state()
         model = find_model(data, model_id)
         if not model:
             return {"error": "Model was not found."}
-        if model.get("status") == "running":
-            return {"error": "Model is already generating."}
-        try:
-            generation_paths(model)
-        except ValueError as exc:
-            return {"error": str(exc)}
-        model["status"] = "running"
+        if model.get("status") in {"queued", "running"}:
+            return {"error": "Model is already queued or generating."}
+        model["status"] = "queued"
         model["progress"] = 3
         model["stage"] = "Queued"
         model["generationProfile"] = profile
-        model["message"] = "Waiting for low-end preprocessing." if profile == "low-end" else "Waiting for preprocessing."
+        model["message"] = "Waiting for the preprocessing worker."
         model["log"] = []
         model["updatedAt"] = int(time.time())
         save_model_state(data)
-    try:
-        enqueue_model_generation(model_id, profile)
-    except Exception as exc:
-        fail_model_generation(model_id, str(exc))
-        return {"error": f"Could not queue model generation: {exc}"}
-    return {"modelId": model_id, "status": "running"}
+    enqueue_model_generation(model_id, profile)
+    return {"modelId": model_id, "status": "queued"}
 
 
 def enqueue_model_generation(model_id: str, profile: str) -> None:
     global GENERATION_WORKER
-    with GENERATION_WORKER_LOCK:
-        if GENERATION_WORKER is None or not GENERATION_WORKER.is_alive():
-            GENERATION_WORKER = threading.Thread(target=run_generation_queue, daemon=True)
-            GENERATION_WORKER.start()
-        GENERATION_QUEUE.put((model_id, profile))
+    with GENERATION_QUEUE_LOCK:
+        GENERATION_QUEUE.append((model_id, profile))
+        if GENERATION_WORKER is not None and GENERATION_WORKER.is_alive():
+            return
+        GENERATION_WORKER = threading.Thread(target=model_generation_worker, daemon=True)
+        GENERATION_WORKER.start()
 
 
-def run_generation_queue() -> None:
+def model_generation_worker() -> None:
+    global GENERATION_WORKER
     while True:
-        model_id, profile = GENERATION_QUEUE.get()
+        with GENERATION_QUEUE_LOCK:
+            if not GENERATION_QUEUE:
+                GENERATION_WORKER = None
+                return
+            model_id, profile = GENERATION_QUEUE.popleft()
+        if not mark_model_generation_running(model_id, profile):
+            continue
         try:
             run_model_generation(model_id, profile)
-        except Exception as exc:
-            fail_model_generation(model_id, str(exc))
-        finally:
-            GENERATION_QUEUE.task_done()
+        except BaseException as exc:
+            # An unexpected worker failure must not strand the remaining queue.
+            fail_model_generation(model_id, f"Preprocessing worker failed: {exc}")
+
+
+def mark_model_generation_running(model_id: str, profile: str) -> bool:
+    with MODEL_LOCK:
+        data = load_model_state()
+        model = find_model(data, model_id)
+        if not model or model.get("status") != "queued":
+            return False
+        model["status"] = "running"
+        model["progress"] = max(5, int(model.get("progress", 0)))
+        model["stage"] = "Starting"
+        model["message"] = "Starting low-end preprocessing." if profile == "low-end" else "Starting preprocessing."
+        model["updatedAt"] = int(time.time())
+        save_model_state(data)
+        return True
+
+
+def recover_interrupted_model_generations() -> int:
+    """Turn stale busy states from a stopped server into retryable failures."""
+    with MODEL_LOCK:
+        data = load_model_state()
+        recovered = 0
+        for model in data["models"]:
+            if model.get("status") not in {"queued", "running"}:
+                continue
+            recovered += 1
+            model["status"] = "failed"
+            model["stage"] = "Interrupted"
+            model["message"] = "Generation was interrupted when the server stopped. Start generation again."
+            model["updatedAt"] = int(time.time())
+            log = list(model.get("log", []))
+            log.append(model["message"])
+            model["log"] = log[-80:]
+        if recovered:
+            save_model_state(data)
+        return recovered
 
 
 def run_model_generation(model_id: str, profile: str = "full") -> None:
-    package = None
+    with MODEL_LOCK:
+        data = load_model_state()
+        model = find_model(data, model_id)
+        if not model:
+            return
+        ifc_path = Path(model["ifcPath"])
+        package = Path(model["packagePath"])
+    if package.exists():
+        shutil.rmtree(package)
+    update_model_progress(model_id, 8, "Reading IFC", "Reading model geometry.")
+    command = [
+        sys.executable,
+        "-u",
+        str(ROOT / "preprocess.py"),
+        "--ifc",
+        str(ifc_path),
+        "--output",
+        str(package),
+        "--save-bin",
+    ]
+    low_end = profile == "low-end"
+    if low_end:
+        command.append("--low-end")
+    zip_path = ifctolbd_zip()
+    exe_path = ifctolbd_exe()
+    if exe_path:
+        command.extend(["--ifctolbd-exe", str(exe_path)])
+    if zip_path:
+        command.extend(["--ifctolbd-zip", str(zip_path)])
     try:
-        with MODEL_LOCK:
-            data = load_model_state()
-            model = find_model(data, model_id)
-            if not model:
-                return
-            ifc_path, package = generation_paths(model)
-        low_end = profile == "low-end"
-        update_model_progress(
-            model_id,
-            5,
-            "Starting",
-            "Preparing low-end preprocessing." if low_end else "Preparing preprocessing.",
-        )
-        with NAVIGATION_LOCK:
-            NAVIGATION_CACHE.pop(str(package.resolve()), None)
-        if package.exists():
-            shutil.rmtree(package)
-        update_model_progress(model_id, 8, "Reading IFC", "Reading model geometry.")
-        command = [
-            sys.executable,
-            str(ROOT / "preprocess.py"),
-            "--ifc",
-            str(ifc_path),
-            "--output",
-            str(package),
-            "--save-bin",
-        ]
-        if low_end:
-            command.append("--low-end")
-        zip_path = ifctolbd_zip()
-        exe_path = ifctolbd_exe()
-        if exe_path:
-            command.extend(["--ifctolbd-exe", str(exe_path)])
-        if zip_path:
-            command.extend(["--ifctolbd-zip", str(zip_path)])
         env = low_end_environment(os.environ) if low_end else None
         creation_flags = 0
         if low_end and sys.platform.startswith("win"):
@@ -626,8 +548,7 @@ def run_model_generation(model_id: str, profile: str = "full") -> None:
             update_model_from_log(model_id, line.rstrip())
         code = process.wait()
     except Exception as exc:
-        if package is not None:
-            cleanup_package_work(package)
+        cleanup_package_work(package)
         fail_model_generation(model_id, str(exc))
         return
     cleanup_package_work(package)
@@ -716,8 +637,12 @@ def progress_from_line(line: str) -> tuple[int, str]:
         return 46, "Converting IFC to RDF"
     if "raw graph created" in lower:
         return 62, "Preparing rule graph"
-    if "building tiled point-navigation" in lower:
+    if "building tiled navigation package" in lower or "building tiled point-navigation" in lower:
         return 88, "Building point navigation"
+    if "auditing strict 0.01 m routes" in lower:
+        return 90, "Auditing strict routes"
+    if "attaching the audited routes" in lower:
+        return 92, "Preparing floor-check routes"
     if "routes:" in lower:
         return 94, "Writing package"
     if "wrote package" in lower:
@@ -758,7 +683,7 @@ def ifctolbd_exe() -> Path | None:
 
 def assistant_context(data: dict) -> dict:
     elements_by_guid = {element.get("guid"): element for element in data.get("elements", [])}
-    all_issues = [issue for issue in data.get("issues", []) if issue.get("severity") != "info" and issue.get("rule_id") not in {"door_height", "missing_door_height", "route_door_height"}]
+    all_issues = data.get("issues", [])
     issue_examples = all_issues[:40]
     detected_rules = sorted({issue.get("rule_id") for issue in all_issues if issue.get("rule_id")})
     issue_counts = Counter(issue.get("rule_id") for issue in all_issues if issue.get("rule_id"))
@@ -836,7 +761,7 @@ def shacl_report_response(data: dict) -> dict:
         "source": "SHACL validation report",
         "shacl": shacl,
         "issueCount": summary.get("issueCount"),
-        "issues": [issue for issue in data.get("issues", []) if issue.get("severity") != "info" and issue.get("rule_id") not in {"door_height", "missing_door_height", "route_door_height"}][:20],
+        "issues": data.get("issues", [])[:20],
     }
 
 
@@ -1115,10 +1040,9 @@ def main() -> None:
     MODEL_HOME = args.model_home.resolve()
     MODEL_FILE = MODEL_HOME / "models.json"
     ACTIVE_MODEL_FILE = MODEL_HOME / "active_model.txt"
-    stopped_preprocessing = stop_interrupted_preprocessing()
-    if stopped_preprocessing:
-        print(f"Stopped {stopped_preprocessing} interrupted preprocessing process tree(s).")
-    recover_interrupted_generations()
+    recovered = recover_interrupted_model_generations()
+    if recovered:
+        print(f"Marked {recovered} interrupted model generation job(s) as failed.")
     OLLAMA_AVAILABLE = ollama_available()
     if OLLAMA_AVAILABLE:
         try:
@@ -1139,7 +1063,6 @@ def main() -> None:
     try:
         server.serve_forever()
     finally:
-        stop_interrupted_preprocessing()
         server.server_close()
         ACTIVE_SERVER = None
 

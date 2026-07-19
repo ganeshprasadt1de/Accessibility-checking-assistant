@@ -131,6 +131,7 @@ function setupModelLibrary() {
   const input = document.querySelector("#modelFile");
   const dropZone = document.querySelector(".modelDropZone");
   document.querySelector("#modelUploadButton")?.addEventListener("click", uploadSelectedModels);
+  document.querySelector("#modelRefresh")?.addEventListener("click", loadModels);
   input?.addEventListener("change", () => {
     pendingUploadFiles = Array.from(input.files || []);
     setUploadSummary(pendingUploadFiles);
@@ -215,13 +216,14 @@ function modelRow(model) {
 
 function modelActions(model) {
   const buttons = [];
+  const busy = model.status === "queued" || model.status === "running";
   if (model.status === "complete") buttons.push(modelButton(model.id, "open", "Open"));
-  if (model.status !== "running") {
+  if (!busy) {
     buttons.push(modelButton(model.id, "generate", model.status === "complete" ? "Regenerate" : "Generate"));
     buttons.push(modelButton(model.id, "generate", model.status === "complete" ? "Regenerate low-end" : "Generate low-end", "low-end"));
   }
   buttons.push(modelButton(model.id, "rename", "Rename"));
-  if (model.status !== "running") buttons.push(modelButton(model.id, "delete", "Delete"));
+  if (!busy) buttons.push(modelButton(model.id, "delete", "Delete"));
   return buttons.join("");
 }
 
@@ -361,13 +363,12 @@ async function deleteModel(id) {
 }
 
 function scheduleModelPolling() {
-  const running = (modelState.models || []).some((model) => model.status === "running");
-  if (running && !modelPollTimer) {
+  const busy = (modelState.models || []).some((model) => model.status === "queued" || model.status === "running");
+  if (busy && !modelPollTimer) {
     modelPollTimer = setInterval(loadModels, 1600);
-  } else if (!running && modelPollTimer) {
+  } else if (!busy && modelPollTimer) {
     clearInterval(modelPollTimer);
     modelPollTimer = null;
-    setModelStatus("");
   }
 }
 
@@ -389,7 +390,7 @@ function renderSummary() {
     ["Elements", appData.summary.elementCount],
     ["Doors", appData.summary.doorCount],
     ["Route edges", appData.summary.routeEdgeCount],
-    ["Issues", appData.issues.filter((issue) => !isDoorHeightAdvisory(issue) && issue.severity !== "info").length],
+    ["Issues", appData.summary.issueCount],
     ["Missing geometry", appData.summary.missingGeometryCount],
     ["IFCtoLBD", String(appData.summary.ifctolbd || "").toLowerCase().includes("ifctolbd failed") ? "failed" : "ok"],
     ["SHACL conforms", appData.summary.shacl.conforms === true ? "yes" : appData.summary.shacl.conforms === false ? "no" : "unknown"],
@@ -429,7 +430,7 @@ function renderTables() {
       e.source,
     ]);
   fillTable("#elementTable", ["Type", "Name", "Width m", "Depth m", "Height m", "Source"], elementRows);
-  const issueRows = appData.issues.filter((i) => !isDoorHeightAdvisory(i) && i.severity !== "info").map((i) => [
+  const issueRows = appData.issues.map((i) => [
     i.element_type,
     i.element_label,
     i.short_text,
@@ -444,7 +445,6 @@ function setupFloorPlan() {
   const select = document.querySelector("#planFloorSelect");
   if (!select) return;
   const routeMode = document.querySelector("#planRouteMode");
-  const accessibleOnly = document.querySelector("#planAccessibleOnly");
   const interactionMode = document.querySelector("#planInteractionMode");
   const pointReset = document.querySelector("#planPointReset");
   const floors = (appData.floors || []).filter((floor) => floor.elementGuids?.length);
@@ -461,12 +461,7 @@ function setupFloorPlan() {
       renderFloorPlan();
     });
     routeMode?.addEventListener("change", () => {
-      planRouteMode = routeMode.value === "issues" ? "issues" : accessibleOnly?.checked ? "accessible" : "candidate";
-      renderFloorPlan();
-    });
-    accessibleOnly?.addEventListener("change", () => {
-      if (routeMode?.value !== "candidate") return;
-      planRouteMode = accessibleOnly.checked ? "accessible" : "candidate";
+      planRouteMode = routeMode.value;
       renderFloorPlan();
     });
     interactionMode?.addEventListener("change", () => {
@@ -478,6 +473,7 @@ function setupFloorPlan() {
       renderFloorPlan();
       if (simInteractionMode === "point" && simFloorName === planFloorName && simulationReady) loadSimulationScenario("point-reset");
     });
+    document.querySelector("#planResetView")?.addEventListener("click", resetPlanView);
     setupPlanPanZoom();
     planControlsReady = true;
   }
@@ -493,7 +489,6 @@ function renderFloorPlan() {
   if (!viewer || !title || !status || !metrics || !details) return;
   const floors = appData.floors || [];
   const floor = floors.find((item) => item.name === planFloorName) || floors.find((item) => item.elementGuids?.length);
-  document.querySelector(".planShell")?.setAttribute("data-route-mode", planRouteMode);
   if (!floor) {
     viewer.innerHTML = "<p class=\"emptyPlan\">No floor data was generated.</p>";
     title.textContent = "Floor plan";
@@ -505,48 +500,41 @@ function renderFloorPlan() {
   planFloorName = floor.name;
   const select = document.querySelector("#planFloorSelect");
   if (select && select.value !== planFloorName) select.value = planFloorName;
-  const routeMode = document.querySelector("#planRouteMode");
-  if (routeMode) routeMode.value = planRouteMode === "issues" ? "issues" : "candidate";
-  const accessibleOnly = document.querySelector("#planAccessibleOnly");
-  if (accessibleOnly) accessibleOnly.checked = planRouteMode === "accessible";
-  const interactionMode = document.querySelector("#planInteractionMode");
-  const pointReset = document.querySelector("#planPointReset");
   const elementsByGuid = new Map(appData.elements.map((element) => [element.guid, element]));
-  const planEdges = appData.planRouteEdges?.length ? appData.planRouteEdges : appData.routeEdges;
-  const edgesById = new Map(planEdges.map((edge) => [edge.edgeId, edge]));
+  const edgesById = new Map(appData.routeEdges.map((edge) => [edge.edgeId, edge]));
   const issueCounts = planIssueCounts();
-  const edgeIds = appData.planRouteEdges?.length ? floor.planRouteEdgeIds : floor.routeEdgeIds;
-  const edges = (edgeIds || []).map((edgeId) => edgesById.get(edgeId)).filter(Boolean);
-  const floorElements = (floor.elementGuids || []).map((guid) => elementsByGuid.get(guid)).filter(Boolean);
-  const elements = uniqueElements(floorElements.concat(planRouteEvidenceElements(edges, elementsByGuid)));
+  const elements = (floor.elementGuids || []).map((guid) => elementsByGuid.get(guid)).filter(Boolean);
+  const edges = (floor.routeEdgeIds || []).map((edgeId) => edgesById.get(edgeId)).filter(Boolean);
   const geometryContract = floorGeometryContract(elements, edges);
-  viewer.innerHTML = floorPlanSvg(floor, elements, edges, issueCounts, elementsByGuid);
-  viewer.dataset.floorGeometryContract = JSON.stringify(geometryContract);
+  viewer.innerHTML = floorPlanSvg(floor, elements, edges, issueCounts);
   viewer.classList.toggle("pointMode", planInteractionMode === "point");
+  const interactionMode = document.querySelector("#planInteractionMode");
+  const routeMode = document.querySelector("#planRouteMode");
+  const pointReset = document.querySelector("#planPointReset");
   if (interactionMode && interactionMode.value !== planInteractionMode) interactionMode.value = planInteractionMode;
   if (routeMode) routeMode.disabled = planInteractionMode === "point";
-  if (accessibleOnly) accessibleOnly.disabled = planInteractionMode === "point";
   if (pointReset) pointReset.hidden = planInteractionMode !== "point";
   updatePointCoordinateControl("plan", planInteractionMode === "point", floor.name);
+  viewer.dataset.floorGeometryContract = JSON.stringify(geometryContract);
   planPick = null;
   applyPlanZoom();
   title.textContent = `${floor.name} floor plan`;
-  const floorIssueCount = floorElements.reduce((sum, element) => sum + (issueCounts.get(element.guid) || 0), 0);
-  const routeIssueCount = routeIssueGroupCount(edges, elementsByGuid);
+  const failedRoutes = edges.filter((edge) => edge.status === "fail").length;
   const pointState = pointCheck.floor === floor.name ? pointCheck : null;
   status.textContent = planInteractionMode === "point"
     ? pointStatusText(pointState)
-    : planRouteMode === "accessible"
-      ? `${floor.spaceGuids?.length || 0} rooms and ${floor.doorGuids?.length || 0} doors on this floor.`
-      : planRouteMode === "issues"
-        ? `${floorIssueCount} building issue${floorIssueCount === 1 ? "" : "s"} on this floor.`
-        : `${routeIssueCount} route issue${routeIssueCount === 1 ? "" : "s"} on this floor.`;
-  const visibleEdges = planVisibleEdges(edges, elementsByGuid);
-  const networkStats = planAccessibleNetworkStats(visibleEdges, elementsByGuid);
-  metrics.innerHTML = planMetricRows(floor, networkStats, floorIssueCount, routeIssueCount)
+    : `${elements.length} elements, ${edges.length} route edges, ${failedRoutes} blocked route edges.`;
+  metrics.innerHTML = [
+    ["Spaces", String(floor.spaceGuids?.length || 0), floor.spaceGuids?.length ? "pass" : "fail"],
+    ["Doors", String(floor.doorGuids?.length || 0), floor.doorGuids?.length ? "pass" : "fail"],
+    ["Route edges", String(edges.length), edges.length ? "pass" : "fail"],
+    ["Issues", String(floor.issueCount || 0), floor.issueCount ? "fail" : "pass"],
+  ]
     .map(([label, value, state]) => `<div class="simMetric ${state}"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)}</span></div>`)
     .join("");
-  details.innerHTML = planInteractionMode === "point" ? pointDetailsMarkup(pointState) : floorPlanModeHelp();
+  details.innerHTML = planInteractionMode === "point"
+    ? pointDetailsMarkup(pointState)
+    : planRouteMode === "issues" ? "<p>Click a room, door, stair, or ramp to inspect it. Use the Routes control to overlay route lines.</p>" : "<p>Click a room, door, stair, ramp, or route line to inspect it.</p>";
   viewer.onclick = (event) => {
     if (planSuppressClick) {
       planSuppressClick = false;
@@ -563,1734 +551,15 @@ function renderFloorPlan() {
     if (!target) return;
     const guid = target.getAttribute("data-guid");
     const edgeId = target.getAttribute("data-edge-id");
-    const regionId = target.getAttribute("data-region-id");
-    const areaId = target.getAttribute("data-region-area-id");
     selectPlanTarget(target);
-    if (guid) showPlanElement(guid, elementsByGuid, regionId, areaId);
-    if (edgeId) {
-      const edgeIds = planTargetEdgeIds(target);
-      const routeIssues = planTargetRouteIssues(target);
-      selectPlanRouteRegions(edgeIds, edgesById, routeIssues);
-      if (target.classList.contains("routeIssueMarker")) {
-        showPlanRouteGroup(edgeIds, edgesById, elementsByGuid, routeIssues);
-      } else {
-        showPlanRoute(edgeIds[0] || edgeId, edgesById, elementsByGuid);
-      }
-    }
+    if (guid) showPlanElement(guid, elementsByGuid, issueCounts);
+    if (edgeId) showPlanRoute(edgeId, edgesById, elementsByGuid);
   };
-}
-
-function setPlanZoom(value) {
-  planZoom = Math.max(0.7, Math.min(planMaximumZoom(), value));
-  applyPlanZoom();
-}
-
-function applyPlanZoom() {
-  const svg = document.querySelector("#planViewer svg");
-  if (!svg) return;
-  svg.style.width = `${100 * planZoom}%`;
-  svg.style.height = `${100 * planZoom}%`;
-  svg.style.minWidth = `${760 * planZoom}px`;
-  svg.style.minHeight = `${560 * planZoom}px`;
-}
-
-function setupPlanPanZoom() {
-  const viewer = document.querySelector("#planViewer");
-  if (!viewer) return;
-  viewer.addEventListener("wheel", (event) => {
-    if (!viewer.querySelector("svg")) return;
-    event.preventDefault();
-    const rect = viewer.getBoundingClientRect();
-    const oldZoom = planZoom;
-    const nextZoom = planZoom * (event.deltaY < 0 ? 1.12 : 0.89);
-    setPlanZoom(nextZoom);
-    const ratio = planZoom / oldZoom;
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-    viewer.scrollLeft = (viewer.scrollLeft + x) * ratio - x;
-    viewer.scrollTop = (viewer.scrollTop + y) * ratio - y;
-  }, { passive: false });
-  viewer.addEventListener("pointerdown", (event) => {
-    if (event.button !== 0) return;
-    const target = event.target instanceof Element ? event.target.closest("[data-guid], [data-edge-id]") : null;
-    planDrag = {
-      x: event.clientX,
-      y: event.clientY,
-      left: viewer.scrollLeft,
-      top: viewer.scrollTop,
-      moved: false,
-      target,
-      pointerId: event.pointerId,
-    };
-    viewer.setPointerCapture(event.pointerId);
-  });
-  viewer.addEventListener("pointermove", (event) => {
-    if (!planDrag) return;
-    if ((event.buttons & 1) !== 1) {
-      planDrag = null;
-      return;
-    }
-    const dx = event.clientX - planDrag.x;
-    const dy = event.clientY - planDrag.y;
-    if (Math.abs(dx) + Math.abs(dy) > 4) {
-      planDrag.moved = true;
-    }
-    viewer.scrollLeft = planDrag.left - (event.clientX - planDrag.x);
-    viewer.scrollTop = planDrag.top - (event.clientY - planDrag.y);
-  });
-  viewer.addEventListener("pointerup", (event) => {
-    if (planDrag?.moved) {
-      planSuppressClick = true;
-    } else {
-      planClickTarget = planDrag?.target || null;
-    }
-    if (viewer.hasPointerCapture(event.pointerId)) {
-      viewer.releasePointerCapture(event.pointerId);
-    }
-    planDrag = null;
-  });
-  viewer.addEventListener("pointercancel", (event) => {
-    if (viewer.hasPointerCapture(event.pointerId)) {
-      viewer.releasePointerCapture(event.pointerId);
-    }
-    planDrag = null;
-  });
-}
-
-function selectPlanTarget(target) {
-  document.querySelectorAll("#planViewer .selectedPlanElement").forEach((item) => item.classList.remove("selectedPlanElement"));
-  document.querySelectorAll("#planViewer .selectedPlanRoute").forEach((item) => item.classList.remove("selectedPlanRoute"));
-  document.querySelectorAll("#planViewer .selectedIssueRegion").forEach((item) => item.classList.remove("selectedIssueRegion"));
-  if (target.hasAttribute("data-edge-id")) {
-    for (const edgeId of planTargetEdgeIds(target)) {
-      document.querySelectorAll(`#planViewer [data-edge-id="${cssEscape(edgeId)}"]`).forEach((item) => item.classList.add("selectedPlanRoute"));
-    }
-    target.classList.add("selectedPlanRoute");
-    return;
-  }
-  const regionId = target.getAttribute("data-region-id");
-  if (regionId) {
-    const areaId = target.getAttribute("data-region-area-id");
-    const areaSelector = areaId ? `[data-issue-area-id="${cssEscape(areaId)}"]` : "";
-    document.querySelectorAll(`#planViewer [data-issue-region-id="${cssEscape(regionId)}"]${areaSelector}`).forEach((item) => item.classList.add("selectedIssueRegion"));
-    target.classList.add("selectedPlanElement");
-    return;
-  }
-  const guid = target.getAttribute("data-guid");
-  if (guid) {
-    document.querySelectorAll(`#planViewer [data-guid="${cssEscape(guid)}"]`).forEach((item) => item.classList.add("selectedPlanElement"));
-    return;
-  }
-  target.classList.add("selectedPlanElement");
-}
-
-function selectPlanRouteRegions(edgeIds, edgesById, routeIssues = []) {
-  const selectedEdgeIds = routeIssues.length
-    ? new Set(routeIssues.filter((issue) => issue.reason === "route_width").flatMap((issue) => issue.edgeIds || []))
-    : new Set(edgeIds);
-  const spaceGuids = new Set(
-    [...selectedEdgeIds]
-      .map((edgeId) => edgesById.get(edgeId))
-      .filter((edge) => edge?.reasons?.includes("route_width") && edge.viaSpaceGuid)
-      .map((edge) => edge.viaSpaceGuid),
-  );
-  for (const region of appData.issueRegions || []) {
-    if (!spaceGuids.has(region.element_guid) || region.rule_id !== "corridor_width") continue;
-    document.querySelectorAll(`#planViewer .planIssueRegion[data-issue-region-id="${cssEscape(region.region_id)}"]`).forEach((item) => item.classList.add("selectedIssueRegion"));
-  }
-}
-
-function planTargetEdgeIds(target) {
-  const edgeIds = target.getAttribute("data-edge-ids");
-  if (edgeIds) return edgeIds.split(",").filter(Boolean);
-  const edgeId = target.getAttribute("data-edge-id");
-  return edgeId ? [edgeId] : [];
-}
-
-function planTargetRouteIssues(target) {
-  const value = target.getAttribute("data-route-issues");
-  if (!value) return [];
-  try {
-    const issues = JSON.parse(decodeURIComponent(value));
-    return Array.isArray(issues) ? issues : [];
-  } catch {
-    return [];
-  }
-}
-
-function pickPlanTarget(event, fallback, elementsByGuid, edgesById, issueCounts) {
-  const candidates = planTargetCandidates(event, fallback, elementsByGuid, edgesById, issueCounts);
-  if (!candidates.length) return null;
-  const x = Math.round(event.clientX);
-  const y = Math.round(event.clientY);
-  const samePick = planPick && Math.abs(planPick.x - x) <= 8 && Math.abs(planPick.y - y) <= 8;
-  let target = candidates[0];
-  if (samePick && planPick.key) {
-    target = nextPlanTarget(candidates, planPick.key, planPick.kind, elementsByGuid, edgesById);
-  }
-  planPick = { x, y, key: planTargetKey(target), kind: planTargetKind(target, elementsByGuid, edgesById) };
-  return target;
-}
-
-function planTargetCandidates(event, fallback, elementsByGuid, edgesById, issueCounts) {
-  const viewer = document.querySelector("#planViewer");
-  if (!viewer) return [];
-  const candidates = [];
-  for (const item of document.elementsFromPoint(event.clientX, event.clientY)) {
-    const target = item instanceof Element ? item.closest("[data-guid], [data-edge-id]") : null;
-    if (!target || !viewer.contains(target)) continue;
-    if (!candidates.some((candidate) => planTargetKey(candidate) === planTargetKey(target))) {
-      candidates.push(target);
-    }
-  }
-  if (fallback && viewer.contains(fallback) && !candidates.some((candidate) => planTargetKey(candidate) === planTargetKey(fallback))) {
-    candidates.push(fallback);
-  }
-  return candidates.sort((a, b) => planTargetPriority(a, elementsByGuid, edgesById, issueCounts) - planTargetPriority(b, elementsByGuid, edgesById, issueCounts));
-}
-
-function planTargetKey(target) {
-  const edgeId = target.getAttribute("data-edge-id");
-  const routeIssues = target.getAttribute("data-route-issues");
-  if (edgeId && routeIssues) return `issue:${routeIssues}`;
-  if (edgeId) return `edge:${edgeId}`;
-  const regionId = target.getAttribute("data-region-id");
-  if (regionId) return `region:${regionId}:${target.getAttribute("data-region-area-id") || ""}`;
-  return `guid:${target.getAttribute("data-guid") || ""}`;
-}
-
-function nextPlanTarget(candidates, key, kind, elementsByGuid, edgesById) {
-  const index = candidates.findIndex((candidate) => planTargetKey(candidate) === key);
-  if (index < 0) return candidates[0];
-  for (let offset = 1; offset < candidates.length; offset++) {
-    const candidate = candidates[(index + offset) % candidates.length];
-    if (planTargetKind(candidate, elementsByGuid, edgesById) !== kind) return candidate;
-  }
-  return candidates[(index + 1) % candidates.length];
-}
-
-function planTargetKind(target, elementsByGuid, edgesById) {
-  const edgeId = target.getAttribute("data-edge-id");
-  if (edgeId && edgesById.has(edgeId)) return "route";
-  const element = elementsByGuid.get(target.getAttribute("data-guid"));
-  if (!element) return "element";
-  if (element.ifcType === "IfcDoor") return "door";
-  if (isStairType(element.ifcType) || isRampType(element.ifcType)) return "blocker";
-  if (element.ifcType === "IfcSpace") return "space";
-  if (element.ifcType === "IfcWall" || element.ifcType === "IfcColumn") return "wall";
-  return "element";
-}
-
-function planTargetPriority(target, elementsByGuid, edgesById, issueCounts) {
-  const edgeId = target.getAttribute("data-edge-id");
-  if (edgeId) {
-    if (target.classList.contains("routeIssueMarker")) return 4;
-    if (target.classList.contains("routeDotItem")) return 24;
-    if (target.classList.contains("routeDoorMarkerItem")) return 24;
-    if (planRouteMode === "issues") return 80;
-    return 35;
-  }
-  const guid = target.getAttribute("data-guid");
-  const element = elementsByGuid.get(guid);
-  let priority = planElementPriority(element);
-  if (planRouteMode === "issues" && issueCounts.get(guid)) priority -= 100;
-  return priority;
-}
-
-function planElementPriority(element) {
-  if (!element) return 70;
-  if (element.ifcType === "IfcDoor") return 20;
-  if (isStairType(element.ifcType) || isRampType(element.ifcType)) return 30;
-  if (element.ifcType === "IfcSpace") return 40;
-  if (element.ifcType === "IfcWall" || element.ifcType === "IfcColumn") return 50;
-  return 60;
-}
-
-function floorPlanSvg(floor, elements, edges, issueCounts, elementsByGuid) {
-  const spaces = elements.filter((element) => element.ifcType === "IfcSpace" && element.bboxMin && element.bboxMax);
-  const walls = elements.filter((element) => ["IfcWall", "IfcColumn"].includes(element.ifcType) && element.bboxMin && element.bboxMax);
-  const doors = elements.filter((element) => element.ifcType === "IfcDoor" && element.bboxMin && element.bboxMax);
-  const blockers = elements.filter((element) => ["IfcStair", "IfcStairFlight", "IfcRamp", "IfcRampFlight"].includes(element.ifcType) && element.bboxMin && element.bboxMax);
-  if (!spaces.length && !doors.length && !blockers.length && !edges.some((edge) => edge.path?.length > 1)) {
-    return "<p class=\"emptyPlan\">No routed floor geometry was generated for this floor.</p>";
-  }
-  const bounds = floorPlanBounds(elements, edges);
-  if (!bounds) return "<p class=\"emptyPlan\">No drawable geometry was generated for this floor.</p>";
-  const view = floorPlanView(bounds);
-  const elementGuids = new Set(elements.map((element) => element.guid));
-  const issueRegions = (appData.issueRegions || []).filter((region) => elementGuids.has(region.element_guid));
-  const pointMode = planInteractionMode === "point";
-  const visibleEdges = pointMode ? [] : planVisibleEdges(edges, elementsByGuid);
-  const showRouteIssues = !pointMode && planRouteMode === "candidate";
-  const showElementIssues = !pointMode && planRouteMode === "issues";
-  const issueEdges = showRouteIssues ? edges.filter((edge) => !planRouteVisible(edge, elementsByGuid) && routeHasIssue(edge)) : [];
-  const hiddenPassEdges = !pointMode && planRouteMode === "candidate"
-    ? edges.filter((edge) => !planRouteVisible(edge, elementsByGuid) && edge.status === "pass")
-    : [];
-  const routeIssueEdges = showRouteIssues
-    ? [...new Map(visibleEdges.filter(routeHasIssue).concat(issueEdges).map((edge) => [edge.edgeId, edge])).values()]
-    : [];
-  const issueReserved = floorPlanIssueReservedAreas(elements, visibleEdges, bounds, view);
-  const doorOpenings = doors.map((door) => floorPlanDoorOpening(door, bounds, view, walls)).filter(Boolean);
-  const routeMarkup = floorPlanRouteMarkup(visibleEdges, bounds, view, elementsByGuid);
-  const routeIssueMarkup = floorPlanRouteIssueMarkup(routeIssueEdges, bounds, view, elementsByGuid, issueReserved);
-  const regionMarkup = floorPlanIssueRegionMarkup(issueRegions, bounds, view);
-  const markerEdges = pointMode ? [] : (planRouteMode === "candidate" ? visibleEdges : visibleEdges.filter(routePassesChecks)).concat(hiddenPassEdges);
-  const connectedDoorMarkup = floorPlanConnectedDoorMarkers(markerEdges, bounds, view, elementsByGuid, walls);
-  const wallMarkup = floorPlanWallMarkup(walls, doorOpenings, bounds, view, issueCounts);
-  const spaceFillMarkup = floorPlanSpaceFillMarkup(spaces, bounds, view);
-  const doorFootprintMarkup = doors.map((element) => floorPlanDoorFootprint(element, bounds, view, floorPlanDoorClass(element, issueCounts), issueCounts, walls)).join("");
-  const spaceBorderMarkup = floorPlanSpaceBorderMarkup(spaces, doorOpenings, bounds, view, issueCounts);
-  const blockerMarkup = blockers.map((element) => floorPlanRect(element, bounds, view, isStairType(element.ifcType) ? "planBlocker" : "planRamp", issueCounts)).join("");
-  const doorMarkup = doors.map((element) => floorPlanDoor(element, bounds, view, floorPlanDoorClass(element, issueCounts), issueCounts, walls)).join("");
-  const labelMarkup = spaces.map((element, index) => index < 90 ? floorPlanLabel(element, bounds, view) : "").join("");
-  const issueMarkup = showElementIssues ? floorPlanElementIssueMarkup(elements, issueCounts, bounds, view, issueReserved, issueRegions) : "";
-  const pointMarkup = floorPlanPointCheck(floor, bounds, view);
-  return `<svg class="floorSvg routeMode-${escapeHtml(planRouteMode)}" viewBox="0 0 ${view.width} ${view.height}" role="img" aria-label="${escapeHtml(floor.name)} floor plan">
-    <defs><pattern id="planIssueRegionHatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#f8e3df" fill-opacity="0.72"></rect><line x1="0" y1="0" x2="0" y2="7" stroke="#a84d45" stroke-opacity="0.48" stroke-width="2"></line></pattern></defs>
-    <rect class="planCanvas" x="0" y="0" width="${view.width}" height="${view.height}"></rect>
-    <g>${spaceFillMarkup}</g>
-    <g class="planIssueRegionLayer">${regionMarkup.fill}</g>
-    <g>${doorFootprintMarkup}</g>
-    <g>${spaceBorderMarkup}</g>
-    <g>${wallMarkup}</g>
-    <g>${routeMarkup}</g>
-    <g>${blockerMarkup}</g>
-    <g>${doorMarkup}</g>
-    <g>${connectedDoorMarkup}</g>
-    <g>${labelMarkup}</g>
-    <g class="planIssueLayer">${regionMarkup.measurement}${routeIssueMarkup}${issueMarkup}</g>
-    <g>${pointMarkup}</g>
-  </svg>`;
-}
-
-function planVisibleEdges(edges, elementsByGuid) {
-  const hasPlanNetwork = edges.some((edge) => edge.measurements?.planNetworkRole);
-  if (planRouteMode === "accessible") {
-    if (hasPlanNetwork) {
-      return edges.filter((edge) => {
-        const roles = String(edge.measurements?.planNetworkRole || "").split(" ");
-        return roles.includes("accessible") || (roles.includes("physical") && edge.status === "fail" && routePassesChecks(edge));
-      });
-    }
-    const passed = edges.filter(routePassesChecks);
-    return planAccessibleSpanningForest(passed, elementsByGuid);
-  }
-  if (planRouteMode === "candidate" && hasPlanNetwork) {
-    return edges.filter((edge) => {
-      const roles = String(edge.measurements?.planNetworkRole || "").split(" ");
-      return roles.includes("physical") || roles.includes("issue");
-    });
-  }
-  const visible = edges.filter((edge) => planRouteVisible(edge, elementsByGuid));
-  if (planRouteMode === "candidate") return visible;
-  return [];
-}
-
-function distance3d(a, b) {
-  return Math.hypot((a?.[0] || 0) - (b?.[0] || 0), (a?.[1] || 0) - (b?.[1] || 0), (a?.[2] || 0) - (b?.[2] || 0));
-}
-
-function floorPlanModeHelp() {
-  if (planRouteMode === "issues") return "<p>No issue selected.</p>";
-  if (planRouteMode === "accessible") return "<p>Accessible network shows the pass-only network without redundant cycles. Separate groups are not mutually reachable.</p>";
-  return "<p>No route selected.</p>";
-}
-
-function planMetricRows(floor, networkStats, issueCount, routeIssueCount) {
-  const rows = [
-    ["Rooms", String(floor.spaceGuids?.length || 0), floor.spaceGuids?.length ? "pass" : "fail"],
-    ["Doors", String(floor.doorGuids?.length || 0), floor.doorGuids?.length ? "pass" : "fail"],
-  ];
-  if (planRouteMode === "accessible") {
-    rows.push(["Doors on network", String(networkStats.doorCount), networkStats.doorCount === (floor.doorGuids?.length || 0) ? "pass" : "fail"]);
-    rows.push(["Accessible groups", String(networkStats.groupCount), networkStats.groupCount === 1 ? "pass" : "fail"]);
-  } else {
-    const count = planRouteMode === "issues" ? issueCount : routeIssueCount;
-    rows.push(["Issues", String(count), count ? "fail" : "pass"]);
-  }
-  return rows;
-}
-
-function planAccessibleNetworkStats(edges, elementsByGuid) {
-  const groups = planNetworkComponents(edges, elementsByGuid).filter((group) => group.doorCount >= 2);
-  return {
-    doorCount: groups.reduce((sum, group) => sum + group.doorCount, 0),
-    groupCount: groups.length,
+  viewer.onpointermove = (event) => {
+    if (planInteractionMode !== "point") return;
+    updateCursorCoordinateOutput("plan", planPointFromEvent(event, elements, edges));
   };
-}
-
-function planAccessibleSpanningForest(edges, elementsByGuid) {
-  const included = new Set(
-    planNetworkComponents(edges, elementsByGuid)
-      .filter((group) => group.doorCount >= 2)
-      .flatMap((group) => [...group.nodes]),
-  );
-  const candidates = edges
-    .filter((edge) => included.has(edge.startGuid) && included.has(edge.endGuid))
-    .sort((a, b) => {
-      const role = Number(a.measurements?.routeNetworkRole === "candidate") - Number(b.measurements?.routeNetworkRole === "candidate");
-      if (role) return role;
-      const length = Number(a.distanceM || 0) - Number(b.distanceM || 0);
-      if (Math.abs(length) > 0.001) return length;
-      const points = (a.path?.length || 0) - (b.path?.length || 0);
-      return points || String(a.edgeId).localeCompare(String(b.edgeId));
-    });
-  const parent = new Map();
-  const find = (node) => {
-    if (!parent.has(node)) parent.set(node, node);
-    if (parent.get(node) !== node) parent.set(node, find(parent.get(node)));
-    return parent.get(node);
-  };
-  const selected = [];
-  for (const edge of candidates) {
-    const start = find(edge.startGuid);
-    const end = find(edge.endGuid);
-    if (start === end) continue;
-    parent.set(end, start);
-    selected.push(edge);
-  }
-  const incident = new Map();
-  selected.forEach((edge, index) => {
-    for (const node of [edge.startGuid, edge.endGuid]) {
-      if (!incident.has(node)) incident.set(node, new Set());
-      incident.get(node).add(index);
-    }
-  });
-  const active = new Set(selected.map((_edge, index) => index));
-  const queue = [...incident]
-    .filter(([node, edgeIds]) => elementsByGuid.get(node)?.ifcType !== "IfcDoor" && edgeIds.size <= 1)
-    .map(([node]) => node);
-  while (queue.length) {
-    const node = queue.shift();
-    const edgeIndex = [...(incident.get(node) || [])].find((index) => active.has(index));
-    if (edgeIndex == null) continue;
-    active.delete(edgeIndex);
-    const edge = selected[edgeIndex];
-    for (const endpoint of [edge.startGuid, edge.endGuid]) {
-      incident.get(endpoint)?.delete(edgeIndex);
-      if (elementsByGuid.get(endpoint)?.ifcType !== "IfcDoor" && incident.get(endpoint)?.size <= 1) queue.push(endpoint);
-    }
-  }
-  return selected.filter((_edge, index) => active.has(index));
-}
-
-function planNetworkComponents(edges, elementsByGuid) {
-  const graph = new Map();
-  for (const edge of edges) {
-    if (!edge.startGuid || !edge.endGuid || edge.startGuid === edge.endGuid) continue;
-    if (!graph.has(edge.startGuid)) graph.set(edge.startGuid, new Set());
-    if (!graph.has(edge.endGuid)) graph.set(edge.endGuid, new Set());
-    graph.get(edge.startGuid).add(edge.endGuid);
-    graph.get(edge.endGuid).add(edge.startGuid);
-  }
-  const seen = new Set();
-  const groups = [];
-  for (const start of graph.keys()) {
-    if (seen.has(start)) continue;
-    const pending = [start];
-    const nodes = new Set();
-    let doorCount = 0;
-    while (pending.length) {
-      const guid = pending.pop();
-      if (seen.has(guid)) continue;
-      seen.add(guid);
-      nodes.add(guid);
-      if (elementsByGuid.get(guid)?.ifcType === "IfcDoor") doorCount += 1;
-      for (const next of graph.get(guid) || []) {
-        if (!seen.has(next)) pending.push(next);
-      }
-    }
-    groups.push({ nodes, doorCount });
-  }
-  return groups;
-}
-
-function planRouteVisible(edge, elementsByGuid) {
-  const roles = String(edge.measurements?.planNetworkRole || "").split(" ");
-  if (roles.includes("physical") || roles.includes("issue")) return true;
-  if (!isLocalDoorToDoorRoute(edge, elementsByGuid)) return true;
-  return pathBlockingRoute(edge);
-}
-
-function isLocalDoorToDoorRoute(edge, elementsByGuid) {
-  if (edge.source !== "IFC space boundaries and floor geometry") return false;
-  const space = elementsByGuid.get(edge.viaSpaceGuid);
-  if (space?.extra?.isCorridorLike) return false;
-  return elementsByGuid.get(edge.startGuid)?.ifcType === "IfcDoor" && elementsByGuid.get(edge.endGuid)?.ifcType === "IfcDoor";
-}
-
-function floorPlanBounds(elements, edges) {
-  const xs = [];
-  const ys = [];
-  const baseElements = elements.some((element) => element.ifcType === "IfcSpace" && element.bboxMin && element.bboxMax)
-    ? elements.filter((element) => ["IfcSpace", "IfcDoor", "IfcRamp", "IfcRampFlight"].includes(element.ifcType))
-    : elements;
-  for (const element of baseElements) {
-    if (!element.bboxMin || !element.bboxMax) continue;
-    xs.push(element.bboxMin[0], element.bboxMax[0]);
-    ys.push(element.bboxMin[1], element.bboxMax[1]);
-  }
-  if (!xs.length || !ys.length) {
-    for (const edge of edges) {
-      for (const point of edge.path || []) {
-        xs.push(point[0]);
-        ys.push(point[1]);
-      }
-    }
-  }
-  if (!xs.length || !ys.length) return null;
-  const minX = Math.min(...xs);
-  const maxX = Math.max(...xs);
-  const minY = Math.min(...ys);
-  const maxY = Math.max(...ys);
-  const pad = Math.max(1, Math.min(4, Math.max(maxX - minX, maxY - minY) * 0.04));
-  return { minX: minX - pad, maxX: maxX + pad, minY: minY - pad, maxY: maxY + pad };
-}
-
-function floorPlanView(bounds) {
-  const width = 1000;
-  const worldWidth = Math.max(bounds.maxX - bounds.minX, 1);
-  const worldHeight = Math.max(bounds.maxY - bounds.minY, 1);
-  return { width, height: Math.max(380, Math.min(760, Math.round(width * worldHeight / worldWidth))) };
-}
-
-function floorPlanPoint(point, bounds, view) {
-  const x = ((point[0] - bounds.minX) / Math.max(bounds.maxX - bounds.minX, 0.001)) * view.width;
-  const y = view.height - ((point[1] - bounds.minY) / Math.max(bounds.maxY - bounds.minY, 0.001)) * view.height;
-  return [x, y];
-}
-
-function floorPlanRect(element, bounds, view, className, issueCounts) {
-  if (element.ifcType === "IfcDoor") return floorPlanDoor(element, bounds, view, className, issueCounts);
-  const a = floorPlanPoint(element.bboxMin, bounds, view);
-  const b = floorPlanPoint(element.bboxMax, bounds, view);
-  const x = Math.min(a[0], b[0]);
-  const y = Math.min(a[1], b[1]);
-  const width = Math.max(Math.abs(a[0] - b[0]), 1);
-  const height = Math.max(Math.abs(a[1] - b[1]), 1);
-  return `<g data-guid="${escapeHtml(element.guid)}">
-    <rect class="${className}" x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${width.toFixed(2)}" height="${height.toFixed(2)}"></rect>
-  </g>`;
-}
-
-function floorPlanDoor(element, bounds, view, className, issueCounts, walls = []) {
-  const box = floorPlanDoorHitBox(element, bounds, view, walls);
-  return `<g data-guid="${escapeHtml(element.guid)}">
-    <rect class="planDoorHit" x="${box.x.toFixed(2)}" y="${box.y.toFixed(2)}" width="${box.width.toFixed(2)}" height="${box.height.toFixed(2)}"></rect>
-  </g>`;
-}
-
-function floorPlanDoorFootprint(element, bounds, view, className, issueCounts, walls = []) {
-  const box = floorPlanDoorOpening(element, bounds, view, walls) || floorPlanBox(element, bounds, view);
-  return `<g data-guid="${escapeHtml(element.guid)}">
-    <rect class="${className}" x="${box.x.toFixed(2)}" y="${box.y.toFixed(2)}" width="${box.width.toFixed(2)}" height="${box.height.toFixed(2)}"></rect>
-  </g>`;
-}
-
-function floorPlanDoorHitBox(element, bounds, view, walls = []) {
-  const box = floorPlanDoorOpening(element, bounds, view, walls) || floorPlanBox(element, bounds, view);
-  const pad = 4;
-  return { x: box.x - pad, y: box.y - pad, width: box.width + pad * 2, height: box.height + pad * 2 };
-}
-
-function floorPlanWallMarkup(walls, openings, bounds, view, issueCounts) {
-  return walls.map((wall) => floorPlanWall(wall, openings, bounds, view, issueCounts)).join("");
-}
-
-function floorPlanSpaceFillMarkup(spaces, bounds, view) {
-  return spaces.map((space) => {
-    const box = floorPlanBox(space, bounds, view);
-    return `<g data-guid="${escapeHtml(space.guid)}">
-      <rect class="${floorPlanSpaceFillClass(space)}" x="${box.x.toFixed(2)}" y="${box.y.toFixed(2)}" width="${box.width.toFixed(2)}" height="${box.height.toFixed(2)}"></rect>
-    </g>`;
-  }).join("");
-}
-
-function floorPlanSpaceBorderMarkup(spaces, openings, bounds, view, issueCounts) {
-  return spaces.map((space) => {
-    const box = floorPlanBox(space, bounds, view);
-    const borderClass = floorPlanSpaceBorderClass(space, issueCounts);
-    return `<g data-guid="${escapeHtml(space.guid)}">${floorPlanSpaceBorder(box, openings, borderClass)}</g>`;
-  }).join("");
-}
-
-function floorPlanSpaceBorder(box, openings, className) {
-  return [
-    ...floorPlanBorderSegments(box.x, box.x + box.width, box.y, "h", openings),
-    ...floorPlanBorderSegments(box.x, box.x + box.width, box.y + box.height, "h", openings),
-    ...floorPlanBorderSegments(box.y, box.y + box.height, box.x, "v", openings),
-    ...floorPlanBorderSegments(box.y, box.y + box.height, box.x + box.width, "v", openings),
-  ].map((segment) => floorPlanBorderLine(segment, className)).join("");
-}
-
-function floorPlanBorderSegments(start, end, coord, axis, openings) {
-  const cuts = openings
-    .filter((opening) => axis === "h" ? coord >= opening.y - 0.8 && coord <= opening.y + opening.height + 0.8 : coord >= opening.x - 0.8 && coord <= opening.x + opening.width + 0.8)
-    .map((opening) => axis === "h" ? [Math.max(start, opening.x), Math.min(end, opening.x + opening.width)] : [Math.max(start, opening.y), Math.min(end, opening.y + opening.height)])
-    .filter(([cutStart, cutEnd]) => cutEnd - cutStart > 0.8)
-    .sort((a, b) => a[0] - b[0]);
-  const segments = [];
-  let cursor = start;
-  for (const [cutStart, cutEnd] of cuts) {
-    if (cutStart - cursor > 0.8) segments.push({ axis, coord, start: cursor, end: cutStart });
-    cursor = Math.max(cursor, cutEnd);
-  }
-  if (end - cursor > 0.8) segments.push({ axis, coord, start: cursor, end });
-  return segments;
-}
-
-function floorPlanBorderLine(segment, className) {
-  if (segment.axis === "h") {
-    return `<line class="${className}" x1="${segment.start.toFixed(2)}" y1="${segment.coord.toFixed(2)}" x2="${segment.end.toFixed(2)}" y2="${segment.coord.toFixed(2)}"></line>`;
-  }
-  return `<line class="${className}" x1="${segment.coord.toFixed(2)}" y1="${segment.start.toFixed(2)}" x2="${segment.coord.toFixed(2)}" y2="${segment.end.toFixed(2)}"></line>`;
-}
-
-function floorPlanWall(element, openings, bounds, view, issueCounts) {
-  const box = floorPlanBox(element, bounds, view);
-  const horizontal = box.width >= box.height;
-  const cuts = openings
-    .filter((opening) => floorPlanBoxesOverlap(box, opening))
-    .map((opening) => horizontal ? [Math.max(box.x, opening.x), Math.min(box.x + box.width, opening.x + opening.width)] : [Math.max(box.y, opening.y), Math.min(box.y + box.height, opening.y + opening.height)])
-    .filter(([start, end]) => end - start > 1)
-    .sort((a, b) => a[0] - b[0]);
-  if (!cuts.length) return floorPlanWallSegmentGroup(element, [box], issueCounts);
-  const segments = [];
-  let cursor = horizontal ? box.x : box.y;
-  for (const [start, end] of cuts) {
-    if (start - cursor > 0.8) segments.push(horizontal ? { x: cursor, y: box.y, width: start - cursor, height: box.height } : { x: box.x, y: cursor, width: box.width, height: start - cursor });
-    cursor = Math.max(cursor, end);
-  }
-  const limit = horizontal ? box.x + box.width : box.y + box.height;
-  if (limit - cursor > 0.8) segments.push(horizontal ? { x: cursor, y: box.y, width: limit - cursor, height: box.height } : { x: box.x, y: cursor, width: box.width, height: limit - cursor });
-  return floorPlanWallSegmentGroup(element, segments, issueCounts);
-}
-
-function floorPlanWallSegmentGroup(element, segments, issueCounts) {
-  const rects = segments
-    .map((segment) => `<rect class="planWall" x="${segment.x.toFixed(2)}" y="${segment.y.toFixed(2)}" width="${segment.width.toFixed(2)}" height="${segment.height.toFixed(2)}"></rect>`)
-    .join("");
-  return `<g data-guid="${escapeHtml(element.guid)}">${rects}</g>`;
-}
-
-function floorPlanBoxesOverlap(a, b) {
-  return Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x) > 0.6 &&
-    Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y) > 0.6;
-}
-
-function floorPlanBox(element, bounds, view) {
-  const a = floorPlanPoint(element.bboxMin, bounds, view);
-  const b = floorPlanPoint(element.bboxMax, bounds, view);
-  const x = Math.min(a[0], b[0]);
-  const y = Math.min(a[1], b[1]);
-  const width = Math.max(Math.abs(a[0] - b[0]), 1);
-  const height = Math.max(Math.abs(a[1] - b[1]), 1);
-  return { x, y, width, height };
-}
-
-function floorPlanDoorOpening(element, bounds, view, walls = []) {
-  const axis = floorPlanDoorAxis(element, bounds, view, walls);
-  if (!axis) return null;
-  const thickness = Math.max(axis.thickness, Math.min(8, axis.length * 0.45));
-  if (axis.horizontal) {
-    return { x: axis.center[0] - axis.length / 2, y: axis.center[1] - thickness / 2, width: axis.length, height: thickness };
-  }
-  return { x: axis.center[0] - thickness / 2, y: axis.center[1] - axis.length / 2, width: thickness, height: axis.length };
-}
-
-function floorPlanDoorAxis(element, bounds, view, walls = []) {
-  if (!element?.bboxMin || !element?.bboxMax) return null;
-  const a = floorPlanPoint(element.bboxMin, bounds, view);
-  const b = floorPlanPoint(element.bboxMax, bounds, view);
-  const width = Math.abs(a[0] - b[0]);
-  const height = Math.abs(a[1] - b[1]);
-  const scale = floorPlanScale(bounds, view);
-  const wall = floorPlanDoorWall(element, walls);
-  const center = element.center ? floorPlanPoint(element.center, bounds, view) : [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
-  const axisX = Number(element.extra?.doorWidthAxisX);
-  const axisY = Number(element.extra?.doorWidthAxisY);
-  const horizontal = Number.isFinite(axisX) && Number.isFinite(axisY) ? Math.abs(axisX) >= Math.abs(axisY) : wall ? wall.horizontal : width >= height;
-  const assessedWidth = doorAssessedWidth(element);
-  const worldLength = assessedWidth || (horizontal ? Math.abs(element.bboxMax[0] - element.bboxMin[0]) : Math.abs(element.bboxMax[1] - element.bboxMin[1]));
-  const length = Math.max(worldLength * (horizontal ? scale.x : scale.y), 5);
-  const wallThickness = wall ? wall.thickness * (horizontal ? scale.y : scale.x) + 3 : 0;
-  const rawThickness = horizontal ? height : width;
-  const fallbackThickness = Math.max(3, Math.min(rawThickness, Math.min(8, length * 0.18)));
-  const thickness = Math.max(wallThickness, fallbackThickness);
-  return { center, horizontal, length, thickness };
-}
-
-function floorPlanScale(bounds, view) {
-  return {
-    x: view.width / Math.max(bounds.maxX - bounds.minX, 0.001),
-    y: view.height / Math.max(bounds.maxY - bounds.minY, 0.001),
-  };
-}
-
-function floorPlanDoorWall(door, walls) {
-  const point = elementPoint(door);
-  if (!point) return null;
-  const candidates = walls
-    .filter((wall) => wall.bboxMin && wall.bboxMax)
-    .map((wall) => {
-      const distance = floorPlanBoxDistance(point, wall);
-      const horizontal = Math.abs(wall.bboxMax[0] - wall.bboxMin[0]) >= Math.abs(wall.bboxMax[1] - wall.bboxMin[1]);
-      const thickness = horizontal ? Math.abs(wall.bboxMax[1] - wall.bboxMin[1]) : Math.abs(wall.bboxMax[0] - wall.bboxMin[0]);
-      return { distance, horizontal, thickness };
-    })
-    .filter((item) => item.distance <= 0.75)
-    .sort((a, b) => a.distance - b.distance || a.thickness - b.thickness);
-  return candidates[0] || null;
-}
-
-function floorPlanBoxDistance(point, element) {
-  const dx = point[0] < element.bboxMin[0] ? element.bboxMin[0] - point[0] : point[0] > element.bboxMax[0] ? point[0] - element.bboxMax[0] : 0;
-  const dy = point[1] < element.bboxMin[1] ? element.bboxMin[1] - point[1] : point[1] > element.bboxMax[1] ? point[1] - element.bboxMax[1] : 0;
-  return Math.hypot(dx, dy);
-}
-
-function floorPlanLabel(element, bounds, view) {
-  const a = floorPlanPoint(element.bboxMin, bounds, view);
-  const b = floorPlanPoint(element.bboxMax, bounds, view);
-  const x = Math.min(a[0], b[0]);
-  const y = Math.min(a[1], b[1]);
-  const width = Math.abs(a[0] - b[0]);
-  const height = Math.abs(a[1] - b[1]);
-  if (width <= 48 || height <= 18) return "";
-  return `<text class="planLabel" x="${(x + width / 2).toFixed(2)}" y="${(y + height / 2).toFixed(2)}">${escapeHtml(planElementName(element.name || element.label))}</text>`;
-}
-
-function floorPlanRoute(edge, bounds, view, elementsByGuid) {
-  const screenPoints = edge.path.map((point) => floorPlanPoint(point, bounds, view));
-  if (routeAsConnectionDot(edge, screenPoints)) {
-    if (routeDoorForEdge(edge, elementsByGuid)) return "";
-    return floorPlanRouteDotSegment({ point: screenPoints[0], edgeId: edge.edgeId });
-  }
-  const points = screenPoints.map((point) => point.map((value) => value.toFixed(2)).join(",")).join(" ");
-  const className = pathBlockingRoute(edge) ? "planRoute passRoute blockedRoute" : "planRoute passRoute";
-  return `<g class="planRouteItem${pathBlockingRoute(edge) ? " blockedRouteItem" : ""}" data-edge-id="${escapeHtml(edge.edgeId)}">
-    <polyline class="planRouteHit" points="${points}"></polyline>
-    <polyline class="planRouteCasing" points="${points}"></polyline>
-    <polyline class="${className}" points="${points}"></polyline>
-  </g>`;
-}
-
-function floorPlanRouteMarkup(edges, bounds, view, elementsByGuid) {
-  const drawable = edges
-    .filter((edge) => edge.path?.length > 1 && !edge.measurements?.planMarkerOnly)
-    .sort((a, b) => (pathBlockingRoute(a) ? 1 : 0) - (pathBlockingRoute(b) ? 1 : 0));
-  if (planRouteMode === "accessible") {
-    return drawable.map((edge) => floorPlanRoute(edge, bounds, view, elementsByGuid)).join("");
-  }
-  if (planRouteMode === "candidate") {
-    return drawable.map((edge) => floorPlanRoute(edge, bounds, view, elementsByGuid)).join("");
-  }
-  if (drawable.length <= 30) {
-    return drawable.map((edge) => floorPlanRoute(edge, bounds, view, elementsByGuid)).join("");
-  }
-  return floorPlanMergedRoutes(drawable, bounds, view, elementsByGuid);
-}
-
-function _clampNumber(value, low, high) {
-  if (low > high) return (low + high) / 2;
-  return Math.max(low, Math.min(high, value));
-}
-
-function floorPlanMergedRoutes(edges, bounds, view, elementsByGuid) {
-  const groups = new Map();
-  const diagonal = [];
-  const dots = [];
-  for (const edge of edges) {
-    const points = edge.path.map((point) => floorPlanPoint(point, bounds, view));
-    if (routeAsConnectionDot(edge, points)) {
-      if (!routeDoorForEdge(edge, elementsByGuid)) dots.push({ point: points[0], edgeId: edge.edgeId });
-      continue;
-    }
-    let drawable = false;
-    for (let index = 1; index < points.length; index++) {
-      const a = points[index - 1];
-      const b = points[index];
-      const dx = b[0] - a[0];
-      const dy = b[1] - a[1];
-      if (Math.hypot(dx, dy) < 4) continue;
-      drawable = true;
-      if (Math.abs(dy) <= 2) {
-        addRouteInterval(groups, `h:${Math.round((a[1] + b[1]) / 2)}`, "h", (a[1] + b[1]) / 2, Math.min(a[0], b[0]), Math.max(a[0], b[0]), edge.edgeId);
-      } else if (Math.abs(dx) <= 2) {
-        addRouteInterval(groups, `v:${Math.round((a[0] + b[0]) / 2)}`, "v", (a[0] + b[0]) / 2, Math.min(a[1], b[1]), Math.max(a[1], b[1]), edge.edgeId);
-      } else {
-        diagonal.push({ points: `${a[0].toFixed(2)},${a[1].toFixed(2)} ${b[0].toFixed(2)},${b[1].toFixed(2)}`, edgeId: edge.edgeId, count: 1 });
-      }
-    }
-    if (!drawable && points.length) {
-      if (!routeDoorForEdge(edge, elementsByGuid)) dots.push({ point: points[0], edgeId: edge.edgeId });
-    }
-  }
-  const merged = [];
-  for (const group of groups.values()) {
-    const intervals = group.intervals.sort((a, b) => a.start - b.start);
-    let current = null;
-    for (const interval of intervals) {
-      if (!current || interval.start > current.end + 3) {
-        if (current) merged.push(routeSegmentFromInterval(group, current));
-        current = { ...interval, edgeIds: [...interval.edgeIds] };
-      } else {
-        current.end = Math.max(current.end, interval.end);
-        current.edgeIds.push(...interval.edgeIds);
-      }
-    }
-    if (current) merged.push(routeSegmentFromInterval(group, current));
-  }
-  return [...merged, ...diagonal]
-    .map(floorPlanRouteSegment)
-    .join("") + dots.map(floorPlanRouteDotSegment).join("");
-}
-
-function routeAsConnectionDot(edge, points) {
-  const source = String(edge.source || "");
-  if (!source.includes("space boundary to corridor spine")) return routeScreenLength(points) < 4;
-  return routeScreenLength(points) < 18;
-}
-
-function addRouteInterval(groups, key, axis, coord, start, end, edgeId) {
-  if (!groups.has(key)) groups.set(key, { axis, coord, intervals: [] });
-  groups.get(key).intervals.push({ start, end, edgeIds: [edgeId] });
-}
-
-function routeSegmentFromInterval(group, interval) {
-  const points = group.axis === "h"
-    ? `${interval.start.toFixed(2)},${group.coord.toFixed(2)} ${interval.end.toFixed(2)},${group.coord.toFixed(2)}`
-    : `${group.coord.toFixed(2)},${interval.start.toFixed(2)} ${group.coord.toFixed(2)},${interval.end.toFixed(2)}`;
-  return { points, edgeId: interval.edgeIds[0], count: interval.edgeIds.length };
-}
-
-function floorPlanRouteSegment(segment) {
-  const edgeIds = segment.edgeIds || [segment.edgeId];
-  return `<g class="planRouteItem routeBundle" data-edge-id="${escapeHtml(segment.edgeId)}" data-edge-ids="${escapeHtml(edgeIds.join(","))}" data-edge-count="${segment.count}">
-    <polyline class="planRouteHit" points="${segment.points}"></polyline>
-    <polyline class="planRouteCasing" points="${segment.points}"></polyline>
-    <polyline class="planRoute passRoute" points="${segment.points}"></polyline>
-  </g>`;
-}
-
-function floorPlanRouteDotSegment(segment) {
-  return `<g class="planRouteItem routeDotItem" data-edge-id="${escapeHtml(segment.edgeId)}">
-    <circle class="planRouteDotHit" cx="${segment.point[0].toFixed(2)}" cy="${segment.point[1].toFixed(2)}" r="8"></circle>
-    ${floorPlanRouteDot(segment.point)}
-  </g>`;
-}
-
-function floorPlanRouteDot(point) {
-  if (!point) return "";
-  return `<circle class="planRouteDot" cx="${point[0].toFixed(2)}" cy="${point[1].toFixed(2)}" r="3.8"></circle>`;
-}
-
-function floorPlanConnectedDoorMarkers(edges, bounds, view, elementsByGuid, walls = []) {
-  const markers = new Map();
-  for (const edge of edges) {
-    for (const guid of [edge.startGuid, edge.endGuid]) {
-      const door = elementsByGuid.get(guid);
-      if (door?.ifcType !== "IfcDoor" || !door.center || !door.bboxMin || !door.bboxMax) continue;
-      const axis = floorPlanDoorAxis(door, bounds, view, walls);
-      if (!markers.has(guid)) markers.set(guid, { axis, edgeIds: [] });
-      if (axis?.projected && !markers.get(guid).axis?.projected) markers.get(guid).axis = axis;
-      markers.get(guid).edgeIds.push(edge.edgeId);
-    }
-  }
-  return [...markers.values()].filter((item) => item.axis).map(floorPlanRouteDoorMarker).join("");
-}
-
-function floorPlanRouteDoorMarker(item) {
-  const edgeIds = uniqueText(item.edgeIds);
-  const axis = item.axis;
-  const radius = Math.max(5.2, Math.min(7.2, axis.thickness * 0.85));
-  return `<g class="planRouteItem routeDoorMarkerItem" data-edge-id="${escapeHtml(edgeIds[0])}" data-edge-ids="${escapeHtml(edgeIds.join(","))}">
-    <circle class="planRouteDoorMarkerHit" cx="${axis.center[0].toFixed(2)}" cy="${axis.center[1].toFixed(2)}" r="${(radius + 5).toFixed(2)}"></circle>
-    <circle class="planRouteDoorMarker" cx="${axis.center[0].toFixed(2)}" cy="${axis.center[1].toFixed(2)}" r="${radius.toFixed(2)}"></circle>
-  </g>`;
-}
-
-function floorPlanIssueRegionMarkup(regions, bounds, view) {
-  const fill = [];
-  const measurement = [];
-  for (const region of regions) {
-    for (const area of issueRegionAreas(region)) {
-      const areaAttribute = ` data-issue-area-id="${escapeHtml(area.area_id)}"`;
-      const path = floorPlanIssueRegionPath(area.geometry, bounds, view);
-      if (path) {
-        fill.push(`<g class="planIssueRegion" data-issue-region-id="${escapeHtml(region.region_id)}"${areaAttribute}><path class="planIssueRegionPath" d="${path}" fill-rule="evenodd"></path></g>`);
-      }
-      const line = area.measurement_line || [];
-      if (line.length !== 2) continue;
-      const [start, end] = floorPlanOrthogonalMeasurement(
-        floorPlanPoint(line[0], bounds, view),
-        floorPlanPoint(line[1], bounds, view),
-      );
-      measurement.push(`<g class="planIssueMeasurement" data-issue-region-id="${escapeHtml(region.region_id)}"${areaAttribute}>
-        <line class="planIssueMeasureHalo" x1="${start[0].toFixed(2)}" y1="${start[1].toFixed(2)}" x2="${end[0].toFixed(2)}" y2="${end[1].toFixed(2)}"></line>
-        <line class="planIssueMeasureLine" x1="${start[0].toFixed(2)}" y1="${start[1].toFixed(2)}" x2="${end[0].toFixed(2)}" y2="${end[1].toFixed(2)}"></line>
-        <circle class="planIssueMeasureEnd" cx="${start[0].toFixed(2)}" cy="${start[1].toFixed(2)}" r="2"></circle>
-        <circle class="planIssueMeasureEnd" cx="${end[0].toFixed(2)}" cy="${end[1].toFixed(2)}" r="2"></circle>
-      </g>`);
-    }
-  }
-  return { fill: fill.join(""), measurement: measurement.join("") };
-}
-
-function floorPlanOrthogonalMeasurement(start, end) {
-  const dx = end[0] - start[0];
-  const dy = end[1] - start[1];
-  const length = Math.hypot(dx, dy);
-  if (!length) return [start, end];
-  const middle = [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2];
-  if (Math.abs(dx) <= Math.abs(dy) * 0.22) {
-    return [[middle[0], middle[1] - length / 2], [middle[0], middle[1] + length / 2]];
-  }
-  if (Math.abs(dy) <= Math.abs(dx) * 0.22) {
-    return [[middle[0] - length / 2, middle[1]], [middle[0] + length / 2, middle[1]]];
-  }
-  return [start, end];
-}
-
-function issueRegionAreas(region) {
-  if (region?.areas?.length) {
-    return region.areas.map((area, index) => ({ ...area, position: index + 1 }));
-  }
-  return region ? [{
-    area_id: region.region_id,
-    measured: region.measured,
-    geometry: region.geometry,
-    anchor: region.anchor,
-    measurement_line: region.measurement_line,
-    position: 1,
-  }] : [];
-}
-
-function floorPlanIssueRegionPath(geometry, bounds, view) {
-  if (!geometry?.coordinates) return "";
-  const polygons = geometry.type === "Polygon" ? [geometry.coordinates] : geometry.type === "MultiPolygon" ? geometry.coordinates : [];
-  return polygons.flatMap((polygon) => polygon.map((ring) => {
-    const points = ring.map((point) => floorPlanPoint([point[0], point[1], 0], bounds, view));
-    return points.length ? `M ${points.map((point) => `${point[0].toFixed(2)} ${point[1].toFixed(2)}`).join(" L ")} Z` : "";
-  })).filter(Boolean).join(" ");
-}
-
-function floorPlanElementIssueMarkup(elements, issueCounts, bounds, view, reserved = [], issueRegions = []) {
-  const groups = new Map();
-  const regionsByIssue = new Map(issueRegions.map((region) => [region.issue_id, region]));
-  for (const issue of buildingIssues()) {
-    const element = elements.find((item) => item.guid === issue.element_guid);
-    if (!element || (!element.center && !element.bboxMin) || !issueCounts.get(element.guid)) continue;
-    const region = regionsByIssue.get(issue.issue_id);
-    const key = `${elementIssueGroupKey(element)}:${region ? issue.issue_id : "general"}`;
-    if (!groups.has(key)) groups.set(key, { elements: [], issues: [], region });
-    const group = groups.get(key);
-    if (!group.elements.some((item) => item.guid === element.guid)) group.elements.push(element);
-    group.issues.push(issue);
-  }
-  const markers = [...groups.values()].flatMap((group) => {
-    const count = issueGroupCount(group);
-    const areas = issueRegionAreas(group.region);
-    if (!areas.length) return [{
-      group,
-      count,
-      anchor: averageScreenPoint(group.elements.map(elementPoint).filter(Boolean).map((item) => floorPlanPoint(item, bounds, view))),
-      radius: floorPlanIssueRadius(count, 6.6),
-    }];
-    return areas.map((area) => ({
-      group,
-      count,
-      area,
-      anchor: floorPlanPoint(area.anchor, bounds, view),
-      radius: floorPlanIssueRadius(count, 5.8),
-    }));
-  });
-  return floorPlanIssueLayout(markers, reserved, view).map(floorPlanElementIssueMarker).join("");
-}
-
-function floorPlanElementIssueMarker(marker) {
-  const { group, count, area, anchor, point, radius } = marker;
-  const element = group.elements[0];
-  const checks = uniqueText(group.issues.map(issueCheckText)).join("; ");
-  const areas = Number(group.region?.area_count || 0);
-  const areaText = area && areas > 1 ? `; affected area ${area.position} of ${areas}` : areas > 1 ? `; ${areas} affected areas` : "";
-  const title = checks ? `${checks}${areaText}` : `${count} issue${count > 1 ? "s" : ""}: ${elementName(element)}`;
-  const regionId = group.region ? ` data-region-id="${escapeHtml(group.region.region_id)}"` : "";
-  const areaId = area ? ` data-region-area-id="${escapeHtml(area.area_id)}"` : "";
-  return `<g class="planElementIssueMarker" data-guid="${escapeHtml(element.guid)}"${regionId}${areaId}>
-    <title>${escapeHtml(title)}</title>
-    ${floorPlanIssueLeaderMarkup(anchor, point, radius)}
-    <circle class="planIssueAnchorHalo" cx="${anchor[0].toFixed(2)}" cy="${anchor[1].toFixed(2)}" r="3.2"></circle>
-    <circle class="planIssueAnchor" cx="${anchor[0].toFixed(2)}" cy="${anchor[1].toFixed(2)}" r="2"></circle>
-    <circle class="planElementIssueHit" cx="${point[0].toFixed(2)}" cy="${point[1].toFixed(2)}" r="${(radius + 5).toFixed(2)}"></circle>
-    <circle class="planElementIssueHalo" cx="${point[0].toFixed(2)}" cy="${point[1].toFixed(2)}" r="${(radius + 2.8).toFixed(2)}"></circle>
-    <circle class="planElementIssueDot" cx="${point[0].toFixed(2)}" cy="${point[1].toFixed(2)}" r="${radius.toFixed(2)}"></circle>
-    ${count > 1 ? `<text class="planElementIssueCount" x="${point[0].toFixed(2)}" y="${point[1].toFixed(2)}">${count}</text>` : planElementIssueTickMarkup(point[0], point[1])}
-  </g>`;
-}
-
-function planElementIssueTickMarkup(x, y) {
-  return `<line class="planElementIssueTick" x1="${x.toFixed(2)}" y1="${(y - 3.4).toFixed(2)}" x2="${x.toFixed(2)}" y2="${(y + 1.4).toFixed(2)}"></line>
-      <circle class="planElementIssueTickDot" cx="${x.toFixed(2)}" cy="${(y + 4).toFixed(2)}" r="0.9"></circle>`;
-}
-
-function issueGroupCount(group) {
-  if (group.elements.some((element) => isStairType(element.ifcType))) {
-    return uniqueText(group.issues.map((issue) => issue.rule_id)).length || group.elements.length;
-  }
-  return group.issues.length || group.elements.length;
-}
-
-function elementIssueGroupKey(element) {
-  if (isStairType(element.ifcType)) return stairGroupKey(element);
-  return element.guid;
-}
-
-function averageScreenPoint(points) {
-  if (!points.length) return [0, 0];
-  return [
-    points.reduce((sum, point) => sum + point[0], 0) / points.length,
-    points.reduce((sum, point) => sum + point[1], 0) / points.length,
-  ];
-}
-
-function floorPlanIssueReservedAreas(elements, edges, bounds, view) {
-  const reserved = [];
-  for (const element of elements) {
-    if (!element.bboxMin || !element.bboxMax) continue;
-    const box = floorPlanBox(element, bounds, view);
-    if (["IfcWall", "IfcColumn"].includes(element.ifcType)) {
-      reserved.push({ ...box, pad: 2 });
-    } else if (element.ifcType === "IfcDoor") {
-      reserved.push({ ...box, pad: 6 });
-    } else if (["IfcStair", "IfcStairFlight", "IfcRamp", "IfcRampFlight"].includes(element.ifcType)) {
-      reserved.push({ ...box, pad: 3 });
-    } else if (element.ifcType === "IfcSpace" && box.width > 48 && box.height > 18) {
-      const labelWidth = Math.min(box.width - 6, Math.max(18, planElementName(element.name || element.label).length * 6));
-      reserved.push({ x: box.x + (box.width - labelWidth) / 2, y: box.y + box.height / 2 - 7, width: labelWidth, height: 14, pad: 2 });
-    }
-  }
-  for (const edge of edges.filter((item) => item.path?.length > 1)) {
-    const points = edge.path.map((point) => floorPlanPoint(point, bounds, view));
-    for (let index = 1; index < points.length; index++) {
-      const start = points[index - 1];
-      const end = points[index];
-      const steps = Math.max(1, Math.ceil(Math.hypot(end[0] - start[0], end[1] - start[1]) / 14));
-      for (let step = 0; step <= steps; step++) {
-        const t = step / steps;
-        reserved.push({
-          x: start[0] + (end[0] - start[0]) * t,
-          y: start[1] + (end[1] - start[1]) * t,
-          radius: 3,
-        });
-      }
-    }
-  }
-  return reserved;
-}
-
-function floorPlanIssueRadius(count, singleRadius) {
-  if (count > 99) return 10;
-  if (count > 9) return 8.4;
-  if (count > 1) return 7.2;
-  return singleRadius;
-}
-
-function floorPlanIssueLayout(markers, reserved, view) {
-  const anchors = markers.map((marker) => ({ x: marker.anchor[0], y: marker.anchor[1], radius: 3 }));
-  const placed = [];
-  const ordered = markers.map((marker, index) => ({ ...marker, index }))
-    .sort((a, b) => b.count - a.count || a.anchor[1] - b.anchor[1] || a.anchor[0] - b.anchor[0]);
-  for (const marker of ordered) {
-    const candidates = floorPlanIssueCandidates(marker, view);
-    const markerObstacles = placed.map((item) => ({ x: item.point[0], y: item.point[1], radius: item.radius + 9 }));
-    const openCandidates = candidates.filter((point) => markerObstacles.every((obstacle) => floorPlanIssueOverlap(point, marker.radius, obstacle) <= 0));
-    const available = openCandidates.length ? openCandidates : candidates;
-    const obstacles = reserved.concat(anchors, markerObstacles);
-    let best = available[0];
-    let bestScore = Number.POSITIVE_INFINITY;
-    for (let index = 0; index < available.length; index++) {
-      const point = available[index];
-      const score = floorPlanIssuePositionScore(point, marker.radius, marker.anchor, obstacles) + index * 0.01;
-      if (score < bestScore) {
-        best = point;
-        bestScore = score;
-      }
-    }
-    placed.push({ ...marker, point: best });
-  }
-  return placed.sort((a, b) => a.index - b.index);
-}
-
-function floorPlanIssueCandidates(marker, view) {
-  const directions = [[0, -1], [1, 0], [0, 1], [-1, 0], [0.71, -0.71], [0.71, 0.71], [-0.71, 0.71], [-0.71, -0.71]];
-  const distances = [marker.radius + 11, marker.radius + 23, marker.radius + 35, marker.radius + 49];
-  const margin = marker.radius + 4;
-  return distances.flatMap((distance) => directions.map(([dx, dy]) => [
-    _clampNumber(marker.anchor[0] + dx * distance, margin, view.width - margin),
-    _clampNumber(marker.anchor[1] + dy * distance, margin, view.height - margin),
-  ]));
-}
-
-function floorPlanIssuePositionScore(point, radius, anchor, obstacles) {
-  let score = Math.hypot(point[0] - anchor[0], point[1] - anchor[1]) * 0.3;
-  for (const obstacle of obstacles) {
-    const overlap = floorPlanIssueOverlap(point, radius, obstacle);
-    if (overlap > 0) score += overlap * overlap * 30;
-  }
-  return score;
-}
-
-function floorPlanIssueOverlap(point, radius, obstacle) {
-  if (Number.isFinite(obstacle.width) && Number.isFinite(obstacle.height)) {
-    const dx = Math.max(obstacle.x - point[0], 0, point[0] - obstacle.x - obstacle.width);
-    const dy = Math.max(obstacle.y - point[1], 0, point[1] - obstacle.y - obstacle.height);
-    return radius + (obstacle.pad || 0) - Math.hypot(dx, dy);
-  }
-  return radius + (obstacle.radius || 0) + 3 - Math.hypot(point[0] - obstacle.x, point[1] - obstacle.y);
-}
-
-function floorPlanIssueLeaderMarkup(anchor, point, radius) {
-  const dx = point[0] - anchor[0];
-  const dy = point[1] - anchor[1];
-  const length = Math.hypot(dx, dy) || 1;
-  const startX = anchor[0] + dx / length * 3;
-  const startY = anchor[1] + dy / length * 3;
-  const endX = point[0] - dx / length * (radius + 1);
-  const endY = point[1] - dy / length * (radius + 1);
-  return `<line class="planIssueLeaderHalo" x1="${startX.toFixed(2)}" y1="${startY.toFixed(2)}" x2="${endX.toFixed(2)}" y2="${endY.toFixed(2)}"></line>
-    <line class="planIssueLeader" x1="${startX.toFixed(2)}" y1="${startY.toFixed(2)}" x2="${endX.toFixed(2)}" y2="${endY.toFixed(2)}"></line>`;
-}
-
-function routeDoorForEdge(edge, elementsByGuid) {
-  return [elementsByGuid.get(edge.startGuid), elementsByGuid.get(edge.endGuid)].find((element) => element?.ifcType === "IfcDoor") || null;
-}
-
-function routeScreenLength(points) {
-  let total = 0;
-  for (let index = 1; index < points.length; index++) {
-    total += Math.hypot(points[index][0] - points[index - 1][0], points[index][1] - points[index - 1][1]);
-  }
-  return total;
-}
-
-function floorPlanRouteIssueMarkup(edges, bounds, view, elementsByGuid, reserved = []) {
-  const markers = routeIssueMarkers(edges, bounds, view, elementsByGuid);
-  const clusters = routeIssueClusters(markers).map((cluster) => {
-    const count = cluster.items.length;
-    return { cluster, count, anchor: cluster.screenPoint, radius: floorPlanIssueRadius(count, 5.6) };
-  });
-  return floorPlanIssueLayout(clusters, reserved, view).map((marker) => {
-    const { cluster, count, anchor, point, radius } = marker;
-    const [x, y] = point;
-    const edgeIds = uniqueText(cluster.items.flatMap((item) => item.edges.map((edge) => edge.edgeId)));
-    const issues = cluster.items.map((item) => ({
-      reason: item.reason,
-      locationKey: item.locationKey,
-      edgeIds: item.edges.map((edge) => edge.edgeId),
-    }));
-    const checks = cluster.items
-      .map((item) => routeIssueChecks(item.edges, [item.reason])[0])
-      .filter(Boolean)
-      .map((check) => `${check.label}: ${check.comparison}`)
-      .join("; ");
-    const title = count > 1 ? `${count} issues: ${checks}` : checks;
-    return `<g class="routeIssueMarker" data-edge-id="${escapeHtml(edgeIds[0])}" data-edge-ids="${escapeHtml(edgeIds.join(","))}" data-route-issues="${escapeHtml(encodeURIComponent(JSON.stringify(issues)))}">
-      <title>${escapeHtml(title)}</title>
-      ${floorPlanIssueLeaderMarkup(anchor, point, radius)}
-      <circle class="planIssueAnchorHalo" cx="${anchor[0].toFixed(2)}" cy="${anchor[1].toFixed(2)}" r="3.2"></circle>
-      <circle class="planIssueAnchor" cx="${anchor[0].toFixed(2)}" cy="${anchor[1].toFixed(2)}" r="2"></circle>
-      <circle class="routeIssueHit" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${(radius + 5).toFixed(2)}"></circle>
-      <circle class="routeIssueHalo" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${(radius + 2.8).toFixed(2)}"></circle>
-      <circle class="routeIssueDot" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${radius.toFixed(2)}"></circle>
-      ${count > 1 ? `<text class="routeIssueCount" x="${x.toFixed(2)}" y="${y.toFixed(2)}">${count}</text>` : routeIssueTickMarkup(x, y)}
-    </g>`;
-  }).join("");
-}
-
-function routeIssueClusters(markers) {
-  const clusters = [];
-  for (const marker of markers) {
-    const cluster = clusters.find((item) => {
-      const distance = Math.hypot(item.screenPoint[0] - marker.screenPoint[0], item.screenPoint[1] - marker.screenPoint[1]);
-      return distance < (item.groupKeys.has(marker.groupKey) ? 18 : 7);
-    });
-    if (cluster) {
-      cluster.items.push(marker);
-      cluster.groupKeys.add(marker.groupKey);
-      cluster.screenPoint = [
-        cluster.items.reduce((sum, item) => sum + item.screenPoint[0], 0) / cluster.items.length,
-        cluster.items.reduce((sum, item) => sum + item.screenPoint[1], 0) / cluster.items.length,
-      ];
-    } else {
-      clusters.push({ screenPoint: marker.screenPoint, items: [marker], groupKeys: new Set([marker.groupKey]) });
-    }
-  }
-  return clusters;
-}
-
-function routeIssueGroupCount(edges, elementsByGuid) {
-  return routeIssueGroups(edges, elementsByGuid).length;
-}
-
-function routeIssueTickMarkup(x, y) {
-  return `<line class="routeIssueTick" x1="${(x - 3.2).toFixed(2)}" y1="${(y - 3.2).toFixed(2)}" x2="${(x + 3.2).toFixed(2)}" y2="${(y + 3.2).toFixed(2)}"></line>
-      <line class="routeIssueTick" x1="${(x + 3.2).toFixed(2)}" y1="${(y - 3.2).toFixed(2)}" x2="${(x - 3.2).toFixed(2)}" y2="${(y + 3.2).toFixed(2)}"></line>`;
-}
-
-function routeIssueMarkers(edges, bounds, view, elementsByGuid) {
-  return routeIssueGroups(edges, elementsByGuid).map((group) => ({
-    reason: group.reason,
-    locationKey: group.locationKey,
-    edges: group.edges,
-    point: group.point,
-    screenPoint: floorPlanPoint(group.point, bounds, view),
-    groupKey: group.locationKey,
-  }));
-}
-
-function routeIssueGroups(edges, elementsByGuid) {
-  const groups = new Map();
-  for (const edge of edges.filter(routeHasIssue)) {
-    for (const location of routeIssueLocations(edge, elementsByGuid)) {
-      const issueKey = `${location.reason}:${location.key}`;
-      if (!groups.has(issueKey)) groups.set(issueKey, { ...location, locationKey: location.key, edges: [] });
-      const group = groups.get(issueKey);
-      if (!group.edges.some((item) => item.edgeId === edge.edgeId)) group.edges.push(edge);
-      if (location.value != null && (group.value == null || location.value < group.value)) {
-        group.value = location.value;
-        group.point = location.point;
-      }
-    }
-  }
-  return [...groups.values()];
-}
-
-function routeIssueLocations(edge, elementsByGuid) {
-  const reasons = routeReasons(edge);
-  const locations = [];
-  if (reasons.includes("unreachable")) {
-    const door = routeEndpointElements(edge, elementsByGuid).find((element) => element.ifcType === "IfcDoor");
-    if (door) locations.push({ reason: "unreachable", key: `unreachable:${door.guid}`, point: elementPoint(door), name: elementName(door) });
-  }
-  if (reasons.includes("door_width")) {
-    for (const door of narrowRouteDoors(edge, elementsByGuid)) {
-      locations.push({ reason: "door_width", key: `door:${door.guid}`, point: elementPoint(door), name: elementName(door) });
-    }
-  }
-  if (reasons.includes("wall_block")) {
-    for (const wall of routeObstacleElements(edge, elementsByGuid, isWallType)) {
-      locations.push({ reason: "wall_block", key: `wall_block:${wall.guid}`, point: routeIssuePointNearElement(edge, wall), name: elementName(wall) });
-    }
-  }
-  if (reasons.includes("stair_block")) {
-    for (const stair of routeIssueElements(edge, elementsByGuid, isStairType)) {
-      locations.push({
-        reason: "stair_block",
-        key: `stair_block:${stairGroupKey(stair)}:${routeLevelKey(edge)}`,
-        point: stairGroupPoint(edge, stair, elementsByGuid),
-        name: elementName(stair),
-      });
-    }
-  }
-  for (const reason of ["ramp_slope", "ramp_width", "ramp_run_length"]) {
-    if (!reasons.includes(reason)) continue;
-    for (const ramp of routeObstacleElements(edge, elementsByGuid, isRampType)) {
-      locations.push({ reason, key: `ramp:${ramp.guid}`, point: routeIssuePointNearElement(edge, ramp), name: elementName(ramp) });
-    }
-  }
-  if (reasons.includes("turning_space")) {
-    const point = routeMeasurementPoint(edge, "routeTurningPoint") || routeTurnPoint(edge) || routeMidpoint(edge);
-    if (point) {
-      locations.push({
-        reason: "turning_space",
-        key: `turning_space:${edge.viaSpaceGuid || edge.edgeId}:${Math.round(point[0] * 2)}:${Math.round(point[1] * 2)}`,
-        point,
-        value: Number(edge.measurements?.routeTurningSpaceM),
-        name: edge.viaSpaceLabel ? planElementName(edge.viaSpaceLabel) : "Route",
-      });
-    }
-  }
-  if (reasons.includes("route_width")) {
-    const point = routeMeasurementPoint(edge, "routeClearWidthPoint") || routeMidpoint(edge);
-    if (point) {
-      locations.push({
-        reason: "route_width",
-        key: `route_width:${edge.viaSpaceGuid || edge.edgeId}`,
-        point,
-        value: Number(edge.measurements?.routeClearWidthM),
-        name: edge.viaSpaceLabel ? planElementName(edge.viaSpaceLabel) : "Route",
-      });
-    }
-  }
-  const locatedReasons = new Set(locations.map((location) => location.reason));
-  for (const reason of reasons.filter((item) => !locatedReasons.has(item))) {
-    locations.push({
-      reason,
-      key: `route:${edge.edgeId}`,
-      point: routeMidpoint(edge),
-      name: edge.viaSpaceLabel ? planElementName(edge.viaSpaceLabel) : "Route",
-    });
-  }
-  return locations.filter((location) => location.point);
-}
-
-function routeIssuePointNearElement(edge, element) {
-  const samples = routePathSamples(edge.path || []);
-  const point = samples.find((item) => pointInElement(item, element, 0.75));
-  return point || elementPoint(element) || routeMidpoint(edge);
-}
-
-function pointInElement(point, element, pad = 0) {
-  return point &&
-    element?.bboxMin &&
-    element?.bboxMax &&
-    point[0] >= element.bboxMin[0] - pad &&
-    point[0] <= element.bboxMax[0] + pad &&
-    point[1] >= element.bboxMin[1] - pad &&
-    point[1] <= element.bboxMax[1] + pad;
-}
-
-function elementPoint(element) {
-  if (element?.center) return element.center;
-  if (element?.bboxMin && element?.bboxMax) {
-    return [
-      (element.bboxMin[0] + element.bboxMax[0]) / 2,
-      (element.bboxMin[1] + element.bboxMax[1]) / 2,
-      (element.bboxMin[2] + element.bboxMax[2]) / 2,
-    ];
-  }
-  return null;
-}
-
-function routeTurnPoint(edge) {
-  const path = edge.path || [];
-  if (path.length < 3) return null;
-  for (let index = 1; index < path.length - 1; index++) {
-    const prev = path[index - 1];
-    const point = path[index];
-    const next = path[index + 1];
-    const a = [point[0] - prev[0], point[1] - prev[1]];
-    const b = [next[0] - point[0], next[1] - point[1]];
-    if (Math.abs(a[0] * b[1] - a[1] * b[0]) > 0.05) return point;
-  }
-  return null;
-}
-
-function routeMidpoint(edge) {
-  const path = edge.path || [];
-  if (!path.length) return null;
-  return path[Math.floor(path.length / 2)];
-}
-
-function routeMeasurementPoint(edge, key) {
-  const x = Number(edge.measurements?.[`${key}X`]);
-  const y = Number(edge.measurements?.[`${key}Y`]);
-  if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
-  const zValue = edge.measurements?.[`${key}Z`];
-  const z = zValue == null ? Number(routeMidpoint(edge)?.[2] || 0) : Number(zValue);
-  return [x, y, Number.isFinite(z) ? z : 0];
-}
-
-function uniqueRoutePoints(points) {
-  const result = [];
-  for (const point of points) {
-    if (!result.some((item) => Math.hypot(item[0] - point[0], item[1] - point[1]) < 0.35)) {
-      result.push(point);
-    }
-  }
-  return result;
-}
-
-function pathBlockingRoute(edge) {
-  const pathReasons = new Set(["door_width", "route_width", "turning_space", "stair_block", "ramp_slope", "ramp_width", "ramp_run_length", "unreachable"]);
-  return routeHasIssue(edge) && routeReasons(edge).some((reason) => pathReasons.has(reason));
-}
-
-function routeHasIssue(edge) {
-  return edge.status === "fail" && Boolean(routeReasons(edge).length);
-}
-
-function routePassesChecks(edge) {
-  return edge.status === "pass" || (edge.status === "fail" && Boolean(edge.reasons?.length) && !routeReasons(edge).length);
-}
-
-function routeReasons(edge) {
-  return (edge.reasons || []).filter((reason) => reason !== "door_height");
-}
-
-function floorPlanSpaceFillClass(element) {
-  return element.extra?.isCorridorLike ? "planSpace corridorSpace" : "planSpace";
-}
-
-function floorPlanSpaceBorderClass(element, issueCounts) {
-  return element.extra?.isCorridorLike ? "planSpaceBorder corridorSpaceBorder" : "planSpaceBorder";
-}
-
-function floorPlanDoorClass(element, issueCounts) {
-  return "planDoor";
-}
-
-function planIssueCounts() {
-  const counts = new Map();
-  for (const issue of buildingIssues()) {
-    counts.set(issue.element_guid, (counts.get(issue.element_guid) || 0) + 1);
-  }
-  return counts;
-}
-
-function buildingIssues() {
-  const routeRules = new Set([
-    "route_door_width",
-    "route_door_height",
-    "route_width",
-    "route_turning_space",
-    "route_wall_block",
-    "route_unreachable",
-    "stair_block",
-    "route_ramp_slope",
-    "route_ramp_width",
-    "route_ramp_run_length",
-  ]);
-  return (appData.issues || []).filter((issue) => !isDoorHeightAdvisory(issue) && issue.severity !== "info" && !routeRules.has(issue.rule_id));
-}
-
-function buildingAdvisories() {
-  return (appData.issues || []).filter((issue) => isDoorHeightAdvisory(issue));
-}
-
-function isDoorHeightAdvisory(issue) {
-  return issue.rule_id === "door_height" || issue.rule_id === "missing_door_height" || issue.rule_id === "route_door_height";
-}
-
-function showPlanElement(guid, elementsByGuid, regionId = null, areaId = null) {
-  const element = elementsByGuid.get(guid);
-  if (!element) return;
-  const region = (appData.issueRegions || []).find((item) => item.region_id === regionId) || null;
-  const area = issueRegionAreas(region).find((item) => item.area_id === areaId) || null;
-  const selectedRegion = area ? { ...region, ...area } : region;
-  const issues = planRouteMode === "issues"
-    ? buildingIssues().filter((issue) => issue.element_guid === guid && (!region || issue.issue_id === region.issue_id))
-    : [];
-  const advisories = planRouteMode === "issues"
-    ? buildingAdvisories().filter((issue) => issue.element_guid === guid)
-    : [];
-  const summary = `<h3>${escapeHtml(elementName(element))}</h3>${planRows(planElementRows(element))}`;
-  const checks = issues.map((issue) => ({
-    label: sentenceText(planReasonText(issue.rule_id)),
-    comparison: selectedRegion && issue.issue_id === selectedRegion.issue_id
-      ? comparisonText(selectedRegion.rule_id, selectedRegion.measured, selectedRegion.required, selectedRegion.unit)
-      : issueComparisonText(issue),
-  }));
-  const cards = checks.map((check) => ({ ...check, locations: [elementName(element)] }));
-  const rows = [];
-  if (region?.area_count > 1) rows.push(["Affected areas", String(region.area_count)]);
-  const issueMarkup = cards.length ? `<div class="planElementIssues">${planIssueCards(cards, rows)}</div>` : "";
-  const advisoryMarkup = advisories.length ? planAdvisoryCards(advisories) : "";
-  document.querySelector("#planDetails").innerHTML = `${summary}${issueMarkup}${advisoryMarkup}`;
-}
-
-function planElementRows(element) {
-  const rows = [["Type", element.ifcType || planElementType(element)], ["Name", elementName(element)]];
-  const floor = element.storey || planFloorName;
-  if (floor) rows.push(["Floor", floor]);
-  if (element.ifcType === "IfcDoor") {
-    const width = doorAssessedWidth(element);
-    const height = doorAssessedHeight(element);
-    if (width) rows.push(["Clear width", valueWithUnit(width, "m")]);
-    if (height) rows.push(["Clear height", valueWithUnit(height, "m")]);
-  } else {
-    if (element.width !== null && element.width !== undefined) rows.push(["Width", valueWithUnit(element.width, "m")]);
-    if (element.depth !== null && element.depth !== undefined) rows.push(["Depth", valueWithUnit(element.depth, "m")]);
-    if (element.height !== null && element.height !== undefined) rows.push(["Height", valueWithUnit(element.height, "m")]);
-  }
-  const issueCount = buildingIssues().filter((issue) => issue.element_guid === element.guid).length;
-  rows.push(["Building issues", String(issueCount)]);
-  const advisoryCount = buildingAdvisories().filter((issue) => issue.element_guid === element.guid).length;
-  if (advisoryCount) rows.push(["Advisories", String(advisoryCount)]);
-  return rows;
-}
-
-function planElementType(element) {
-  if (element.ifcType === "IfcSpace") return element.extra?.isCorridorLike ? "Corridor" : "Room";
-  return {
-    IfcDoor: "Door",
-    IfcWall: "Wall",
-    IfcColumn: "Column",
-    IfcStair: "Stair",
-    IfcStairFlight: "Stair",
-    IfcRamp: "Ramp",
-    IfcRampFlight: "Ramp",
-  }[element.ifcType] || String(element.ifcType || "Element").replace(/^Ifc/, "");
-}
-
-function showPlanRoute(edgeId, edgesById, elementsByGuid) {
-  const edge = edgesById.get(edgeId);
-  if (!edge) return;
-  const start = elementsByGuid.get(edge.startGuid);
-  const end = elementsByGuid.get(edge.endGuid);
-  const connection = `${routeEndpointName(edge.startGuid, start)} to ${routeEndpointName(edge.endGuid, end)}`;
-  if (routePassesChecks(edge)) {
-    const rows = [["Connection", connection]];
-    if (edge.viaSpaceLabel) rows.push(["Through", planElementName(edge.viaSpaceLabel)]);
-    rows.push(["Distance", valueWithUnit(edge.distanceM, "m")]);
-    document.querySelector("#planDetails").innerHTML = `<h3>Accessible route</h3>${planRows(rows)}`;
-    return;
-  }
-  const checks = routeIssueChecks([edge]);
-  const cards = routeIssueCardData([edge], elementsByGuid, checks);
-  const rows = [["Connection", connection], ["Alternative", routeAlternativeText(edge)]];
-  document.querySelector("#planDetails").innerHTML = planIssueCards(cards, rows);
-}
-
-function showPlanRouteGroup(edgeIds, edgesById, elementsByGuid, routeIssues = []) {
-  const edges = edgeIds.map((edgeId) => edgesById.get(edgeId)).filter(Boolean);
-  if (!edges.length) return;
-  const checks = routeIssueChecks(edges);
-  const cards = routeIssueCardData(edges, elementsByGuid, checks, routeIssues);
-  document.querySelector("#planDetails").innerHTML = planIssueCards(cards);
-}
-
-function routeIssueCardData(edges, elementsByGuid, checks, routeIssues = []) {
-  if (routeIssues.length) {
-    const edgesById = new Map(edges.map((edge) => [edge.edgeId, edge]));
-    return routeIssues.map((issue) => {
-      const affected = uniqueText(issue.edgeIds || []).map((edgeId) => edgesById.get(edgeId)).filter(Boolean);
-      const check = routeIssueChecks(affected, [issue.reason])[0];
-      const locations = uniqueText(affected.flatMap((edge) => routeIssueLocations(edge, elementsByGuid)
-        .filter((location) => location.reason === issue.reason && location.key === issue.locationKey)
-        .map((location) => location.name)));
-      return {
-        ...check,
-        locations,
-      };
-    });
-  }
-  return checks.map((check) => {
-    const affected = edges.filter((edge) => routeReasons(edge).includes(check.reason));
-    const locations = uniqueText(affected.flatMap((edge) => routeIssueLocationNames({ ...edge, reasons: [check.reason] }, elementsByGuid)));
-    return {
-      ...check,
-      locations,
-    };
-  });
-}
-
-function planIssueCards(cards, rows = []) {
-  const title = cards.length === 1 ? "Accessibility issue" : "Accessibility issues";
-  const cardMarkup = cards.map((card) => {
-    const locations = uniqueText(card.locations || []).join("; ") || "Not identified";
-    return `<article class="planIssueCard">
-      <div class="planIssueCardHeader"><span class="planIssueCardIcon" aria-hidden="true">!</span><h4>${escapeHtml(card.label)}</h4></div>
-      <div class="planIssueLocation"><span>Location</span><p>${escapeHtml(locations)}</p></div>
-      <p class="planIssueComparison">${escapeHtml(card.comparison)}</p>
-    </article>`;
-  }).join("");
-  const context = rows.length ? `<div class="planIssueContext">${planRows(rows)}</div>` : "";
-  return `<h3>${title}</h3><div class="planIssueCards">${cardMarkup}</div>${context}`;
-}
-
-function planAdvisoryCards(advisories) {
-  const cards = advisories.map((advisory) => {
-    const label = advisory.rule_id === "missing_door_height" ? "Door height not available" : "Door height advisory";
-    return `<article class="planAdvisoryCard">
-      <div class="planAdvisoryCardHeader"><span class="planAdvisoryCardIcon" aria-hidden="true">i</span><h4>${label}</h4></div>
-      <p class="planAdvisoryComparison">${escapeHtml(issueComparisonText(advisory))}</p>
-      <p>Advisory only. Review the clear height for this door.</p>
-    </article>`;
-  }).join("");
-  return `<div class="planElementAdvisories"><h3>Advisory</h3><div class="planAdvisoryCards">${cards}</div></div>`;
-}
-
-function routeEndpointElements(edge, elementsByGuid) {
-  return [elementsByGuid.get(edge.startGuid), elementsByGuid.get(edge.endGuid)].filter(Boolean);
-}
-
-function routeIssueLocationNames(edge, elementsByGuid) {
-  const reasons = routeReasons(edge);
-  const locations = [];
-  if (reasons.includes("unreachable")) {
-    const door = routeEndpointElements(edge, elementsByGuid).find((element) => element.ifcType === "IfcDoor");
-    if (door) locations.push(elementName(door));
-  }
-  if (reasons.includes("door_width")) {
-    const doors = narrowRouteDoors(edge, elementsByGuid);
-    locations.push(...(doors.length ? doors : routeEndpointElements(edge, elementsByGuid).filter((element) => element.ifcType === "IfcDoor")).map(elementName));
-  }
-  if (reasons.includes("route_width") || reasons.includes("turning_space")) {
-    if (edge.viaSpaceLabel) locations.push(planElementName(edge.viaSpaceLabel));
-  }
-  if (reasons.includes("wall_block")) {
-    const walls = routeObstacleElements(edge, elementsByGuid, isWallType);
-    locations.push(...walls.map(elementName));
-  }
-  if (reasons.includes("stair_block")) {
-    const stairs = routeIssueElements(edge, elementsByGuid, isStairType);
-    locations.push(...stairs.map(elementName));
-  }
-  if (reasons.includes("ramp_slope") || reasons.includes("ramp_width") || reasons.includes("ramp_run_length")) {
-    const ramps = routeObstacleElements(edge, elementsByGuid, isRampType);
-    locations.push(...ramps.map(elementName));
-  }
-  if (!locations.length && edge.viaSpaceLabel) locations.push(planElementName(edge.viaSpaceLabel));
-  return uniqueText(locations);
-}
-
-function narrowRouteDoors(edge, elementsByGuid) {
-  const limit = routeDoorWidthLimit();
-  return [elementsByGuid.get(edge.startGuid), elementsByGuid.get(edge.endGuid)]
-    .filter((element) => element?.ifcType === "IfcDoor" && doorAssessedWidth(element) && doorAssessedWidth(element) < limit);
-}
-
-function routeAlternativeText(edge) {
-  const route = accessibleRouteBetween(edge.startGuid, edge.endGuid) || accessibleRouteBetween(edge.endGuid, edge.startGuid);
-  if (route) return `Available (${valueWithUnit(route.distance_m, "m")})`;
-  return "None found";
-}
-
-function accessibleRouteBetween(startGuid, endGuid) {
-  return (appData.accessibleRoutesByDoor?.[startGuid] || []).find((route) => route.target_guid === endGuid) || null;
-}
-
-function routeObstacleElements(edge, elementsByGuid, predicate) {
-  return (appData.elements || [])
-    .filter((element) => predicate(element.ifcType) && element.bboxMin && element.bboxMax)
-    .filter((element) => routeIntersectsElement(edge, element))
-    .sort((a, b) => elementName(a).localeCompare(elementName(b)));
-}
-
-function planRouteEvidenceElements(edges, elementsByGuid) {
-  const elements = [];
-  for (const edge of edges.filter(routeHasIssue)) {
-    const reasons = routeReasons(edge);
-    if (reasons.includes("stair_block")) elements.push(...routeIssueElements(edge, elementsByGuid, isStairType));
-    if (reasons.includes("wall_block")) elements.push(...routeIssueElements(edge, elementsByGuid, isWallType));
-    if (reasons.some((reason) => ["ramp_slope", "ramp_width", "ramp_run_length"].includes(reason))) {
-      elements.push(...routeIssueElements(edge, elementsByGuid, isRampType));
-    }
-  }
-  return uniqueElements(elements);
-}
-
-function routeIssueElements(edge, elementsByGuid, predicate) {
-  const endpoints = routeEndpointElements(edge, elementsByGuid).filter((element) => predicate(element.ifcType));
-  return endpoints.length ? endpoints : routeObstacleElements(edge, elementsByGuid, predicate);
-}
-
-function isWallType(type) {
-  return type === "IfcWall" || type === "IfcColumn";
-}
-
-function routeIntersectsElement(edge, element) {
-  const pad = 0.75;
-  for (const point of routePathSamples(edge.path || [])) {
-    if (
-      point[0] >= element.bboxMin[0] - pad &&
-      point[0] <= element.bboxMax[0] + pad &&
-      point[1] >= element.bboxMin[1] - pad &&
-      point[1] <= element.bboxMax[1] + pad &&
-      routePointOverlapsElementLevel(point, element)
-    ) {
-      return true;
-    }
-  }
-  return false;
-}
-
-function routePointOverlapsElementLevel(point, element) {
-  if (!Number.isFinite(Number(point[2]))) return true;
-  const clearanceHeight = Number(appData.rules?.clearance_height_m || 2.05);
-  return Number(point[2]) - 0.05 <= element.bboxMax[2] && Number(point[2]) + clearanceHeight >= element.bboxMin[2];
-}
-
-function routeOverlapsElementLevel(edge, element) {
-  return (edge.path || []).some((point) => routePointOverlapsElementLevel(point, element));
-}
-
-function routePathSamples(path) {
-  if (path.length < 2) return path;
-  const points = [];
-  for (let index = 1; index < path.length; index++) {
-    const start = path[index - 1];
-    const end = path[index];
-    const count = Math.max(1, Math.ceil(Math.hypot(end[0] - start[0], end[1] - start[1]) / 0.5));
-    for (let step = 0; step <= count; step++) {
-      const t = step / count;
-      points.push([
-        start[0] + (end[0] - start[0]) * t,
-        start[1] + (end[1] - start[1]) * t,
-        start[2] + (end[2] - start[2]) * t,
-      ]);
-    }
-  }
-  return points;
-}
-
-function doorAssessedWidth(door) {
-  return Number(door?.extra?.derivedDoorWidthM || 0);
-}
-
-function doorAssessedHeight(door) {
-  return Number(door?.extra?.derivedDoorHeightM || 0);
-}
-
-function routeDoorWidthLimit() {
-  return Number(appData.rules?.route_door_width_m || appData.rules?.door_width_m || 0.9);
-}
-
-function elementName(element) {
-  const text = planElementName(element?.name || element?.label || element?.guid || "unknown");
-  if (isStairType(element?.ifcType)) return text.replace(/\s+Run\s+\d+\b/i, "");
-  return text;
-}
-
-function stairGroupKey(element) {
-  return elementName(element).toLowerCase();
-}
-
-function stairGroupPoint(edge, stair, elementsByGuid) {
-  const group = [...elementsByGuid.values()].filter((element) =>
-    isStairType(element.ifcType) &&
-    element.bboxMin &&
-    element.bboxMax &&
-    stairGroupKey(element) === stairGroupKey(stair) &&
-    routeOverlapsElementLevel(edge, element));
-  const values = group.length ? group : [stair];
-  const boxes = values.filter((element) => element.bboxMin && element.bboxMax);
-  if (!boxes.length) return elementPoint(stair) || routeMidpoint(edge);
-  return [
-    (Math.min(...boxes.map((element) => element.bboxMin[0])) + Math.max(...boxes.map((element) => element.bboxMax[0]))) / 2,
-    (Math.min(...boxes.map((element) => element.bboxMin[1])) + Math.max(...boxes.map((element) => element.bboxMax[1]))) / 2,
-    routeMeanZ(edge),
-  ];
-}
-
-function routeMeanZ(edge) {
-  const values = (edge.path || []).map((point) => Number(point[2])).filter(Number.isFinite);
-  return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
-}
-
-function routeLevelKey(edge) {
-  return routeMeanZ(edge).toFixed(2);
-}
-
-function routeEndpointName(guid, element) {
-  if (element) return elementName(element);
-  if (String(guid || "").startsWith("route-node:")) return "Route network";
-  return planElementName(guid || "unknown");
-}
-
-function uniqueText(items) {
-  return [...new Set(items.filter(Boolean))];
-}
-
-function uniqueElements(elements) {
-  return [...new Map(elements.filter(Boolean).map((element) => [element.guid, element])).values()];
-}
-
-function planRows(rows) {
-  return `<dl class="planRows">${rows.map(([label, value]) => `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value ?? "missing")}</dd>`).join("")}</dl>`;
+  viewer.onpointerleave = () => updateCursorCoordinateOutput("plan", null, "move over the floor plan");
 }
 
 function setupProjectServiceStop() {
@@ -2363,16 +632,20 @@ function updatePointCoordinateControl(prefix, visible, floor) {
   }
 }
 
+function updateCursorCoordinateOutput(prefix, point, emptyText = "move over the floor view") {
+  const output = document.querySelector(`#${prefix}PointCursorCoordinates`);
+  if (!output) return;
+  output.textContent = Array.isArray(point) && point.every(Number.isFinite)
+    ? `Mouse coordinates: X ${point[0].toFixed(4)} m, Y ${point[1].toFixed(4)} m`
+    : `Mouse coordinates: ${emptyText}`;
+}
+
 function pointStatusText(state) {
   if (!state?.start) return "Click a walkable start point, then click the destination.";
   if (!state.end) return "Start point selected. Click the destination.";
   if (state.pending) return "Checking the selected points against the streamed navigation tiles.";
   if (state.error) return state.error;
   if (state.result?.status === "pass") return `Accessible orthogonal route found. Distance: ${Number(state.result.distanceM).toFixed(2)} m.`;
-  if (state.result?.status === "reachable_with_issues") {
-    const count = state.result.issues?.length || 0;
-    return `The destination is reachable, but ${count} accessibility issue${count === 1 ? " applies" : "s apply"} to this route. Distance: ${Number(state.result.distanceM).toFixed(2)} m.`;
-  }
   if (state.result?.status === "blocked") {
     const message = state.result.message || "No accessible route connects the selected points.";
     const hasCandidate = Array.isArray(state.result.path) && state.result.path.length > 1;
@@ -2383,14 +656,10 @@ function pointStatusText(state) {
 
 function pointAuditState(result) {
   const hasCandidate = Array.isArray(result?.path) && result.path.length > 1;
-  if (result?.status === "pass" || result?.status === "reachable_with_issues") {
+  if (result?.status === "pass") {
     const passed = result.audit?.orthogonal === true
       && result.audit?.collisionFree === true
       && result.audit?.endpointsExact === true;
-    if (passed && result.status === "reachable_with_issues") {
-      const count = result.issues?.length || 0;
-      return { label: "Route audit", value: `${count} issue${count === 1 ? "" : "s"} found`, tone: "watch" };
-    }
     return { label: "Route audit", value: passed ? "passed" : "failed", tone: passed ? "pass" : "fail" };
   }
   if (result?.status === "blocked") {
@@ -2410,13 +679,11 @@ function pointDetailsMarkup(state) {
     ["Destination", state.end ? `${state.end[0].toFixed(2)}, ${state.end[1].toFixed(2)} m` : "not selected"],
   ];
   const auditState = pointAuditState(state.result);
-  const reached = state.result?.status === "pass" || state.result?.status === "reachable_with_issues";
-  if (reached) {
-    rows.push(["Result", state.result.status === "pass" ? "accessible" : "reachable with issues"]);
+  if (state.result?.status === "pass") {
     rows.push(["Distance", `${Number(state.result.distanceM).toFixed(2)} m`]);
     rows.push(["Grid resolution", `${Number(state.result.resolutionM).toFixed(2)} m`]);
     rows.push(["Wheelchair clearance", `${Number(state.result.clearanceM).toFixed(2)} m`]);
-    rows.push(["Route width requirement", `${Number(state.result.routeWidthM).toFixed(2)} m`]);
+    rows.push(["Accessible route width", `${Number(state.result.routeWidthM).toFixed(2)} m`]);
     rows.push(["Tiles used", String(state.result.streamedTiles)]);
     rows.push([auditState.label, auditState.value]);
   } else if (state.result?.status === "blocked") {
@@ -2433,34 +700,13 @@ function pointDetailsMarkup(state) {
   }
   const explanation = state?.explanation?.text || (state?.explanationPending ? "Ollama is reviewing the deterministic blocking facts." : "The deterministic route result is shown above.");
   const source = state?.explanation?.source ? `<p><small>${escapeHtml(state.explanation.source)}</small></p>` : "";
-  const cards = pointIssueCards(state?.result?.issues || []);
-  const issues = cards.length ? `<div class="planElementIssues">${planIssueCards(cards)}</div>` : "";
-  return `<h3>Point-to-point check</h3>${planRows(rows)}${issues}${state?.result?.status === "blocked" ? `<h3>Why it is blocked</h3><p>${escapeHtml(explanation)}</p>${source}` : ""}`;
-}
-
-function pointIssueCards(issues) {
-  return issues.map((issue) => ({
-    label: sentenceText(planReasonText(issue.ruleId)),
-    comparison: comparisonText(issue.ruleId, issue.measured, issue.required, issue.unit),
-    locations: [issue.elementLabel || issue.elementGuid || "Not identified"],
-  }));
+  return `<h3>Point-to-point check</h3>${planRows(rows)}${state?.result?.status === "blocked" ? `<h3>Why it is blocked</h3><p>${escapeHtml(explanation)}</p>${source}` : ""}`;
 }
 
 function handlePlanPointClick(event, floor, elements, edges) {
   if (pointCheck.pending) return;
-  const svg = document.querySelector("#planViewer svg");
-  const matrix = svg?.getScreenCTM();
-  const bounds = floorPlanBounds(elements, edges);
-  if (!svg || !matrix || !bounds) return;
-  const view = floorPlanView(bounds);
-  const cursor = svg.createSVGPoint();
-  cursor.x = event.clientX;
-  cursor.y = event.clientY;
-  const local = cursor.matrixTransform(matrix.inverse());
-  const selected = [
-    bounds.minX + (local.x / view.width) * (bounds.maxX - bounds.minX),
-    bounds.minY + (1 - local.y / view.height) * (bounds.maxY - bounds.minY),
-  ];
+  const selected = planPointFromEvent(event, elements, edges);
+  if (!selected) return;
   if (pointCheck.floor !== floor.name || !pointCheck.start || pointCheck.end) {
     pointRequestSequence += 1;
     pointCheck = { ...emptyPointCheck(floor.name), start: selected };
@@ -2470,6 +716,22 @@ function handlePlanPointClick(event, floor, elements, edges) {
   pointCheck = { ...pointCheck, end: selected, result: null, error: "" };
   renderFloorPlan();
   requestPointRoute(floor.name, pointCheck.start, pointCheck.end);
+}
+
+function planPointFromEvent(event, elements, edges) {
+  const svg = document.querySelector("#planViewer svg");
+  const matrix = svg?.getScreenCTM();
+  const bounds = floorPlanBounds(elements, edges);
+  if (!svg || !matrix || !bounds) return null;
+  const view = floorPlanView(bounds);
+  const cursor = svg.createSVGPoint();
+  cursor.x = event.clientX;
+  cursor.y = event.clientY;
+  const local = cursor.matrixTransform(matrix.inverse());
+  return [
+    bounds.minX + (local.x / view.width) * (bounds.maxX - bounds.minX),
+    bounds.minY + (1 - local.y / view.height) * (bounds.maxY - bounds.minY),
+  ];
 }
 
 async function requestPointRoute(floor, start, end) {
@@ -2554,20 +816,320 @@ function planMaximumZoom() {
   return Math.max(12, Math.ceil(gridSelectableZoom * 100) / 100);
 }
 
+function setPlanZoom(value) {
+  planZoom = Math.max(0.15, Math.min(planMaximumZoom(), value));
+  applyPlanZoom();
+}
+
+function applyPlanZoom() {
+  const svg = document.querySelector("#planViewer svg");
+  if (!svg) return;
+  svg.style.width = `${100 * planZoom}%`;
+  svg.style.height = `${100 * planZoom}%`;
+  svg.style.minWidth = `${760 * planZoom}px`;
+  svg.style.minHeight = `${560 * planZoom}px`;
+}
+
+function resetPlanView() {
+  planZoom = 1;
+  applyPlanZoom();
+  const viewer = document.querySelector("#planViewer");
+  if (!viewer) return;
+  viewer.scrollLeft = 0;
+  viewer.scrollTop = 0;
+}
+
+function setupPlanPanZoom() {
+  const viewer = document.querySelector("#planViewer");
+  if (!viewer) return;
+  viewer.addEventListener("wheel", (event) => {
+    if (!viewer.querySelector("svg")) return;
+    event.preventDefault();
+    const rect = viewer.getBoundingClientRect();
+    const oldZoom = planZoom;
+    const nextZoom = planZoom * (event.deltaY < 0 ? 1.12 : 0.89);
+    setPlanZoom(nextZoom);
+    const ratio = planZoom / oldZoom;
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    viewer.scrollLeft = (viewer.scrollLeft + x) * ratio - x;
+    viewer.scrollTop = (viewer.scrollTop + y) * ratio - y;
+  }, { passive: false });
+  viewer.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0) return;
+    const target = event.target instanceof Element ? event.target.closest("[data-guid], [data-edge-id]") : null;
+    planDrag = {
+      x: event.clientX,
+      y: event.clientY,
+      left: viewer.scrollLeft,
+      top: viewer.scrollTop,
+      moved: false,
+      target,
+      pointerId: event.pointerId,
+    };
+    viewer.setPointerCapture(event.pointerId);
+  });
+  viewer.addEventListener("pointermove", (event) => {
+    if (!planDrag) return;
+    if ((event.buttons & 1) !== 1) {
+      planDrag = null;
+      return;
+    }
+    const dx = event.clientX - planDrag.x;
+    const dy = event.clientY - planDrag.y;
+    if (Math.abs(dx) + Math.abs(dy) > 4) {
+      planDrag.moved = true;
+    }
+    viewer.scrollLeft = planDrag.left - (event.clientX - planDrag.x);
+    viewer.scrollTop = planDrag.top - (event.clientY - planDrag.y);
+  });
+  viewer.addEventListener("pointerup", (event) => {
+    if (planDrag?.moved) {
+      planSuppressClick = true;
+    } else {
+      planClickTarget = planDrag?.target || null;
+    }
+    if (viewer.hasPointerCapture(event.pointerId)) {
+      viewer.releasePointerCapture(event.pointerId);
+    }
+    planDrag = null;
+  });
+  viewer.addEventListener("pointercancel", (event) => {
+    if (viewer.hasPointerCapture(event.pointerId)) {
+      viewer.releasePointerCapture(event.pointerId);
+    }
+    planDrag = null;
+  });
+}
+
+function selectPlanTarget(target) {
+  document.querySelectorAll("#planViewer .selectedPlanElement").forEach((item) => item.classList.remove("selectedPlanElement"));
+  document.querySelectorAll("#planViewer .selectedPlanRoute").forEach((item) => item.classList.remove("selectedPlanRoute"));
+  if (target.hasAttribute("data-edge-id")) {
+    target.classList.add("selectedPlanRoute");
+    return;
+  }
+  target.classList.add("selectedPlanElement");
+}
+
+function pickPlanTarget(event, fallback, elementsByGuid, edgesById, issueCounts) {
+  const candidates = planTargetCandidates(event, fallback, elementsByGuid, edgesById, issueCounts);
+  if (!candidates.length) return null;
+  const x = Math.round(event.clientX);
+  const y = Math.round(event.clientY);
+  const samePick = planPick && Math.abs(planPick.x - x) <= 8 && Math.abs(planPick.y - y) <= 8;
+  let target = candidates[0];
+  if (samePick && planPick.key) {
+    target = nextPlanTarget(candidates, planPick.key, planPick.kind, elementsByGuid, edgesById);
+  }
+  planPick = { x, y, key: planTargetKey(target), kind: planTargetKind(target, elementsByGuid, edgesById) };
+  return target;
+}
+
+function planTargetCandidates(event, fallback, elementsByGuid, edgesById, issueCounts) {
+  const viewer = document.querySelector("#planViewer");
+  if (!viewer) return [];
+  const candidates = [];
+  for (const item of document.elementsFromPoint(event.clientX, event.clientY)) {
+    const target = item instanceof Element ? item.closest("[data-guid], [data-edge-id]") : null;
+    if (!target || !viewer.contains(target)) continue;
+    if (!candidates.some((candidate) => planTargetKey(candidate) === planTargetKey(target))) {
+      candidates.push(target);
+    }
+  }
+  if (fallback && viewer.contains(fallback) && !candidates.some((candidate) => planTargetKey(candidate) === planTargetKey(fallback))) {
+    candidates.push(fallback);
+  }
+  return candidates.sort((a, b) => planTargetPriority(a, elementsByGuid, edgesById, issueCounts) - planTargetPriority(b, elementsByGuid, edgesById, issueCounts));
+}
+
+function planTargetKey(target) {
+  const edgeId = target.getAttribute("data-edge-id");
+  if (edgeId) return `edge:${edgeId}`;
+  return `guid:${target.getAttribute("data-guid") || ""}`;
+}
+
+function nextPlanTarget(candidates, key, kind, elementsByGuid, edgesById) {
+  const index = candidates.findIndex((candidate) => planTargetKey(candidate) === key);
+  if (index < 0) return candidates[0];
+  for (let offset = 1; offset < candidates.length; offset++) {
+    const candidate = candidates[(index + offset) % candidates.length];
+    if (planTargetKind(candidate, elementsByGuid, edgesById) !== kind) return candidate;
+  }
+  return candidates[(index + 1) % candidates.length];
+}
+
+function planTargetKind(target, elementsByGuid, edgesById) {
+  const edgeId = target.getAttribute("data-edge-id");
+  if (edgeId && edgesById.has(edgeId)) return "route";
+  const element = elementsByGuid.get(target.getAttribute("data-guid"));
+  if (!element) return "element";
+  if (element.ifcType === "IfcDoor") return "door";
+  if (isStairType(element.ifcType) || isRampType(element.ifcType)) return "blocker";
+  if (element.ifcType === "IfcSpace") return "space";
+  if (element.ifcType === "IfcWall" || element.ifcType === "IfcColumn") return "wall";
+  return "element";
+}
+
+function planTargetPriority(target, elementsByGuid, edgesById, issueCounts) {
+  const edgeId = target.getAttribute("data-edge-id");
+  if (edgeId) {
+    const edge = edgesById.get(edgeId);
+    if (planRouteMode === "issues") return 80;
+    return edge?.status === "fail" ? 0 : 4;
+  }
+  const guid = target.getAttribute("data-guid");
+  const element = elementsByGuid.get(guid);
+  let priority = planElementPriority(element);
+  if (planRouteMode === "issues" && issueCounts.get(guid)) priority -= 100;
+  return priority;
+}
+
+function planElementPriority(element) {
+  if (!element) return 70;
+  if (element.ifcType === "IfcDoor") return 20;
+  if (isStairType(element.ifcType) || isRampType(element.ifcType)) return 30;
+  if (element.ifcType === "IfcSpace") return 40;
+  if (element.ifcType === "IfcWall" || element.ifcType === "IfcColumn") return 50;
+  return 60;
+}
+
+function floorPlanSvg(floor, elements, edges, issueCounts) {
+  const bounds = floorPlanBounds(elements, edges);
+  if (!bounds) return "<p class=\"emptyPlan\">No drawable geometry was generated for this floor.</p>";
+  const view = floorPlanView(bounds);
+  const spaces = elements.filter((element) => element.ifcType === "IfcSpace" && element.bboxMin && element.bboxMax);
+  const walls = elements.filter((element) => ["IfcWall", "IfcColumn"].includes(element.ifcType) && element.bboxMin && element.bboxMax);
+  const doors = elements.filter((element) => element.ifcType === "IfcDoor" && element.bboxMin && element.bboxMax);
+  const blockers = elements.filter((element) => ["IfcStair", "IfcStairFlight", "IfcRamp", "IfcRampFlight"].includes(element.ifcType) && element.bboxMin && element.bboxMax);
+  const visibleEdges = planInteractionMode === "point" ? [] : planRouteMode === "all" ? edges : planRouteMode === "fail" ? edges.filter((edge) => edge.status === "fail") : [];
+  const routeMarkup = visibleEdges
+    .filter((edge) => edge.path?.length > 1)
+    .sort((a, b) => (a.status === "fail" ? 1 : 0) - (b.status === "fail" ? 1 : 0))
+    .map((edge) => floorPlanRoute(edge, bounds, view))
+    .join("");
+  const wallMarkup = walls
+    .flatMap((element) => element.ifcType === "IfcWall" ? wallSegmentsForDoors(element, doors) : [element])
+    .map((element) => floorPlanRect(element, bounds, view, "planWall", issueCounts))
+    .join("");
+  const spaceMarkup = spaces.map((element) => floorPlanRect(element, bounds, view, floorPlanSpaceClass(element, issueCounts), issueCounts)).join("");
+  const blockerMarkup = blockers.map((element) => floorPlanRect(element, bounds, view, isStairType(element.ifcType) ? "planBlocker" : "planRamp", issueCounts)).join("");
+  const doorMarkup = doors.map((element) => floorPlanRect(element, bounds, view, floorPlanDoorClass(element, issueCounts), issueCounts)).join("");
+  const labelMarkup = spaces.map((element, index) => index < 90 ? floorPlanLabel(element, bounds, view) : "").join("");
+  const issueMarkerMarkup = planInteractionMode === "inspect"
+    ? floorPlanInspectionIssueMarkup(elements, issueCounts, bounds, view)
+    : "";
+  const pointMarkup = floorPlanPointCheck(floor, bounds, view);
+  return `<svg class="floorSvg" viewBox="0 0 ${view.width} ${view.height}" role="img" aria-label="${escapeHtml(floor.name)} floor plan">
+    <rect class="planCanvas" x="0" y="0" width="${view.width}" height="${view.height}"></rect>
+    <g>${spaceMarkup}</g>
+    <g>${wallMarkup}</g>
+    <g>${routeMarkup}</g>
+    <g>${blockerMarkup}</g>
+    <g>${doorMarkup}</g>
+    <g>${labelMarkup}</g>
+    <g class="planIssueMarkerLayer">${issueMarkerMarkup}</g>
+    <g>${pointMarkup}</g>
+  </svg>`;
+}
+
+function floorPlanInspectionIssueMarkup(elements, issueCounts, bounds, view) {
+  const failedChecksByGuid = new Map();
+  for (const check of appData.inspectionChecks || []) {
+    if (check.status !== "fail" || !check.elementGuid) continue;
+    failedChecksByGuid.set(check.elementGuid, (failedChecksByGuid.get(check.elementGuid) || 0) + 1);
+  }
+  return elements.flatMap((element) => {
+    if (!element.bboxMin || !element.bboxMax) return [];
+    const issueCount = Number(issueCounts.get(element.guid) || 0);
+    const failedCount = Number(failedChecksByGuid.get(element.guid) || 0);
+    const count = issueCount + failedCount;
+    if (!count) return [];
+    const center = [
+      (element.bboxMin[0] + element.bboxMax[0]) / 2,
+      (element.bboxMin[1] + element.bboxMax[1]) / 2,
+      0,
+    ];
+    const [x, y] = floorPlanPoint(center, bounds, view);
+    const label = count > 1 ? String(count) : "!";
+    const title = `${count} inspection issue${count === 1 ? "" : "s"}: ${cleanElementName(element.name || element.label)}`;
+    return [`<g class="planElementIssueMarker" data-guid="${escapeHtml(element.guid)}">
+      <title>${escapeHtml(title)}</title>
+      <circle class="planElementIssueHit" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="11"></circle>
+      <circle class="planElementIssueHalo" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="8.5"></circle>
+      <circle class="planElementIssueDot" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="6.2"></circle>
+      <text class="planElementIssueCount" x="${x.toFixed(2)}" y="${y.toFixed(2)}">${label}</text>
+    </g>`];
+  }).join("");
+}
+
 function floorPlanPointCheck(floor, bounds, view) {
   if (planInteractionMode !== "point" || pointCheck.floor !== floor.name) return "";
   const route = pointCheck.result?.path || [];
-  const routeClass = pointCheck.result?.status === "blocked"
-    ? "pointRoute blocked"
-    : pointCheck.result?.status === "reachable_with_issues" ? "pointRoute issues" : "pointRoute";
+  const routeClass = pointCheck.result?.status === "blocked" ? "pointRoute blocked" : "pointRoute";
   const line = route.length > 1
     ? `<polyline class="${routeClass}" points="${route.map((point) => floorPlanPoint(point, bounds, view).map((value) => value.toFixed(2)).join(",")).join(" ")}"></polyline>`
     : "";
   const start = pointCheck.start ? floorPlanPoint(pointCheck.start, bounds, view) : null;
   const end = pointCheck.end ? floorPlanPoint(pointCheck.end, bounds, view) : null;
+  const labelsOverlap = start && end
+    ? Math.abs(start[0] - end[0]) < 54 && Math.abs(start[1] - end[1]) < 18
+    : false;
   return `${line}
-    ${start ? `<circle class="pointMarker start" cx="${start[0].toFixed(2)}" cy="${start[1].toFixed(2)}" r="5"></circle>` : ""}
-    ${end ? `<circle class="pointMarker end" cx="${end[0].toFixed(2)}" cy="${end[1].toFixed(2)}" r="5"></circle>` : ""}`;
+    ${start ? floorPlanPointMarker(start, "start", "Start", -7) : ""}
+    ${end ? floorPlanPointMarker(end, "end", "Destination", labelsOverlap ? -22 : -7) : ""}`;
+}
+
+function floorPlanPointMarker(point, className, label, labelOffsetY) {
+  const x = point[0].toFixed(2);
+  const y = point[1].toFixed(2);
+  const width = label === "Destination" ? 62 : 34;
+  return `<g class="pointMarkerGroup ${className}">
+    <circle class="pointMarker ${className}" cx="${x}" cy="${y}" r="3.2"></circle>
+    <g class="pointMarkerLabel ${className}" transform="translate(${x} ${(point[1] + labelOffsetY).toFixed(2)})">
+      <rect x="${(-width / 2).toFixed(1)}" y="-13" width="${width}" height="13" rx="6.5"></rect>
+      <text x="0" y="-4" text-anchor="middle">${label}</text>
+    </g>
+  </g>`;
+}
+
+function floorPlanBounds(elements, edges) {
+  const xs = [];
+  const ys = [];
+  const drawableElements = elements.filter((element) => element.bboxMin && element.bboxMax);
+  const layoutElements = drawableElements.filter((element) =>
+    ["IfcSpace", "IfcDoor", "IfcRamp", "IfcRampFlight"].includes(element.ifcType),
+  );
+  const baseElements = layoutElements.some((element) => element.ifcType === "IfcSpace")
+    ? layoutElements
+    : drawableElements;
+  for (const element of baseElements) {
+    if (!element.bboxMin || !element.bboxMax) continue;
+    xs.push(element.bboxMin[0], element.bboxMax[0]);
+    ys.push(element.bboxMin[1], element.bboxMax[1]);
+  }
+  if (!xs.length || !ys.length) {
+    for (const edge of edges) {
+      for (const point of edge.path || []) {
+        xs.push(point[0]);
+        ys.push(point[1]);
+      }
+    }
+  }
+  if (!xs.length || !ys.length) return null;
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+  const pad = Math.max(1, Math.min(4, Math.max(maxX - minX, maxY - minY) * 0.04));
+  return { minX: minX - pad, maxX: maxX + pad, minY: minY - pad, maxY: maxY + pad };
+}
+
+function floorPlanView(bounds) {
+  const width = 1000;
+  const worldWidth = Math.max(bounds.maxX - bounds.minX, 1);
+  const worldHeight = Math.max(bounds.maxY - bounds.minY, 1);
+  return { width, height: Math.max(380, Math.min(760, Math.round(width * worldHeight / worldWidth))) };
 }
 
 function floorGeometryContract(elements, edges) {
@@ -2587,6 +1149,134 @@ function floorGeometryContract(elements, edges) {
     routeEdges: edges.length,
     routePointCount,
   };
+}
+
+function floorPlanPoint(point, bounds, view) {
+  const x = ((point[0] - bounds.minX) / Math.max(bounds.maxX - bounds.minX, 0.001)) * view.width;
+  const y = view.height - ((point[1] - bounds.minY) / Math.max(bounds.maxY - bounds.minY, 0.001)) * view.height;
+  return [x, y];
+}
+
+function floorPlanRect(element, bounds, view, className, issueCounts) {
+  const a = floorPlanPoint(element.bboxMin, bounds, view);
+  const b = floorPlanPoint(element.bboxMax, bounds, view);
+  const x = Math.min(a[0], b[0]);
+  const y = Math.min(a[1], b[1]);
+  const width = Math.max(Math.abs(a[0] - b[0]), element.ifcType === "IfcDoor" ? 4 : 1);
+  const height = Math.max(Math.abs(a[1] - b[1]), element.ifcType === "IfcDoor" ? 4 : 1);
+  const issueClass = issueCounts.get(element.guid) ? " hasIssue" : "";
+  return `<g data-guid="${escapeHtml(element.guid)}">
+    <rect class="${className}${issueClass}" x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${width.toFixed(2)}" height="${height.toFixed(2)}"></rect>
+  </g>`;
+}
+
+function floorPlanLabel(element, bounds, view) {
+  const a = floorPlanPoint(element.bboxMin, bounds, view);
+  const b = floorPlanPoint(element.bboxMax, bounds, view);
+  const x = Math.min(a[0], b[0]);
+  const y = Math.min(a[1], b[1]);
+  const width = Math.abs(a[0] - b[0]);
+  const height = Math.abs(a[1] - b[1]);
+  if (width <= 48 || height <= 18) return "";
+  return `<text class="planLabel" x="${(x + width / 2).toFixed(2)}" y="${(y + height / 2).toFixed(2)}">${escapeHtml(cleanElementName(element.name || element.label))}</text>`;
+}
+
+function floorPlanRoute(edge, bounds, view) {
+  const points = edge.path.map((point) => floorPlanPoint(point, bounds, view).map((value) => value.toFixed(2)).join(",")).join(" ");
+  const className = edge.status === "fail" ? "planRoute failRoute" : "planRoute passRoute";
+  return `<polyline class="${className}" points="${points}" data-edge-id="${escapeHtml(edge.edgeId)}"></polyline>`;
+}
+
+function floorPlanSpaceClass(element, issueCounts) {
+  if (issueCounts.get(element.guid)) return "planSpace issueSpace";
+  return element.extra?.isCorridorLike ? "planSpace corridorSpace" : "planSpace";
+}
+
+function floorPlanDoorClass(element, issueCounts) {
+  if (issueCounts.get(element.guid) || Number(element.extra?.derivedDoorWidthM || 0) < 0.9) return "planDoor issueDoor";
+  return "planDoor";
+}
+
+function planIssueCounts() {
+  const counts = new Map();
+  for (const issue of appData.issues || []) {
+    counts.set(issue.element_guid, (counts.get(issue.element_guid) || 0) + 1);
+  }
+  return counts;
+}
+
+function showPlanElement(guid, elementsByGuid, issueCounts) {
+  const element = elementsByGuid.get(guid);
+  if (!element) return;
+  const issues = (appData.issues || []).filter((issue) => issue.element_guid === guid);
+  const inspectionChecks = (appData.inspectionChecks || []).filter((check) => check.elementGuid === guid);
+  const rows = [
+    ["Type", element.ifcType],
+    ["Name", cleanElementName(element.name || element.label)],
+    ["Width", valueWithUnit(element.width, "m")],
+    ["Depth", valueWithUnit(element.depth, "m")],
+    ["Height", valueWithUnit(element.height, "m")],
+    ["Issues", String(issueCounts.get(guid) || 0)],
+    ["Inspect checks", String(inspectionChecks.length)],
+  ];
+  document.querySelector("#planDetails").innerHTML = `<h3>${escapeHtml(cleanElementName(element.name || element.label))}</h3>${planRows(rows)}${planInspectionList(inspectionChecks)}${planIssueList(issues)}`;
+}
+
+function showPlanRoute(edgeId, edgesById, elementsByGuid) {
+  const edge = edgesById.get(edgeId);
+  if (!edge) return;
+  const start = elementsByGuid.get(edge.startGuid);
+  const end = elementsByGuid.get(edge.endGuid);
+  const rows = [
+    ["Route", edge.edgeId],
+    ["From", cleanElementName(start?.name || start?.label || edge.startGuid)],
+    ["To", cleanElementName(end?.name || end?.label || edge.endGuid)],
+    ["Distance", valueWithUnit(edge.distanceM, "m")],
+    ["Status", edge.status],
+    ["Reason", edge.reasons?.map(reasonText).join(", ") || "clear"],
+  ];
+  document.querySelector("#planDetails").innerHTML = `<h3>${escapeHtml(edge.edgeId)}</h3>${planRows(rows)}`;
+}
+
+function planRows(rows) {
+  return `<dl class="planRows">${rows.map(([label, value]) => `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value ?? "missing")}</dd>`).join("")}</dl>`;
+}
+
+function planIssueList(issues) {
+  if (!issues.length) return "";
+  const groups = new Map();
+  for (const issue of issues) {
+    const description = issue.short_text || issue.details || "Accessibility requirement failed.";
+    const key = `${issue.rule_id || "accessibility"}|${description}`;
+    if (!groups.has(key)) groups.set(key, { ruleId: issue.rule_id || "Accessibility issue", description, count: 0 });
+    groups.get(key).count += 1;
+  }
+  const cards = [...groups.values()].map((issue) => `<article class="planIssueCard">
+    <div class="planIssueCardHeader"><span class="planIssueCardIcon" aria-hidden="true">!</span><div><h4>${escapeHtml(issue.ruleId)}</h4>${issue.count > 1 ? `<span class="planIssueOccurrence">${issue.count} findings</span>` : ""}</div></div>
+    <p class="planIssueComparison">${escapeHtml(issue.description)}</p>
+  </article>`).join("");
+  return `<section class="planElementIssues"><h3>Accessibility issues</h3><div class="planIssueCards">${cards}</div></section>`;
+}
+
+function planInspectionList(checks) {
+  if (!checks.length) return "";
+  const cards = checks.map((check) => {
+    const measured = check.measured == null ? "not available" : valueWithUnit(check.measured, check.unit);
+    const required = valueWithUnit(check.required, check.unit);
+    const comparison = check.comparison === "minimum" ? "minimum" : "maximum";
+    const status = check.status === "pass" ? "passed" : check.status === "fail" ? "failed" : check.status === "advisory" ? "review" : "not available";
+    const movement = check.ruleId === "corridor_movement_area"
+      ? `<p>A ${valueWithUnit(check.movementSpaceM, "m")} × ${valueWithUnit(check.movementSpaceM, "m")} passing area is required at intervals no greater than ${required}.</p>`
+      : "";
+    const note = check.note ? `<p>${escapeHtml(check.note)}</p>` : "";
+    const icon = check.status === "fail" ? "!" : check.status === "pass" ? "P" : "i";
+    return `<article class="planInspectionCard ${escapeHtml(check.status)}">
+      <div class="planInspectionHeader"><span class="planInspectionIcon" aria-hidden="true">${icon}</span><strong>${escapeHtml(check.label)}</strong><span class="planInspectionStatus">${escapeHtml(status)}</span></div>
+      <dl class="planInspectionValues"><dt>Measured</dt><dd>${escapeHtml(measured)}</dd><dt>Rule</dt><dd>${escapeHtml(comparison)} ${escapeHtml(required)}</dd></dl>
+      ${movement}${note}<p class="planInspectionSource">Source: ${escapeHtml(check.source || "not available")}</p>
+    </article>`;
+  }).join("");
+  return `<section class="planInspection"><h3>Inspection checks</h3>${cards}</section>`;
 }
 
 function setupAssistant() {
@@ -3127,12 +1817,7 @@ function loadSimulationScenario(name) {
     }
   }
   simPathLine = pointPathHasTravel
-    ? addCurrentSimulationPath(
-      simWorld,
-      simPath,
-      currentSimulationRoute()?.status === "fail" ? 0xb3261e : currentSimulationRoute()?.status === "watch" ? 0xa66516 : 0x2d7d46,
-      simFloorTransform,
-    )
+    ? addCurrentSimulationPath(simWorld, simPath, currentSimulationRoute()?.status === "fail" ? 0xb3261e : 0x2d7d46, simFloorTransform)
     : null;
   addSimulationPointMarkers();
   simChair.visible = simInteractionMode === "automatic" || simPath.length > 0;
@@ -3173,15 +1858,13 @@ function disposeObjectTree(root) {
 function configurePointSimulationScenario() {
   const state = pointCheck.floor === simFloorName ? pointCheck : null;
   const passed = state?.result?.status === "pass";
-  const issues = state?.result?.status === "reachable_with_issues";
-  const reached = passed || issues;
   const pathLength = state?.result?.path?.length || 0;
-  const hasCandidate = reached ? pathLength > 0 : pathLength > 1;
+  const hasCandidate = passed ? pathLength > 0 : pathLength > 1;
   const auditState = pointAuditState(state?.result);
   const route = hasCandidate ? {
     key: `point:${simFloorName}:${state.start.join(",")}:${state.end.join(",")}`,
     edgeId: "Selected points",
-    status: passed ? "pass" : issues ? "watch" : "fail",
+    status: passed ? "pass" : "fail",
     reason: passed ? "accessible" : state.result.reason,
     blockAt: 1,
     path: state.result.path.map((point) => simFloorTransform.point(point)),
@@ -3194,14 +1877,10 @@ function configurePointSimulationScenario() {
   simScenarioData.metrics = [
     ["Start point", state?.start ? `${state.start[0].toFixed(2)}, ${state.start[1].toFixed(2)} m` : "not selected", state?.start ? "pass" : "watch"],
     ["Destination", state?.end ? `${state.end[0].toFixed(2)}, ${state.end[1].toFixed(2)} m` : "not selected", state?.end ? "pass" : "watch"],
-    [
-      "Accessible route",
-      passed ? "found" : issues ? "issues found" : state?.result?.status === "blocked" ? "blocked" : "not checked",
-      passed ? "pass" : issues ? "watch" : state?.result?.status === "blocked" ? "fail" : "watch",
-    ],
-    ["Route distance", reached ? `${Number(state.result.distanceM).toFixed(2)} m` : "not available", passed ? "pass" : "watch"],
-    ["Reachable candidate", !reached && hasCandidate ? `${Number(state.result.distanceM).toFixed(2)} m` : "not applicable", !reached && hasCandidate ? "fail" : "watch"],
-    ["Route width requirement", reached ? `${Number(state.result.routeWidthM).toFixed(2)} m` : "not available", passed ? "pass" : "watch"],
+    ["Accessible route", passed ? "found" : state?.result?.status === "blocked" ? "blocked" : "not checked", passed ? "pass" : state?.result?.status === "blocked" ? "fail" : "watch"],
+    ["Route distance", passed ? `${Number(state.result.distanceM).toFixed(2)} m` : "not available", passed ? "pass" : "watch"],
+    ["Reachable candidate", !passed && hasCandidate ? `${Number(state.result.distanceM).toFixed(2)} m` : "not applicable", !passed && hasCandidate ? "fail" : "watch"],
+    ["Accessible route width", passed ? `${Number(state.result.routeWidthM).toFixed(2)} m` : "not available", passed ? "pass" : "watch"],
     [auditState.label, auditState.value, auditState.tone],
   ];
 }
@@ -3223,10 +1902,10 @@ function updateSimulationModeControls() {
 function addSimulationPointMarkers() {
   if (simInteractionMode !== "point" || pointCheck.floor !== simFloorName) return;
   const markerData = [
-    [pointCheck.start, 0x2159a6],
-    [pointCheck.end, 0x6b2ca0],
+    [pointCheck.start, 0x2159a6, "Start", 34],
+    [pointCheck.end, 0x6b2ca0, "Destination", 76],
   ];
-  for (const [raw, color] of markerData) {
+  for (const [raw, color, label, labelPixelOffset] of markerData) {
     if (!raw) continue;
     const point = simFloorTransform.point(raw);
     const marker = new THREE.Mesh(
@@ -3236,7 +1915,82 @@ function addSimulationPointMarkers() {
     marker.position.set(point.x, simFloorTransform.floorSurfaceY + simFloorTransform.length(0.13), point.z);
     marker.castShadow = true;
     simWorld.add(marker);
+    const labelSprite = createSimulationPointLabel(label, color);
+    labelSprite.userData.pointMarkerPixelWidth = label === "Destination" ? 120 : 76;
+    labelSprite.userData.pointMarkerPixelHeight = 30;
+    labelSprite.userData.pointMarkerPixelOffsetY = labelPixelOffset;
+    labelSprite.userData.pointMarkerAnchor = new THREE.Vector3(
+      point.x,
+      simFloorTransform.floorSurfaceY + simFloorTransform.length(0.13),
+      point.z,
+    );
+    labelSprite.position.copy(labelSprite.userData.pointMarkerAnchor);
+    simWorld.add(labelSprite);
   }
+  updateSimulationPointLabelScales();
+}
+
+function createSimulationPointLabel(text, color) {
+  const canvas = document.createElement("canvas");
+  canvas.width = text === "Destination" ? 1024 : 640;
+  canvas.height = 256;
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "rgba(255, 255, 255, 0.84)";
+  ctx.strokeStyle = `#${color.toString(16).padStart(6, "0")}`;
+  ctx.lineWidth = 12;
+  ctx.beginPath();
+  ctx.roundRect(16, 16, canvas.width - 32, canvas.height - 32, 104);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#1f2628";
+  ctx.font = "700 104px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, canvas.width / 2, canvas.height / 2 + 4);
+  const texture = configureSimulationTextTexture(new THREE.CanvasTexture(canvas));
+  const material = new THREE.SpriteMaterial({
+    map: texture,
+    transparent: true,
+    depthTest: false,
+    depthWrite: false,
+  });
+  const sprite = new THREE.Sprite(material);
+  sprite.userData.pointMarkerLabel = text;
+  sprite.renderOrder = 100;
+  return sprite;
+}
+
+function configureSimulationTextTexture(texture) {
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.generateMipmaps = true;
+  texture.anisotropy = Math.min(8, simRenderer?.capabilities?.getMaxAnisotropy?.() || 1);
+  texture.needsUpdate = true;
+  return texture;
+}
+
+function updateSimulationPointLabelScales() {
+  const height = simRenderer?.domElement?.clientHeight || 0;
+  if (!simWorld || !simCamera || !height || !Number.isFinite(simCamera.zoom) || simCamera.zoom <= 0) return;
+  const worldPerPixel = (simCamera.top - simCamera.bottom) / (height * simCamera.zoom);
+  const screenUp = new THREE.Vector3(0, 1, 0).applyQuaternion(simCamera.quaternion).normalize();
+  simWorld.traverse((object) => {
+    if (!object.userData?.pointMarkerLabel) return;
+    object.scale.set(
+      object.userData.pointMarkerPixelWidth * worldPerPixel,
+      object.userData.pointMarkerPixelHeight * worldPerPixel,
+      1,
+    );
+    const anchor = object.userData.pointMarkerAnchor;
+    if (anchor) {
+      object.position.copy(anchor).addScaledVector(
+        screenUp,
+        object.userData.pointMarkerPixelOffsetY * worldPerPixel,
+      );
+    }
+  });
 }
 
 function setupSimulationPointPicking() {
@@ -3247,26 +2001,19 @@ function setupSimulationPointPicking() {
     simPointGesture = { x: event.clientX, y: event.clientY, moved: false };
   });
   canvas.addEventListener("pointermove", (event) => {
+    if (simInteractionMode === "point") updateCursorCoordinateOutput("sim", simulationPointFromEvent(event));
     if (!simPointGesture) return;
     if (Math.abs(event.clientX - simPointGesture.x) + Math.abs(event.clientY - simPointGesture.y) > 5) simPointGesture.moved = true;
   });
+  canvas.addEventListener("pointerleave", () => updateCursorCoordinateOutput("sim", null));
   canvas.addEventListener("pointerup", (event) => {
     if (!simPointGesture || simPointGesture.moved || simInteractionMode !== "point" || pointCheck.pending) {
       simPointGesture = null;
       return;
     }
     simPointGesture = null;
-    const rect = canvas.getBoundingClientRect();
-    const mouse = new THREE.Vector2(
-      ((event.clientX - rect.left) / rect.width) * 2 - 1,
-      -((event.clientY - rect.top) / rect.height) * 2 + 1,
-    );
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(mouse, simCamera);
-    const scenePoint = new THREE.Vector3();
-    const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -simFloorTransform.floorSurfaceY);
-    if (!raycaster.ray.intersectPlane(floorPlane, scenePoint)) return;
-    const selected = simFloorTransform.inversePoint(scenePoint);
+    const selected = simulationPointFromEvent(event);
+    if (!selected) return;
     if (pointCheck.floor !== simFloorName || !pointCheck.start || pointCheck.end) {
       pointRequestSequence += 1;
       pointCheck = { ...emptyPointCheck(simFloorName), start: selected };
@@ -3281,6 +2028,23 @@ function setupSimulationPointPicking() {
   canvas.addEventListener("pointercancel", () => {
     simPointGesture = null;
   });
+}
+
+function simulationPointFromEvent(event) {
+  const canvas = simRenderer?.domElement;
+  if (!canvas || !simCamera || !simFloorTransform) return null;
+  const rect = canvas.getBoundingClientRect();
+  const mouse = new THREE.Vector2(
+    ((event.clientX - rect.left) / rect.width) * 2 - 1,
+    -((event.clientY - rect.top) / rect.height) * 2 + 1,
+  );
+  const raycaster = new THREE.Raycaster();
+  raycaster.setFromCamera(mouse, simCamera);
+  const scenePoint = new THREE.Vector3();
+  const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -simFloorTransform.floorSurfaceY);
+  return raycaster.ray.intersectPlane(floorPlane, scenePoint)
+    ? simFloorTransform.inversePoint(scenePoint)
+    : null;
 }
 
 function setupFloorSelect() {
@@ -3326,11 +2090,8 @@ function buildFloorScenario() {
   const floorElements = (floor.elementGuids || []).map((guid) => elementsByGuid.get(guid)).filter(Boolean);
   const floorDoors = (floor.doorGuids || []).map((guid) => elementsByGuid.get(guid)).filter(Boolean);
   const routeStartDoors = floorDoors.filter((door) => !isLiftDoor(door));
-  const planFloorCheck = (appData.planRouteEdges || []).some((edge) => edge.floorCheckRoutes);
-  const floorCheckEdges = planFloorCheck ? appData.planRouteEdges : appData.routeEdges;
-  const floorCheckEdgeIds = planFloorCheck ? floor.planRouteEdgeIds : floor.routeEdgeIds;
-  const rawFloorEdges = (floorCheckEdgeIds || [])
-    .map((edgeId) => floorCheckEdges.find((edge) => edge.edgeId === edgeId))
+  const rawFloorEdges = (floor.routeEdgeIds || [])
+    .map((edgeId) => appData.routeEdges.find((edge) => edge.edgeId === edgeId))
     .filter((edge) => edge && isFloorCheckRouteEdge(edge, elementsByGuid));
   const floorEdges = rawFloorEdges.map(floorCheckEdge);
   const failedEdges = floorEdges.filter((edge) => edge.status === "fail");
@@ -3346,15 +2107,13 @@ function buildFloorScenario() {
   const floorFailReason = topReasonText(reasonCounts);
   const startText = floorStart?.label || startDoors.map((door) => cleanElementName(door.name || door.label)).join(", ") || "no start point";
   const visualFailedRoutes = routePaths.filter((route) => route.status === "fail").length;
-  const blockerText = failedEdges.length ? floorFailReason : "none";
+  const blockerText = failedEdges.length ? floorFailReason : visualFailedRoutes ? "stair blocks route" : "none";
   return {
     title: `${floor.name} indoor check`,
     status: chosenRoute
       ? visualFailedRoutes
-        ? `Starting from ${startText}. The blocked route is shown first; the remaining accessible routes continue.`
-        : failedEdges.length
-          ? `Starting from ${startText}. The accessible routes are clear; ${failedEdges.length} blocked route ${failedEdges.length === 1 ? "edge remains" : "edges remain"} on this floor.`
-          : `Starting from ${startText}. All generated routes on this floor pass the indoor checks.`
+        ? `Starting from ${startText}. The stair approach is shown as blocked, then the other door routes continue.`
+        : `Starting from ${startText}. All generated routes on this floor pass the indoor checks.`
       : "No door-to-door route edges were generated for this floor.",
     source: "SHACL measurements plus strict 0.01 m tiled navigation and final route audits.",
     fail: Boolean(chosenRoute && chosenRoute.status === "fail"),
@@ -3367,13 +2126,13 @@ function buildFloorScenario() {
       ["Start door", startText, startDoors.length ? "pass" : "fail"],
       ["Doors on floor", String(floorDoors.length), floorDoors.length ? "pass" : "fail"],
       ["Route edges", String(rawFloorEdges.length), rawFloorEdges.length ? "pass" : "fail"],
-      ["Blocked route edges", String(failedEdges.length), failedEdges.length ? "fail" : "pass"],
-      ["Main reason", blockerText, failedEdges.length ? "fail" : "pass"],
+      ["Failed door routes", String(failedEdges.length), failedEdges.length ? "fail" : "pass"],
+      ["Stair approach", visualFailedRoutes ? "blocked" : "clear", visualFailedRoutes ? "fail" : "pass"],
+      ["Main reason", blockerText, visualFailedRoutes ? "fail" : "pass"],
     ],
     build(group) {
       addFloorBase(group, floorElements, transform);
       addFloorSpaces(group, floorElements, transform);
-      addFloorRouteLines(group, floorEdges, transform);
       addFloorDoors(group, floorDoors, floorEdges, transform);
       addFloorBlockers(group, floorElements, transform);
     },
@@ -3408,12 +2167,6 @@ function chooseFloorStartDoors(floor, floorDoors, floorEdges) {
     edgeDegree.set(edge.startGuid, (edgeDegree.get(edge.startGuid) || 0) + 1);
     edgeDegree.set(edge.endGuid, (edgeDegree.get(edge.endGuid) || 0) + 1);
   }
-  const directRouteDegree = new Map();
-  for (const route of appData.floorCheckDirectRoutes || []) {
-    if (route.floor !== floor.name) continue;
-    directRouteDegree.set(route.startGuid, (directRouteDegree.get(route.startGuid) || 0) + 1);
-    directRouteDegree.set(route.endGuid, (directRouteDegree.get(route.endGuid) || 0) + 1);
-  }
   const doorByGuid = new Map(floorDoors.map((door) => [door.guid, door]));
   const stairStartGuids = new Set();
   for (const edge of floorEdges.filter((item) => item.reasons?.includes("stair_block"))) {
@@ -3431,8 +2184,6 @@ function chooseFloorStartDoors(floor, floorDoors, floorEdges) {
   const entranceFloor = guessEntranceFloor();
   if (floor.name === entranceFloor) {
     const entrance = [...floorDoors].sort((a, b) => {
-      const routeDiff = (directRouteDegree.get(b.guid) || 0) - (directRouteDegree.get(a.guid) || 0);
-      if (routeDiff) return routeDiff;
       const widthDiff = Number(b.extra?.derivedDoorWidthM || 0) - Number(a.extra?.derivedDoorWidthM || 0);
       if (Math.abs(widthDiff) > 0.001) return widthDiff;
       return (edgeDegree.get(a.guid) || 0) - (edgeDegree.get(b.guid) || 0);
@@ -3441,7 +2192,7 @@ function chooseFloorStartDoors(floor, floorDoors, floorEdges) {
   }
 
   const bestStart = [...floorDoors].sort((a, b) => {
-    const reachDiff = (directRouteDegree.get(b.guid) || 0) - (directRouteDegree.get(a.guid) || 0);
+    const reachDiff = (appData.accessibleRoutesByDoor?.[b.guid]?.length || 0) - (appData.accessibleRoutesByDoor?.[a.guid]?.length || 0);
     if (reachDiff) return reachDiff;
     return (edgeDegree.get(b.guid) || 0) - (edgeDegree.get(a.guid) || 0);
   })[0];
@@ -3457,25 +2208,22 @@ function buildSimulationRoutesFromStarts(startDoors, floorEdges, transform, floo
   const routes = [];
   const seen = new Set();
   for (const startDoor of startDoors) {
-    const failedEdges = floorEdges.filter((edge) => routeHasIssue(edge) && (edge.startGuid === startDoor.guid || edge.endGuid === startDoor.guid));
+    const failedEdges = floorEdges.filter((edge) => edge.status === "fail" && (edge.startGuid === startDoor.guid || edge.endGuid === startDoor.guid));
     for (const edge of failedEdges) {
       const startGuid = edge.startGuid === startDoor.guid ? edge.startGuid : edge.endGuid;
       const targetGuid = edge.startGuid === startDoor.guid ? edge.endGuid : edge.startGuid;
-      const item = routePathFromEdgeIds(startGuid, [edge.edgeId], edgeById, transform, "fail", routeReasons(edge).map(reasonText).join(", ") || "blocked", targetGuid);
+      const item = routePathFromEdgeIds(startGuid, [edge.edgeId], edgeById, transform, "fail", edge.reasons?.map(reasonText).join(", ") || "blocked", targetGuid);
       if (item && !seen.has(item.key)) {
         seen.add(item.key);
         routes.push(item);
       }
     }
-    const passRoutes = (appData.floorCheckDirectRoutes || []).filter((route) =>
-      route.startGuid === startDoor.guid || route.endGuid === startDoor.guid,
-    );
+    const passRoutes = appData.accessibleRoutesByDoor?.[startDoor.guid] || [];
     for (const route of passRoutes) {
-      const targetGuid = route.startGuid === startDoor.guid ? route.endGuid : route.startGuid;
       const item = routePathFromDirectDoorRoute(
         startDoor.guid,
-        targetGuid,
-        route.edgeIds,
+        route.target_guid,
+        route.edge_ids,
         directRouteByPair,
         transform,
       );
@@ -3672,7 +2420,6 @@ function validateSimulationTransform(transform, elements, edges) {
 }
 
 function isFloorCheckRouteEdge(edge, elementsByGuid) {
-  if (edge.floorCheckExcludedReason === "cross_floor") return false;
   const startType = elementsByGuid.get(edge.startGuid)?.ifcType;
   const endType = elementsByGuid.get(edge.endGuid)?.ifcType;
   return startType === "IfcDoor"
@@ -3685,14 +2432,13 @@ function floorCheckEdge(edge) {
   const navigationReasons = navigationRoutes
     .map((route) => route.reason)
     .filter(Boolean);
-  const reasons = routeReasons(edge);
-  const failed = !routePassesChecks(edge) || !navigationPasses;
+  const failed = edge.status === "fail" || !navigationPasses;
   return {
     ...edge,
     status: failed ? "fail" : "pass",
     reasons: failed
-      ? reasons.length
-        ? reasons
+      ? edge.reasons?.length
+        ? edge.reasons
         : [...new Set(navigationReasons.length ? navigationReasons : ["no_accessible_connection"])]
       : [],
   };
@@ -3832,7 +2578,7 @@ function combinedFloorBox(elements, transform) {
 function countReasons(edges) {
   const counts = {};
   for (const edge of edges) {
-    for (const reason of routeReasons(edge)) {
+    for (const reason of edge.reasons || []) {
       counts[reason] = (counts[reason] || 0) + 1;
     }
   }
@@ -3997,17 +2743,17 @@ function addCylinder(group, position, radius, height, color) {
 
 function addLabelBoard(group, text, position, color, transform) {
   const canvas = document.createElement("canvas");
-  canvas.width = 256;
-  canvas.height = 96;
+  canvas.width = 1024;
+  canvas.height = 384;
   const ctx = canvas.getContext("2d");
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = `#${color.toString(16).padStart(6, "0")}`;
-  ctx.fillRect(0, 0, 12, canvas.height);
+  ctx.fillRect(0, 0, 48, canvas.height);
   ctx.fillStyle = "#1f2628";
-  ctx.font = "bold 28px Arial";
-  ctx.fillText(text, 28, 58);
-  const texture = new THREE.CanvasTexture(canvas);
+  ctx.font = "bold 112px Arial";
+  ctx.fillText(text, 112, 232);
+  const texture = configureSimulationTextTexture(new THREE.CanvasTexture(canvas));
   const mesh = new THREE.Mesh(
     new THREE.PlaneGeometry(transform.length(1.35), transform.length(0.5)),
     new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide }),
@@ -4055,6 +2801,7 @@ function animateSimulation() {
   updateChairPose(simProgress, delta);
   updateSimulationStatus(blocked);
   simControls?.update();
+  updateSimulationPointLabelScales();
   simRenderer.render(simScene, simCamera);
 }
 
@@ -4089,7 +2836,7 @@ function advanceSimulationRoute() {
     }
   }
   const route = currentSimulationRoute();
-  simPathLine = addCurrentSimulationPath(simWorld, simPath, route?.status === "fail" ? 0xb3261e : route?.status === "watch" ? 0xa66516 : 0x2d7d46, simFloorTransform);
+  simPathLine = addCurrentSimulationPath(simWorld, simPath, route?.status === "fail" ? 0xb3261e : 0x2d7d46, simFloorTransform);
 }
 
 function updateChairPose(progress, delta) {
@@ -4176,13 +2923,11 @@ function updateSimulationPanel() {
 function updateSimulationStatus(blocked) {
   if (!simScenarioData) return;
   if (simInteractionMode === "point") {
-    const routeStatus = currentSimulationRoute()?.status;
-    const routeBlocked = routeStatus === "fail";
-    const routeIssues = routeStatus === "watch";
+    const routeBlocked = currentSimulationRoute()?.status === "fail";
     const status = simPath.length && simProgress >= 1
-      ? `${routeBlocked ? "Stopped at the last collision-free point." : routeIssues ? "Destination reached with accessibility issues." : "Destination reached."} ${simScenarioData.status}`
+      ? `${routeBlocked ? "Stopped at the last collision-free point." : "Destination reached."} ${simScenarioData.status}`
       : simPlaying && simPath.length
-        ? `${routeBlocked ? "Following the collision-free candidate toward the obstruction." : routeIssues ? "Following the selected route with accessibility issues." : "Following the selected accessible route."} ${simScenarioData.status}`
+        ? `${routeBlocked ? "Following the collision-free candidate toward the obstruction." : "Following the selected accessible route."} ${simScenarioData.status}`
         : simScenarioData.status;
     document.querySelector("#simStatus").textContent = status;
     return;
@@ -4244,84 +2989,7 @@ function round(value) {
 }
 
 function valueWithUnit(value, unit) {
-  return value !== null && value !== "" && Number.isFinite(Number(value)) ? `${Number(value).toFixed(2)} ${unit}` : "missing";
-}
-
-function issueCheckText(issue) {
-  return `${issue.short_text || issue.details || planReasonText(issue.rule_id)}: ${issueComparisonText(issue)}`;
-}
-
-function issueComparisonText(issue) {
-  return comparisonText(issue.rule_id, issue.measured, issue.required, issue.unit);
-}
-
-function routeIssueChecks(edges, selectedReasons = null) {
-  const reasons = (selectedReasons ? uniqueText(selectedReasons) : uniqueText(edges.flatMap(routeReasons)))
-    .filter((reason) => reason !== "door_height");
-  return reasons.map((reason) => {
-    const values = edges
-      .filter((edge) => routeReasons(edge).includes(reason))
-      .map((edge) => routeCheckValues(edge, reason));
-    const measured = values.filter((value) => value[0] !== null && value[0] !== undefined && value[0] !== "" && Number.isFinite(Number(value[0])));
-    const selected = measured.reduce((best, value) => {
-      if (!best) return value;
-      if (reason === "ramp_slope" || reason === "ramp_run_length") return Number(value[0]) > Number(best[0]) ? value : best;
-      return Number(value[0]) < Number(best[0]) ? value : best;
-    }, null) || values[0] || [null, null, ""];
-    return {
-      reason,
-      label: sentenceText(planReasonText(reason)),
-      comparison: comparisonText(reason, selected[0], selected[1], selected[2]),
-    };
-  });
-}
-
-function routeCheckValues(edge, reason) {
-  const rules = appData.rules || {};
-  return {
-    door_width: [edge.measurements?.routeDoorWidthMinM, rules.route_door_width_m ?? rules.door_width_m, "m"],
-    route_width: [edge.measurements?.routeClearWidthM, rules.corridor_width_m, "m"],
-    turning_space: [edge.measurements?.routeTurningSpaceM, rules.turning_space_m, "m"],
-    wall_block: [edge.measurements?.routeHitsWall ?? true, false, "bool"],
-    stair_block: [edge.measurements?.routeHitsStair ?? true, false, "bool"],
-    ramp_slope: [edge.measurements?.routeRampSlopePercent, rules.ramp_slope_percent, "%"],
-    ramp_width: [edge.measurements?.routeRampUsableWidthM, rules.ramp_width_m, "m"],
-    ramp_run_length: [edge.measurements?.routeRampRunLengthM, rules.ramp_run_length_m, "m"],
-    unreachable: [edge.measurements?.routeReachable ?? false, true, "bool"],
-  }[reason] || [null, null, ""];
-}
-
-function comparisonText(ruleId, measured, required, unit) {
-  const maximumRule = ["ramp_slope", "ramp_run_length", "corridor_slope", "corridor_movement_area"].some((code) => String(ruleId).includes(code));
-  if (measured === null || measured === "" || measured === undefined) {
-    if (required === null || required === "" || required === undefined) return "measurement missing";
-    if (String(ruleId).includes("turning_space")) return `missing; required ${turningSpaceText(required)}`;
-    const operator = maximumRule ? "<=" : ">=";
-    return `missing; required ${operator} ${valueWithUnit(required, unit)}`;
-  }
-  if (unit === "bool") {
-    const measuredValue = measured === true || Number(measured) === 1;
-    const requiredValue = required === true || Number(required) === 1;
-    const text = {
-      wall_block: measuredValue ? "route intersects wall" : "route is clear of walls",
-      route_wall_block: measuredValue ? "route intersects wall" : "route is clear of walls",
-      stair_block: measuredValue ? "route intersects stair" : "route is clear of stairs",
-      unreachable: measuredValue ? "route is connected" : "route is not connected",
-      route_unreachable: measuredValue ? "route is connected" : "route is not connected",
-    }[ruleId];
-    if (text) return text;
-    return `actual ${measuredValue ? "yes" : "no"}; required ${requiredValue ? "yes" : "no"}`;
-  }
-  if (required === null || required === "" || required === undefined) return valueWithUnit(measured, unit);
-  if (String(ruleId).includes("turning_space")) return `${turningSpaceText(measured)} < ${turningSpaceText(required)}`;
-  const operator = maximumRule ? ">" : "<";
-  return `${valueWithUnit(measured, unit)} ${operator} ${valueWithUnit(required, unit)}`;
-}
-
-function turningSpaceText(value) {
-  if (!Number.isFinite(Number(value))) return "missing";
-  const side = Number(value).toFixed(2);
-  return `${side} x ${side} m`;
+  return Number.isFinite(Number(value)) ? `${Number(value).toFixed(2)} ${unit}` : "missing";
 }
 
 function displaySource(value) {
@@ -4346,21 +3014,6 @@ function shortText(value, limit) {
   return text.length <= limit ? text : `${text.slice(0, limit - 3)}...`;
 }
 
-function planElementName(value) {
-  let text = String(value || "");
-  text = text.replace(/^Ifc[A-Za-z0-9]+\s+/i, "");
-  const parts = text.split(":").map((part) => part.trim()).filter(Boolean);
-  if (parts.length > 1) {
-    const unique = [];
-    for (const part of parts) {
-      if (!unique.includes(part)) unique.push(part);
-    }
-    text = unique.join(" ");
-  }
-  text = text.replace(/\bM_/g, "").replace(/_/g, " ");
-  return text;
-}
-
 function cleanElementName(value) {
   let text = String(value || "");
   text = text.replace(/^IfcDoor\s+/i, "");
@@ -4376,39 +3029,19 @@ function cleanElementName(value) {
   return shortText(text, 58);
 }
 
-function sentenceText(value) {
-  const text = String(value || "");
-  return text ? `${text[0].toUpperCase()}${text.slice(1)}` : "";
-}
-
-function planReasonText(code) {
-  return code === "wall_block" ? "wall blocks route" : reasonText(code);
-}
-
 function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[ch]);
-}
-
-function cssEscape(value) {
-  if (window.CSS?.escape) return CSS.escape(String(value));
-  return String(value).replace(/["\\]/g, "\\$&");
 }
 
 function reasonText(code) {
   return {
     door_width: "door too narrow",
-    door_height: "door too low",
-    missing_door_width: "door width is missing",
-    missing_door_height: "door height is missing",
     corridor_width: "corridor too narrow",
-    corridor_slope: "corridor too steep",
-    corridor_movement_area: "passing areas spaced too far apart",
     route_width: "route too narrow",
     turning_space: "turning space too small",
     stair_block: "stair blocks route",
     ramp_slope: "ramp too steep",
     ramp_width: "ramp too narrow",
-    ramp_run_length: "ramp flight too long",
     missing: "data is missing",
     unreachable: "route not connected",
     no_accessible_connection: "no accessible connection",

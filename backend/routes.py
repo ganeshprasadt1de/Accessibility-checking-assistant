@@ -19,18 +19,14 @@ from .navigation import GEOMETRY_TOLERANCE_M, WHEELCHAIR_RADIUS_M
 ACC = Namespace(NS["acc"])
 
 
-def build_route_edges(ifc_path: Path, elements: list[Element], skipped_pairs: list[dict] | None = None) -> list[RouteEdge]:
-    space_edges = _space_boundary_route_edges(ifc_path, elements, skipped_pairs)
+def build_route_edges(ifc_path: Path, elements: list[Element]) -> list[RouteEdge]:
+    space_edges = _space_boundary_route_edges(ifc_path, elements)
     if space_edges:
         return space_edges
     raise RuntimeError("No usable IfcRelSpaceBoundary door-to-space route graph was found in the IFC model.")
 
 
-def _space_boundary_route_edges(
-    ifc_path: Path,
-    elements: list[Element],
-    skipped_pairs: list[dict] | None = None,
-) -> list[RouteEdge]:
+def _space_boundary_route_edges(ifc_path: Path, elements: list[Element]) -> list[RouteEdge]:
     import ifcopenshell
 
     model = ifcopenshell.open(str(ifc_path))
@@ -103,9 +99,6 @@ def _stair_approach_route_edges(elements: list[Element], offset: int) -> list[Ro
         width = _num(start.extra.get("derivedDoorWidthM"))
         if width is not None:
             measurements["routeDoorWidthMinM"] = width
-        height = _num(start.extra.get("derivedDoorHeightM"))
-        if height is not None:
-            measurements["routeDoorHeightMinM"] = height
         edge_id = f"E{offset + len(edges) + 1:05d}"
         edges.append(
             RouteEdge(
@@ -155,29 +148,17 @@ def _route_measurements(
     widths = [float(width) for width in (width_a, width_b) if width is not None]
     if widths:
         measurements["routeDoorWidthMinM"] = min(widths)
-    height_a = door_a.extra.get("derivedDoorHeightM")
-    height_b = door_b.extra.get("derivedDoorHeightM")
-    heights = [float(height) for height in (height_a, height_b) if height is not None]
-    if heights:
-        measurements["routeDoorHeightMinM"] = min(heights)
     if space:
         clear = _num(space.extra.get("derivedClearSpaceWidthM"))
+        turn = _num(space.extra.get("turningSpaceM"))
         if clear is not None:
             measurements["routeClearWidthM"] = clear
+        if turn is not None:
+            measurements["routeTurningSpaceM"] = turn
         measurements["routeHasTurn"] = _path_has_turn(path)
     measurements["routeHitsStair"] = _route_hits_stair(path, obstacles, space)
     measurements.update(_ramp_measurements(obstacles, space, path))
     return measurements
-
-
-def route_measurements(
-    door_a: Element,
-    door_b: Element,
-    path: list[tuple[float, float, float]],
-    obstacles: list[Element],
-    space: Element | None,
-) -> dict[str, float | str | bool | None]:
-    return _route_measurements(door_a, door_b, path, obstacles, space)
 
 
 def apply_navigation_result_to_edge(
@@ -186,7 +167,7 @@ def apply_navigation_result_to_edge(
     result: dict,
     display_path: list[list[float]],
 ) -> None:
-    """Replace provisional edge facts with one audited 0.01 m result."""
+    """Replace provisional route facts with one audited 0.01 m result."""
     by_guid = {element.guid: element for element in elements}
     start = by_guid.get(edge.start_guid)
     end = by_guid.get(edge.end_guid)
@@ -262,9 +243,6 @@ def _route_hits_stair(path: list[tuple[float, float, float]], obstacles: list[El
 
 
 def _route_intersects_any(path: list[tuple[float, float, float]], obstacles: list[Element]) -> bool:
-    # Use the same footprint used to inflate obstacles in the tiled navigation
-    # package.  A separate 0.45 m box here made a route that passed the 0.445 m
-    # raster audit fail SHACL when it ran exactly along the permitted boundary.
     half = WHEELCHAIR_RADIUS_M - GEOMETRY_TOLERANCE_M
     for point in _sample_path(path, step=0.35):
         x, y, z = point
@@ -307,14 +285,11 @@ def _ramp_measurements(obstacles: list[Element], space: Element | None, path: li
             continue
         slope = _num(ramp.extra.get("rampSlopePercent"))
         width = _num(ramp.extra.get("rampUsableWidthM"))
-        run_length = _num(ramp.extra.get("rampRunLengthM"))
         measurements["routeUsesRamp"] = True
         if slope is not None:
             measurements["routeRampSlopePercent"] = slope
         if width is not None:
             measurements["routeRampUsableWidthM"] = width
-        if run_length is not None:
-            measurements["routeRampRunLengthM"] = run_length
     return measurements
 
 
@@ -329,12 +304,7 @@ def _provisional_route_candidate(
     door_b: Element,
     space: Element,
 ) -> list[tuple[float, float, float]]:
-    """Create endpoint geometry used only until the tiled navigation package exists.
-
-    IFC space boundaries decide which door pairs are candidates.  This path is
-    never published as an accepted route; strict 0.01 m navigation replaces it
-    before RDF, SHACL, Dijkstra indexes, audits, and browser data are written.
-    """
+    """Create endpoint geometry that strict tiled navigation replaces before export."""
     z = _route_elevation(door_a, door_b, space)
     start = (door_a.center[0], door_a.center[1], z)
     end = (door_b.center[0], door_b.center[1], z)
@@ -380,13 +350,10 @@ def _dedupe_points(points: list[tuple[float, float, float]]) -> list[tuple[float
     return result
 
 
-def add_routes_to_graph(g: Graph, edges: list[RouteEdge], route_layer: str = "base") -> None:
+def add_routes_to_graph(g: Graph, edges: list[RouteEdge]) -> None:
     for edge in edges:
         uri = ACC[f"route/{edge.edge_id}"]
         g.add((uri, RDF.type, ACC.RouteEdge))
-        if route_layer == "plan2d":
-            g.add((uri, RDF.type, ACC.PlanRouteEdge))
-        g.add((uri, ACC.routeLayer, Literal(route_layer)))
         g.add((uri, ACC.routeStartDoor, element_uri(edge.start_guid)))
         g.add((uri, ACC.routeEndDoor, element_uri(edge.end_guid)))
         g.add((uri, ACC.routeDistanceM, Literal(round(edge.distance_m, 4), datatype=XSD.decimal)))
@@ -405,33 +372,6 @@ def add_routes_to_graph(g: Graph, edges: list[RouteEdge], route_layer: str = "ba
                 g.add((uri, ACC[key], Literal(round(float(value), 4), datatype=XSD.decimal)))
             elif value is not None:
                 g.add((uri, ACC[key], Literal(str(value))))
-
-
-def add_plan_routes_to_graph(g: Graph, edges: list[RouteEdge], elements: list[Element]) -> None:
-    routes = [edge for edge in edges if not edge.measurements.get("planMarkerOnly")]
-    add_routes_to_graph(g, routes, "plan2d")
-    by_guid = {element.guid: element for element in elements}
-    for edge in routes:
-        uri = ACC[f"route/{edge.edge_id}"]
-        for guid, door_predicate, element_predicate in [
-            (edge.start_guid, ACC.routeStartDoor, ACC.routeStartElement),
-            (edge.end_guid, ACC.routeEndDoor, ACC.routeEndElement),
-        ]:
-            element = by_guid.get(guid)
-            if element is None or element.ifc_type == "IfcDoor":
-                continue
-            g.remove((uri, door_predicate, element_uri(guid)))
-            g.add((uri, element_predicate, element_uri(guid)))
-        ramp_guid = edge.measurements.get("routeRampGuid")
-        if ramp_guid:
-            g.add((uri, ACC.routeRamp, element_uri(str(ramp_guid))))
-    connected = {guid for edge in routes for guid in (edge.start_guid, edge.end_guid)}
-    for element in elements:
-        if element.ifc_type != "IfcDoor" or not element.center or element.extra.get("isExcludedRouteDoor"):
-            continue
-        uri = element_uri(element.guid)
-        g.set((uri, ACC.routeReachable, Literal(element.guid in connected, datatype=XSD.boolean)))
-        g.set((uri, ACC.routeConnectivitySource, Literal("2D route network")))
 
 
 def save_route_binary(edges: list[RouteEdge], path) -> None:
@@ -459,12 +399,7 @@ def save_route_binary(edges: list[RouteEdge], path) -> None:
         pickle.dump({"graph": dict(graph), "edges": by_id}, handle)
 
 
-def routes_from_start(
-    edges: list[RouteEdge],
-    start_guid: str,
-    pass_only: bool = False,
-    target_guids: set[str] | None = None,
-) -> list[dict]:
+def routes_from_start(edges: list[RouteEdge], start_guid: str, pass_only: bool = False) -> list[dict]:
     graph = defaultdict(list)
     for edge in edges:
         if pass_only and edge.status != "pass":
@@ -480,7 +415,7 @@ def routes_from_start(
         if guid in seen:
             continue
         seen[guid] = dist
-        if guid != start_guid and (target_guids is None or guid in target_guids):
+        if guid != start_guid:
             result.append({"target_guid": guid, "distance_m": dist, "edge_ids": [e.edge_id for e in path_edges]})
         for nxt, edge in graph.get(guid, []):
             if nxt not in seen:

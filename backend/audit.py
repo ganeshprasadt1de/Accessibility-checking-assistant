@@ -26,7 +26,6 @@ def write_audit_report(ifc_path: Path, output_dir: Path, app_summary: dict) -> N
     all_doors = {door.GlobalId: _label(door) for door in model.by_type("IfcDoor")}
     all_spaces = {space.GlobalId: _label(space) for space in model.by_type("IfcSpace")}
     route_edges = app_summary.get("routeEdges", [])
-    skipped_route_pairs = app_summary.get("skippedRoutePairs", [])
     adjacency: dict[str, set[str]] = defaultdict(set)
     for edge in route_edges:
         adjacency[edge["startGuid"]].add(edge["endGuid"])
@@ -70,12 +69,10 @@ def write_audit_report(ifc_path: Path, output_dir: Path, app_summary: dict) -> N
             "connected_component_sizes": sorted([len(comp) for comp in components], reverse=True),
             "status_counts": dict(Counter(edge["status"] for edge in route_edges)),
             "failure_reason_counts": dict(Counter(reason for edge in route_edges for reason in edge.get("reasons", []))),
-            "skipped_route_pairs": len(skipped_route_pairs),
         },
-        "skipped_route_pairs": skipped_route_pairs,
         "shacl_route_rule_note": (
             "Route geometry measurements are written to RDF first. "
-            "SHACL then checks door dimensions, corridor width, slope and passing areas, route geometry, stairs, and ramp measurements. "
+            "SHACL then checks route door width, route clear width, turning space, stair intersection, and ramp measurements. "
             "The app route status is copied from the SHACL validation results."
         ),
     }
@@ -127,7 +124,6 @@ def _markdown(data: dict) -> str:
         f"- Connected component sizes: {rg['connected_component_sizes']}",
         f"- Route status counts: {rg['status_counts']}",
         f"- Failure reason counts: {rg['failure_reason_counts']}",
-        f"- Skipped door pairs: {rg['skipped_route_pairs']}",
         "",
         "## SHACL Route Rule",
         "",
@@ -137,13 +133,6 @@ def _markdown(data: dict) -> str:
         lines.extend(["", "## Doors Without Space Boundary", ""])
         for item in data["doors_without_space_boundary"][:60]:
             lines.append(f"- {item['name']} ({item['guid']})")
-    if data["skipped_route_pairs"]:
-        lines.extend(["", "## Skipped Door Pairs", ""])
-        for item in data["skipped_route_pairs"][:60]:
-            lines.append(
-                f"- {item['startGuid']} to {item['endGuid']} through {item['spaceLabel']} "
-                f"({item['spaceGuid']}): {item['message']}"
-            )
     return "\n".join(lines) + "\n"
 
 

@@ -22,7 +22,7 @@ class RuleLimits:
     route_door_width_m: float = 0.90
     ramp_slope_percent: float = 6.0
     ramp_width_m: float = 1.20
-    ramp_run_length_m: float = 6.00
+    ramp_run_length_m: float = 6.0
     movement_width_m: float = 1.50
     movement_depth_m: float = 1.50
     turning_space_m: float = 1.50

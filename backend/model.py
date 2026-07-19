@@ -18,8 +18,6 @@ class Element:
     bbox_max: tuple[float, float, float] | None = None
     storey: str | None = None
     extra: dict[str, float | str | bool | None] = field(default_factory=dict)
-    issue_regions: list[dict] = field(default_factory=list)
-    passing_area_gaps: list[dict] = field(default_factory=list)
 
 
 @dataclass
@@ -51,4 +49,3 @@ class Issue:
     source: str
     short_text: str
     details: str
-    evidence_id: str | None = None

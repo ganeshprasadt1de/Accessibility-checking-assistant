@@ -117,6 +117,13 @@
             sh:value <https://example.org/wheelchair-accessibility#element/3LJODRGPbDdfXHXShFLBtQ> ] ;
     sh:result [ a sh:ValidationResult ;
             sh:focusNode <https://example.org/wheelchair-accessibility#route/E00088> ;
+            sh:resultMessage "route_turning_space|Route turn has less than 1.50 m turning space." ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape acc:RouteShape ;
+            sh:value <https://example.org/wheelchair-accessibility#route/E00088> ] ;
+    sh:result [ a sh:ValidationResult ;
+            sh:focusNode <https://example.org/wheelchair-accessibility#route/E00088> ;
             sh:resultMessage "route_width|Route clear width is below 1.50 m." ;
             sh:resultSeverity sh:Violation ;
             sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
@@ -584,6 +591,13 @@
             sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
             sh:sourceShape acc:RouteShape ;
             sh:value <https://example.org/wheelchair-accessibility#route/E00260> ] ;
+    sh:result [ a sh:ValidationResult ;
+            sh:focusNode <https://example.org/wheelchair-accessibility#route/E00261> ;
+            sh:resultMessage "route_turning_space|Route turn has less than 1.50 m turning space." ;
+            sh:resultSeverity sh:Violation ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape acc:RouteShape ;
+            sh:value <https://example.org/wheelchair-accessibility#route/E00261> ] ;
     sh:result [ a sh:ValidationResult ;
             sh:focusNode <https://example.org/wheelchair-accessibility#route/E00261> ;
             sh:resultMessage "route_width|Route clear width is below 1.50 m." ;

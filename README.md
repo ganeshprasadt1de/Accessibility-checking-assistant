@@ -6,8 +6,8 @@ The application contains:
 
 - IFC geometry extraction with IfcOpenShell
 - IFC-to-RDF conversion with the included IFCtoLBD 2.43.4 Java runtime
-- four-direction A* routing on a 0.10 m occupancy grid
-- interactive point-to-point A* routing on precomputed 0.01 m floor tiles
+- four-direction A* routing on precomputed 0.01 m floor tiles
+- interactive point-to-point checks using the same 0.01 m navigation data
 - shortest door-graph routes calculated with Dijkstra's algorithm
 - SHACL validation with pySHACL
 - matching 2D floor plans and a 2.5D wheelchair simulation
@@ -102,14 +102,6 @@ git clone https://github.com/ganeshprasadt1de/Accessibility-checking-assistant.g
 cd Accessibility-checking-assistant
 ```
 
-Confirm that you are on the main branch:
-
-```powershell
-git branch --show-current
-```
-
-The result should be `main`.
-
 ## 6. Create An Isolated Python Environment
 
 A virtual environment prevents this project's packages from changing other Python projects on the computer.
@@ -203,6 +195,14 @@ Generate the DigitalHub browser package with:
 python preprocess.py --ifc ".\20201208DigitalHub_ARC.ifc" --save-bin
 ```
 
+For a laptop with limited cooling or fewer CPU cores, add `--low-end`:
+
+```powershell
+python preprocess.py --ifc ".\20201208DigitalHub_ARC.ifc" --save-bin --low-end
+```
+
+Normal mode uses parallel IFC geometry extraction and parallel floor and route workers. It is intended for a workstation or a well-cooled laptop. Low-end mode runs the same IFC extraction, RDF conversion, 0.01 m navigation, route audits and SHACL rules using one worker for the heavy routing stages. It also lowers process priority, limits native and Java worker threads, and inserts short pauses in heavy loops. Both profiles use the same geometry, accessibility limits and deterministic checks. Only processing time and CPU pressure change.
+
 `output/app_package` contains one active package at a time. Running either command replaces that generated package with the selected model's results. The original IFC files are not modified.
 
 Preprocessing also builds the point-to-point navigation data. Each floor is divided into 5 m tiles at 0.01 m resolution. Walkable cells are packed as bits and compressed, so the browser and server load only the tiles needed for the selected floor and route. Walls, columns, stairs, inaccessible ramps, narrow doors and spaces below the 1.50 m route-width rule are blocked during this build.
@@ -287,6 +287,8 @@ The website contains:
 - `Building Model`: inspect the compact GLB model
 - `Wheelchair Simulation`: play clear and blocked routes on a 2.5D floor slice
 
+The Model Library places generation requests in one FIFO queue. One model is processed at a time and later requests remain labelled `Queued`. If one model fails, the worker records that failure and continues with the next model. If the server stops during generation, the interrupted entry becomes retryable after the server starts again. `Generate` uses the parallel normal profile. `Generate low-end` uses the reduced-pressure profile. Regenerating a model replaces its package automatically; manual deletion is not required.
+
 The Check Results page includes `Restart Ollama`. It stops verified Ollama processes, starts one clean Ollama service, waits for the API and warms the selected model. It refuses to stop an unrelated program if another executable owns port 11434.
 
 The header also includes `Stop Project Services`. It stops verified Wheelchair Route Checker servers on ports 8765, 8766, 8767 and 8771, then stops verified Ollama processes on port 11434. It checks the executable, command line and project API response before stopping a server. Other localhost listeners are reported and left running. Because the current website server is stopped last, the page disconnects after showing the result.
@@ -315,21 +317,20 @@ These checks support model review. They do not replace professional accessibilit
 
 Routes use `IfcRelSpaceBoundary` door-to-space relationships.
 
-For each usable space, the checker builds a 0.10 m occupancy grid from wall, column, stair and other obstacle bounding boxes. Obstacles are expanded by 0.38 m around the route centre. Door rectangles carve controlled portals through wall cells. A four-direction A* search connects exact door centres with horizontal and vertical movement.
+IFC space boundaries decide which door pairs belong to the same space. The final geometry for every published edge is then calculated on the precomputed 0.01 m floor tiles. Walls, columns, stairs and inaccessible ramps are tested in the floor's vertical clearance band. Solid obstacles are expanded by 0.445 m around the route centre: a 0.45 m wheelchair radius minus the 0.005 m grid tolerance. A door portal uses the door's actual IFC bounding-box overlap with its wall. A four-direction A* search connects exact door centres with horizontal and vertical movement.
 
 The generated route has these properties:
 
 - every plan segment uses 0, 90 or 180 degrees
-- consecutive dense route points are no more than 0.12 m apart
 - route endpoints match the selected door centres
 - a route is rejected when no collision-free grid connection exists
 - a route intersecting a blocked wall cell is never accepted
 
 Dijkstra's algorithm joins passing door-to-door edges into shortest routes across the door graph. Stair approaches are stored as blocked edges so the simulation can stop before the stair.
 
-The automatic 2.5D floor check uses the same precomputed 0.01 m navigation tiles as point-to-point mode. The door graph decides which final doors are reachable, but intermediate doors are not forced into the displayed path as visual milestones. A separate four-direction A* search connects the true start and final door centres directly. The chosen green path must be collision-free, orthogonal and no longer than the audited door-graph chain. A blocked red route follows its collision-free candidate to the exact door or stair obstacle where the failure occurs.
+The automatic 2.5D floor check uses the audited directional records already produced for the door graph. The door graph decides which final doors are reachable, but intermediate doors are not forced into the displayed path as visual milestones. A separate four-direction A* search connects the true start and final door centres directly. The chosen green path must be collision-free, orthogonal and no longer than the audited door-graph chain. A blocked red route follows its collision-free candidate to the exact door or stair obstacle where the failure occurs.
 
-Interactive point-to-point routing uses a separate floor grid. Preprocessing divides each floor into compressed 5 m tiles containing 0.01 m cells. Solid obstacles are expanded by 0.445 m around the route centre: a 0.45 m wheelchair radius minus a 0.005 m geometry tolerance. Accessible door rectangles create controlled portals between spaces. A point request loads only the required tiles, runs four-direction A* once, restores the exact selected endpoints and performs a final geometry audit. A complete audited route is green. If the destination cannot be reached, the red candidate ends at the last collision-free cell and is never labelled accessible.
+Interactive point-to-point routing reads the same floor package. Preprocessing divides each floor into compressed 5 m tiles containing 0.01 m cells. A point request loads only the required tiles, runs four-direction A* once, restores the exact selected endpoints and performs a final geometry audit. A complete audited route is green. If the destination cannot be reached, the red candidate ends at the last collision-free cell and is never labelled accessible.
 
 ## RDF, SHACL And Ollama
 
@@ -356,13 +357,11 @@ output/app_package/lbd_graph.ttl         RDF with derived measurements and route
 output/app_package/shacl_report.ttl      complete SHACL report
 output/app_package/route_model.glb       compact browser model
 output/app_package/route_graph.bin       saved route graph when --save-bin is used
-output/app_package/ifc_route_audit.json  machine-readable route audit
-output/app_package/ifc_route_audit.md    readable route audit
 output/app_package/navigation/index.json floor extents, tile metadata and hashes
 output/app_package/navigation/tiles/*/*.nav compressed 0.01 m walkability tiles
 ```
 
-Uploaded Model Library entries have separate generated packages. After changing preprocessing or route code, select `Regenerate`, wait for `Complete`, then select `Open`.
+Uploaded Model Library entries have separate generated packages. `Generate` uses parallel normal processing. `Generate low-end` runs the same checks with reduced CPU pressure. Requests are processed in submission order. After changing preprocessing or route code, regenerate the package, wait for `Complete`, then select `Open`.
 
 ## Main Project Files
 
@@ -371,9 +370,10 @@ preprocess.py                              preprocessing entry point
 server.py                                  local server, Model Library and Ollama control
 requirements.txt                           exact Python dependency versions
 backend/geometry.py                        IFC geometry and bounding-box extraction
-backend/routes.py                          occupancy grid, A* and door graph
-backend/navigation.py                      tiled point-route grid, A* and final audit
+backend/routes.py                          IFC door candidates, route facts and door graph
+backend/navigation.py                      shared 0.01 m tiled grid, A* and final audit
 backend/simulation_routes.py               strict automatic floor-check route geometry
+backend/resource_control.py                low-end process and thread controls
 backend/ifc_tools.py                       pinned IFCtoLBD execution
 backend/shacl_runner.py                    SHACL validation and issue extraction
 backend/package_writer.py                  browser package generation

@@ -271,6 +271,12 @@ main {
   color: #214e59;
 }
 
+.statusBadge.queued {
+  border-color: #dfc47b;
+  color: #805b00;
+  background: #fff9e8;
+}
+
 .statusBadge.failed {
   border-color: #e5b9b5;
   color: #b3261e;

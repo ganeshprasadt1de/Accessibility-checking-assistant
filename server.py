@@ -12,13 +12,14 @@ import time
 import urllib.error
 import urllib.request
 import uuid
-from collections import Counter
+from collections import Counter, deque
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import unquote, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 from backend.short_explainer import POINT_ROUTE_EXPLANATIONS, explain_point_route, explain_question
 from backend.navigation import NavigationError, NavigationPackage
+from backend.resource_control import low_end_environment
 
 ROOT = Path(__file__).resolve().parent
 FRONTEND = ROOT / "frontend"
@@ -32,6 +33,9 @@ OLLAMA_PORT = 11434
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "").strip()
 OLLAMA_LOCK = threading.Lock()
 MODEL_LOCK = threading.Lock()
+GENERATION_QUEUE_LOCK = threading.Lock()
+GENERATION_QUEUE: deque[tuple[str, str]] = deque()
+GENERATION_WORKER: threading.Thread | None = None
 NAVIGATION_LOCK = threading.Lock()
 NAVIGATION_CACHE: dict[str, tuple[int, NavigationPackage]] = {}
 POINT_EXPLANATION_CACHE: dict[tuple[str, str], dict] = {}
@@ -140,7 +144,7 @@ class Handler(SimpleHTTPRequestHandler):
                 self._json(rename_model(model_id, self._body_json()))
                 return
             if action == "generate":
-                self._json(start_model_generation(model_id))
+                self._json(start_model_generation(model_id, generation_profile(parsed)))
                 return
             if action == "select":
                 self._json(select_model(model_id))
@@ -375,7 +379,7 @@ def delete_model(model_id: str) -> dict:
         model = find_model(data, model_id)
         if not model:
             return {"error": "Model was not found."}
-        if model.get("status") == "running":
+        if model.get("status") in {"queued", "running"}:
             return {"error": "Model is still generating."}
         data["models"] = [item for item in data["models"] if item.get("id") != model_id]
         save_model_state(data)
@@ -405,27 +409,95 @@ def select_model(model_id: str) -> dict:
         return {"activeModelId": model_id}
 
 
-def start_model_generation(model_id: str) -> dict:
+def generation_profile(parsed) -> str:
+    requested = (parse_qs(parsed.query).get("profile") or ["full"])[0]
+    return "low-end" if requested == "low-end" else "full"
+
+
+def start_model_generation(model_id: str, profile: str = "full") -> dict:
     with MODEL_LOCK:
         data = load_model_state()
         model = find_model(data, model_id)
         if not model:
             return {"error": "Model was not found."}
-        if model.get("status") == "running":
-            return {"error": "Model is already generating."}
-        model["status"] = "running"
+        if model.get("status") in {"queued", "running"}:
+            return {"error": "Model is already queued or generating."}
+        model["status"] = "queued"
         model["progress"] = 3
         model["stage"] = "Queued"
-        model["message"] = "Starting preprocessing."
+        model["generationProfile"] = profile
+        model["message"] = "Waiting for the preprocessing worker."
         model["log"] = []
         model["updatedAt"] = int(time.time())
         save_model_state(data)
-    thread = threading.Thread(target=run_model_generation, args=(model_id,), daemon=True)
-    thread.start()
-    return {"modelId": model_id, "status": "running"}
+    enqueue_model_generation(model_id, profile)
+    return {"modelId": model_id, "status": "queued"}
 
 
-def run_model_generation(model_id: str) -> None:
+def enqueue_model_generation(model_id: str, profile: str) -> None:
+    global GENERATION_WORKER
+    with GENERATION_QUEUE_LOCK:
+        GENERATION_QUEUE.append((model_id, profile))
+        if GENERATION_WORKER is not None and GENERATION_WORKER.is_alive():
+            return
+        GENERATION_WORKER = threading.Thread(target=model_generation_worker, daemon=True)
+        GENERATION_WORKER.start()
+
+
+def model_generation_worker() -> None:
+    global GENERATION_WORKER
+    while True:
+        with GENERATION_QUEUE_LOCK:
+            if not GENERATION_QUEUE:
+                GENERATION_WORKER = None
+                return
+            model_id, profile = GENERATION_QUEUE.popleft()
+        if not mark_model_generation_running(model_id, profile):
+            continue
+        try:
+            run_model_generation(model_id, profile)
+        except BaseException as exc:
+            # An unexpected worker failure must not strand the remaining queue.
+            fail_model_generation(model_id, f"Preprocessing worker failed: {exc}")
+
+
+def mark_model_generation_running(model_id: str, profile: str) -> bool:
+    with MODEL_LOCK:
+        data = load_model_state()
+        model = find_model(data, model_id)
+        if not model or model.get("status") != "queued":
+            return False
+        model["status"] = "running"
+        model["progress"] = max(5, int(model.get("progress", 0)))
+        model["stage"] = "Starting"
+        model["message"] = "Starting low-end preprocessing." if profile == "low-end" else "Starting preprocessing."
+        model["updatedAt"] = int(time.time())
+        save_model_state(data)
+        return True
+
+
+def recover_interrupted_model_generations() -> int:
+    """Turn stale busy states from a stopped server into retryable failures."""
+    with MODEL_LOCK:
+        data = load_model_state()
+        recovered = 0
+        for model in data["models"]:
+            if model.get("status") not in {"queued", "running"}:
+                continue
+            recovered += 1
+            model["status"] = "failed"
+            model["stage"] = "Interrupted"
+            model["message"] = "Generation was interrupted when the server stopped. Start generation again."
+            model["updatedAt"] = int(time.time())
+            log = list(model.get("log", []))
+            log.append(model["message"])
+            model["log"] = log[-80:]
+        if recovered:
+            save_model_state(data)
+        return recovered
+
+
+def run_model_generation(model_id: str, profile: str = "full") -> None:
     with MODEL_LOCK:
         data = load_model_state()
         model = find_model(data, model_id)
@@ -438,6 +510,7 @@ def run_model_generation(model_id: str) -> None:
     update_model_progress(model_id, 8, "Reading IFC", "Reading model geometry.")
     command = [
         sys.executable,
+        "-u",
         str(ROOT / "preprocess.py"),
         "--ifc",
         str(ifc_path),
@@ -445,6 +518,9 @@ def run_model_generation(model_id: str) -> None:
         str(package),
         "--save-bin",
     ]
+    low_end = profile == "low-end"
+    if low_end:
+        command.append("--low-end")
     zip_path = ifctolbd_zip()
     exe_path = ifctolbd_exe()
     if exe_path:
@@ -452,14 +528,20 @@ def run_model_generation(model_id: str) -> None:
     if zip_path:
         command.extend(["--ifctolbd-zip", str(zip_path)])
     try:
+        env = low_end_environment(os.environ) if low_end else None
+        creation_flags = 0
+        if low_end and sys.platform.startswith("win"):
+            creation_flags |= getattr(subprocess, "BELOW_NORMAL_PRIORITY_CLASS", 0)
         process = subprocess.Popen(
             command,
             cwd=ROOT,
+            env=env,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
             encoding="utf-8",
             errors="replace",
+            creationflags=creation_flags,
         )
         assert process.stdout is not None
         for line in process.stdout:
@@ -555,8 +637,12 @@ def progress_from_line(line: str) -> tuple[int, str]:
         return 46, "Converting IFC to RDF"
     if "raw graph created" in lower:
         return 62, "Preparing rule graph"
-    if "building tiled point-navigation" in lower:
+    if "building tiled navigation package" in lower or "building tiled point-navigation" in lower:
         return 88, "Building point navigation"
+    if "auditing strict 0.01 m routes" in lower:
+        return 90, "Auditing strict routes"
+    if "attaching the audited routes" in lower:
+        return 92, "Preparing floor-check routes"
     if "routes:" in lower:
         return 94, "Writing package"
     if "wrote package" in lower:
@@ -954,6 +1040,9 @@ def main() -> None:
     MODEL_HOME = args.model_home.resolve()
     MODEL_FILE = MODEL_HOME / "models.json"
     ACTIVE_MODEL_FILE = MODEL_HOME / "active_model.txt"
+    recovered = recover_interrupted_model_generations()
+    if recovered:
+        print(f"Marked {recovered} interrupted model generation job(s) as failed.")
     OLLAMA_AVAILABLE = ollama_available()
     if OLLAMA_AVAILABLE:
         try:

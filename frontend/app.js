@@ -153,8 +153,9 @@ function setupModelLibrary() {
     if (!button) return;
     const id = button.getAttribute("data-id");
     const action = button.getAttribute("data-action");
+    const profile = button.getAttribute("data-profile") || "full";
     if (!id || !action) return;
-    if (action === "generate") await generateModel(id);
+    if (action === "generate") await generateModel(id, profile);
     if (action === "open") await openModel(id);
     if (action === "rename") await renameModel(id);
     if (action === "delete") await deleteModel(id);
@@ -215,15 +216,19 @@ function modelRow(model) {
 
 function modelActions(model) {
   const buttons = [];
+  const busy = model.status === "queued" || model.status === "running";
   if (model.status === "complete") buttons.push(modelButton(model.id, "open", "Open"));
-  if (model.status !== "running") buttons.push(modelButton(model.id, "generate", model.status === "complete" ? "Regenerate" : "Generate"));
+  if (!busy) {
+    buttons.push(modelButton(model.id, "generate", model.status === "complete" ? "Regenerate" : "Generate"));
+    buttons.push(modelButton(model.id, "generate", model.status === "complete" ? "Regenerate low-end" : "Generate low-end", "low-end"));
+  }
   buttons.push(modelButton(model.id, "rename", "Rename"));
-  if (model.status !== "running") buttons.push(modelButton(model.id, "delete", "Delete"));
+  if (!busy) buttons.push(modelButton(model.id, "delete", "Delete"));
   return buttons.join("");
 }
 
-function modelButton(id, action, label) {
-  return `<button data-id="${escapeHtml(id)}" data-action="${escapeHtml(action)}">${escapeHtml(label)}</button>`;
+function modelButton(id, action, label, profile = "full") {
+  return `<button data-id="${escapeHtml(id)}" data-action="${escapeHtml(action)}" data-profile="${escapeHtml(profile)}">${escapeHtml(label)}</button>`;
 }
 
 function progressMarkup(model) {
@@ -267,10 +272,12 @@ async function uploadFiles(files) {
   await loadModels();
 }
 
-async function generateModel(id) {
+async function generateModel(id, profile = "full") {
   const model = modelState.models.find((item) => item.id === id);
-  setModelStatus(`Generating ${model?.name || "model"}.`);
-  const response = await fetch(`/api/models/${encodeURIComponent(id)}/generate`, { method: "POST" });
+  const lowEnd = profile === "low-end";
+  setModelStatus(`${lowEnd ? "Generating low-end package" : "Generating"} ${model?.name || "model"}.`);
+  const query = lowEnd ? "?profile=low-end" : "";
+  const response = await fetch(`/api/models/${encodeURIComponent(id)}/generate${query}`, { method: "POST" });
   const data = await response.json();
   if (data.error) {
     setModelStatus(data.error);
@@ -356,10 +363,10 @@ async function deleteModel(id) {
 }
 
 function scheduleModelPolling() {
-  const running = (modelState.models || []).some((model) => model.status === "running");
-  if (running && !modelPollTimer) {
+  const busy = (modelState.models || []).some((model) => model.status === "queued" || model.status === "running");
+  if (busy && !modelPollTimer) {
     modelPollTimer = setInterval(loadModels, 1600);
-  } else if (!running && modelPollTimer) {
+  } else if (!busy && modelPollTimer) {
     clearInterval(modelPollTimer);
     modelPollTimer = null;
   }

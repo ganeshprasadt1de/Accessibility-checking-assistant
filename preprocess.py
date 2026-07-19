@@ -2,8 +2,18 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
+
+from backend.resource_control import (
+    LOW_END_ENV,
+    configure_current_process_low_end,
+    low_end_environment,
+)
+
+if "--low-end" in sys.argv:
+    os.environ.update(low_end_environment(os.environ))
 
 from backend.config import ROOT, default_ifctolbd_zip
 from backend.geometry import extract_elements
@@ -17,7 +27,7 @@ from backend.ifc_tools import (
 )
 from backend.package_writer import write_json_package
 from backend.navigation import build_navigation_package
-from backend.simulation_routes import add_floor_check_routes
+from backend.simulation_routes import add_floor_check_routes, apply_strict_navigation_to_edges
 from backend.routes import add_routes_to_graph, build_route_edges, save_route_binary
 from backend.shacl_runner import issues_from_shacl_report, run_shacl
 from backend.audit import write_audit_report
@@ -34,7 +44,12 @@ def main() -> int:
     parser.add_argument("--ifctolbd-zip", type=Path, default=default_ifctolbd_zip(), help="Path to IFCtoLBD-master.zip.")
     parser.add_argument("--output", type=Path, default=ROOT / "output" / "app_package", help="Output app package folder.")
     parser.add_argument("--save-bin", action="store_true", help="Save route_graph.bin for fast route loading.")
+    parser.add_argument("--low-end", action="store_true", help="Run identical checks with lower process priority and throttled heavy loops.")
     args = parser.parse_args()
+
+    if args.low_end:
+        os.environ[LOW_END_ENV] = "1"
+    configure_current_process_low_end()
 
     output = args.output.resolve()
     work = output / "_work"
@@ -42,6 +57,8 @@ def main() -> int:
     ifc_path = args.ifc.resolve()
 
     print(f"Reading IFC: {ifc_path}")
+    if args.low_end:
+        print("Low-end mode: identical route checks with reduced CPU pressure.")
     elements, missing_geometry = extract_elements(ifc_path)
     print(f"Extracted elements: {len(elements)}")
 
@@ -55,12 +72,44 @@ def main() -> int:
     print(ifctolbd_note)
     add_geometry_to_graph(graph, elements)
     edges = build_route_edges(ifc_path, elements)
+
+    provisional_shacl = {
+        "available": False,
+        "conforms": False,
+        "source": "strict navigation is still being generated",
+        "resultCount": 0,
+        "message": "Provisional package used only to build the 0.01 m navigation tiles.",
+    }
+    write_json_package(output, elements, [], edges, missing_geometry, provisional_shacl, ifctolbd_note)
+    print("Building tiled navigation package at 0.01 m resolution")
+    navigation_index = build_navigation_package(output / "app_data.json", output)
+    print("Auditing strict 0.01 m routes")
+    strict_summary, strict_records = apply_strict_navigation_to_edges(
+        output / "app_data.json", output, elements, edges
+    )
+    print(
+        "Strict routes: "
+        f"{strict_summary['passCount']} pass, "
+        f"{strict_summary['blockedCount']} blocked, "
+        f"{strict_summary['unavailableCount']} unavailable"
+    )
+
     add_routes_to_graph(graph, edges)
     lbd_ttl = output / "lbd_graph.ttl"
     graph.serialize(destination=lbd_ttl, format="turtle")
 
     shacl_summary = run_shacl(lbd_ttl, ROOT / "rules" / "accessibility_rules.shacl.ttl", output / "shacl_report.ttl")
     issues = issues_from_shacl_report(output / "shacl_report.ttl", lbd_ttl, elements, edges)
+    unreported_navigation_failures = [
+        edge.edge_id
+        for edge in edges
+        if edge.measurements.get("routeNavigationBlocked") and edge.status != "fail"
+    ]
+    if unreported_navigation_failures:
+        raise RuntimeError(
+            "SHACL did not reject strict navigation failures: "
+            + ", ".join(unreported_navigation_failures[:12])
+        )
     for issue in issues:
         issue_uri = ACC[f"issue/{issue.issue_id}"]
         graph.add((issue_uri, RDF.type, ACC.AccessibilityIssue))
@@ -81,8 +130,6 @@ def main() -> int:
     graph.serialize(destination=lbd_ttl, format="turtle")
 
     write_json_package(output, elements, issues, edges, missing_geometry, shacl_summary, ifctolbd_note)
-    print("Building tiled point-navigation package at 0.01 m resolution")
-    navigation_index = build_navigation_package(output / "app_data.json", output)
     app_data_path = output / "app_data.json"
     app_data = json.loads(app_data_path.read_text(encoding="utf-8"))
     app_data["summary"]["pointNavigation"] = {
@@ -93,10 +140,12 @@ def main() -> int:
         "accessibleRouteWidthM": navigation_index["accessibleRouteWidthM"],
         "floorCount": len(navigation_index["floors"]),
     }
+    app_data["summary"]["routeNavigation"] = strict_summary
     app_data["sources"]["pointNavigation"] = "precomputed tiled occupancy and component graph from IFC floor geometry"
+    app_data["sources"]["routes"] = "audited four-direction A* routes on precomputed 0.01 m navigation tiles"
     app_data_path.write_text(json.dumps(app_data, indent=2), encoding="utf-8")
-    print("Building strict routes for the 2.5D floor-check simulation")
-    floor_check_summary = add_floor_check_routes(app_data_path, output)
+    print("Attaching the audited routes to the 2.5D floor-check simulation")
+    floor_check_summary = add_floor_check_routes(app_data_path, output, strict_records)
     print(
         "Floor-check routes: "
         f"{floor_check_summary['directionalRouteCount']} directional, "

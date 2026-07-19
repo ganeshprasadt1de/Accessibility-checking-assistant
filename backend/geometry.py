@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import math
+import os
 from pathlib import Path
 
 from .config import RULE_LIMITS
 from .model import Element
+from .resource_control import low_end_enabled
 
 SEMANTIC_PROPERTY_NAMES = {
     "Category Description",
@@ -212,17 +214,33 @@ def extract_elements(ifc_path: Path) -> tuple[list[Element], list[str]]:
         "IfcColumn",
         "IfcTransportElement",
     ]
+    objects_by_type = {ifc_type: list(model.by_type(ifc_type)) for ifc_type in wanted}
+    geometry_targets = [obj for ifc_type in wanted for obj in objects_by_type[ifc_type]]
+    geometry_boxes: dict[int, tuple[tuple[float, float, float], tuple[float, float, float]]] = {}
+    geometry_threads = 1 if low_end_enabled() else max(1, os.cpu_count() or 1)
+    if geometry_targets:
+        iterator = ifcopenshell.geom.iterator(
+            settings,
+            model,
+            num_threads=geometry_threads,
+            include=geometry_targets,
+        )
+        if iterator.initialize():
+            while True:
+                shape = iterator.get()
+                bbox = _bbox_from_shape(shape)
+                if bbox:
+                    geometry_boxes[shape.id] = bbox
+                if not iterator.next():
+                    break
+
     elements: list[Element] = []
     missing_geometry: list[str] = []
     for ifc_type in wanted:
-        for obj in model.by_type(ifc_type):
+        for obj in objects_by_type[ifc_type]:
             guid = getattr(obj, "GlobalId", None) or str(obj.id())
             name = _safe_name(obj)
-            bbox = None
-            try:
-                bbox = _bbox_from_shape(ifcopenshell.geom.create_shape(settings, obj))
-            except Exception:
-                pass
+            bbox = geometry_boxes.get(obj.id())
             if not bbox:
                 missing_geometry.append(guid)
                 extra = _semantic_extra(obj, ifc_type)

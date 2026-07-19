@@ -163,6 +163,7 @@ def _short_text(rule_id: str) -> str:
         "stair_block": "route intersects stair",
         "route_ramp_slope": "route ramp too steep",
         "route_ramp_width": "route ramp too narrow",
+        "unreachable": "route not connected",
     }.get(rule_id, "SHACL violation")
 
 

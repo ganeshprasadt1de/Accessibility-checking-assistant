@@ -6,7 +6,7 @@
     <title>Wheelchair Route Checker</title>
     <link rel="stylesheet" href="styles.css?v=20260719-plan-inspect-8" />
   </head>
-  <body>
+  <body class="homePage">
     <header class="topbar">
       <div>
         <h1>Wheelchair Route Checker</h1>
@@ -15,10 +15,10 @@
       <div class="topActions">
         <nav>
           <button data-page="models" class="active">Home</button>
-          <button data-page="results">Check Results</button>
-          <button data-page="plan">Floor Plan 2D</button>
-          <button data-page="model">Building Model</button>
-          <button data-page="simulation">Wheelchair Simulation</button>
+          <button data-page="results" hidden>Check Results</button>
+          <button data-page="plan" hidden>Floor Plan 2D</button>
+          <button data-page="model" hidden>Building Model</button>
+          <button data-page="simulation" hidden>Wheelchair Simulation</button>
         </nav>
         <div class="serviceStopControl">
           <button id="projectStop" type="button">Stop Project Services</button>
@@ -51,7 +51,6 @@
               <h2>Model Library</h2>
               <p id="modelStatus">Upload an IFC model or open a completed package.</p>
             </div>
-            <button id="modelRefresh">Refresh</button>
           </div>
           <div class="tableWrap"><table id="modelTable"></table></div>
         </div>
@@ -101,9 +100,6 @@
               <button type="submit">Check coordinates</button>
               <output id="planPointCursorCoordinates" class="pointCursorCoordinates">Mouse coordinates: move over the floor plan</output>
             </form>
-            <div class="planZoom">
-              <button id="planResetView">Reset</button>
-            </div>
             <div class="planLegend">
               <span><i class="legendBox roomBox"></i>room</span>
               <span><i class="legendBox corridorBox"></i>corridor</span>
@@ -111,9 +107,12 @@
               <span><i class="legendBox doorBox"></i>door</span>
               <span><i class="legendBox stairBox"></i>stair</span>
               <span><i class="legendBox rampBox"></i>ramp</span>
-              <span><i class="legendLine passLine"></i>clear route</span>
-              <span><i class="legendLine failLine"></i>blocked route</span>
-              <span><i class="legendBox issueBox"></i>issue</span>
+              <span class="pointLegend"><i class="legendLine passLine"></i>clear route</span>
+              <span class="pointLegend"><i class="legendLine failLine"></i>blocked route</span>
+              <span class="pointLegend"><i class="legendBox issueBox"></i>issue</span>
+              <span class="inspectLegend legendRoute"><i class="legendLine passLine"></i>route network</span>
+              <span class="inspectLegend legendBlockage"><i class="legendMarker failLine"></i>route issue</span>
+              <span class="inspectLegend legendIssue"><i class="legendMarker issueMarker"></i>issue</span>
             </div>
           </div>
           <div class="planLayout">

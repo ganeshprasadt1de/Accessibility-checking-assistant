@@ -28,6 +28,7 @@ from backend.ifc_tools import (
 )
 from backend.package_writer import write_json_package
 from backend.navigation import build_navigation_package
+from backend.plan_routes import build_corridor_width_evidence, build_plan_route_edges, prepare_plan_geometry
 from backend.simulation_routes import add_floor_check_routes, apply_strict_navigation_to_edges
 from backend.routes import add_routes_to_graph, build_route_edges, save_route_binary
 from backend.shacl_runner import issues_from_shacl_report, run_shacl
@@ -62,7 +63,16 @@ def main() -> int:
         print("Low-end mode: identical route checks with reduced CPU pressure.")
     elements, missing_geometry = extract_elements(ifc_path)
     print(f"Extracted elements: {len(elements)}")
-    inspection_checks = build_inspection_checks(elements)
+    plan_geometry = None
+    plan_elements = elements
+    corridor_width_evidence = {}
+    try:
+        plan_geometry = prepare_plan_geometry(ifc_path, elements)
+        plan_elements = plan_geometry[3]
+        corridor_width_evidence = build_corridor_width_evidence(plan_elements, plan_geometry)
+    except Exception as exc:
+        print(f"2D inspection geometry unavailable: {exc}")
+    inspection_checks = build_inspection_checks(plan_elements, corridor_width_evidence)
     print(f"2D inspection checks: {len(inspection_checks)}")
 
     raw_ttl = output / "raw_lbd_graph.ttl"
@@ -141,6 +151,14 @@ def main() -> int:
             graph.add((route_uri, ACC.routeFailureReason, Literal(reason)))
     graph.serialize(destination=lbd_ttl, format="turtle")
 
+    print("Building sparse 2D plan routes")
+    try:
+        plan_edges = build_plan_route_edges(ifc_path, elements, edges, plan_geometry)
+        print(f"2D plan routes: {len(plan_edges)}")
+    except Exception as exc:
+        plan_edges = []
+        print(f"2D plan routes unavailable: {exc}")
+
     write_json_package(
         output,
         elements,
@@ -150,6 +168,8 @@ def main() -> int:
         shacl_summary,
         ifctolbd_note,
         inspection_checks,
+        plan_edges,
+        plan_elements,
     )
     app_data_path = output / "app_data.json"
     app_data = json.loads(app_data_path.read_text(encoding="utf-8"))

@@ -14,7 +14,10 @@ CORRIDOR_SKELETON_CLEARANCE = 0.12
 CORRIDOR_MOVEMENT_STEP = 0.40
 
 
-def build_inspection_checks(elements: list[Element]) -> list[dict]:
+def build_inspection_checks(
+    elements: list[Element],
+    corridor_width_evidence: dict[str, dict] | None = None,
+) -> list[dict]:
     """Build 2D Inspect-mode facts without changing validation or routing."""
     checks: list[dict] = []
     blockers = [
@@ -27,7 +30,7 @@ def build_inspection_checks(elements: list[Element]) -> list[dict]:
         if element.ifc_type == "IfcDoor" and element.extra.get("isRouteRelevantDoor", True):
             checks.extend(_door_checks(element))
         elif element.ifc_type == "IfcSpace" and element.extra.get("isCorridorLike"):
-            checks.extend(_corridor_checks(element, blockers))
+            checks.extend(_corridor_checks(element, blockers, (corridor_width_evidence or {}).get(element.guid)))
         elif element.ifc_type in {"IfcRamp", "IfcRampFlight"}:
             checks.extend(_ramp_checks(element))
     return checks
@@ -71,8 +74,10 @@ def _door_checks(element: Element) -> list[dict]:
     return checks
 
 
-def _corridor_checks(element: Element, blockers: list[Element]) -> list[dict]:
-    width = _number(element.extra.get("derivedClearSpaceWidthM"))
+def _corridor_checks(element: Element, blockers: list[Element], width_region: dict | None = None) -> list[dict]:
+    width = _number(width_region.get("measured")) if width_region else None
+    if width is None:
+        width = _number(element.extra.get("derivedClearSpaceWidthM"))
     length = _number(element.extra.get("derivedCorridorLengthM"))
     slope = _number(element.extra.get("derivedCorridorSlopePercent"))
     turning = _number(element.extra.get("turningSpaceM"))
@@ -81,17 +86,20 @@ def _corridor_checks(element: Element, blockers: list[Element]) -> list[dict]:
         if length is not None and length <= RULE_LIMITS.short_corridor_length_m
         else RULE_LIMITS.corridor_slope_percent
     )
+    width_check = _comparison_check(
+        element,
+        "corridor_width",
+        "Corridor clear width",
+        width,
+        RULE_LIMITS.corridor_width_m,
+        "minimum",
+        "m",
+        "Shapely local cross-sections of the IFC corridor footprint" if width_region else "IFC space geometry",
+    )
+    if width_region:
+        width_check["region"] = width_region
     checks = [
-        _comparison_check(
-            element,
-            "corridor_width",
-            "Corridor clear width",
-            width,
-            RULE_LIMITS.corridor_width_m,
-            "minimum",
-            "m",
-            "IFC space geometry",
-        ),
+        width_check,
         _comparison_check(
             element,
             "corridor_slope",
@@ -118,11 +126,18 @@ def _corridor_checks(element: Element, blockers: list[Element]) -> list[dict]:
 
 
 def _ramp_checks(element: Element) -> list[dict]:
-    width = _number(element.extra.get("rampUsableWidthM"))
-    slope = _number(element.extra.get("rampSlopePercent"))
-    run = _number(element.extra.get("inspectionRampRunLengthM"))
+    width = _number(element.extra.get("planRampUsableWidthM"))
+    if width is None:
+        width = _number(element.extra.get("rampUsableWidthM"))
+    slope = _number(element.extra.get("planRampSlopePercent"))
+    if slope is None:
+        slope = _number(element.extra.get("rampSlopePercent"))
+    run = _number(element.extra.get("planRampRunLengthM"))
+    if run is None:
+        run = _number(element.extra.get("inspectionRampRunLengthM"))
     if run is None:
         run = _number(element.extra.get("rampRunLengthM"))
+    source = str(element.extra.get("planRampMeasurementSource") or "IFC ramp geometry")
     return [
         _comparison_check(
             element,
@@ -132,7 +147,7 @@ def _ramp_checks(element: Element) -> list[dict]:
             RULE_LIMITS.ramp_width_m,
             "minimum",
             "m",
-            "IFC ramp geometry",
+            source,
         ),
         _comparison_check(
             element,
@@ -142,7 +157,7 @@ def _ramp_checks(element: Element) -> list[dict]:
             RULE_LIMITS.ramp_slope_percent,
             "maximum",
             "%",
-            "IFC ramp geometry",
+            source,
         ),
         _comparison_check(
             element,
@@ -152,7 +167,7 @@ def _ramp_checks(element: Element) -> list[dict]:
             RULE_LIMITS.ramp_run_length_m,
             "maximum",
             "m",
-            str(element.extra.get("inspectionRampRunSource") or "IFC ramp plan geometry"),
+            source if element.extra.get("planRampRunLengthM") is not None else str(element.extra.get("inspectionRampRunSource") or "IFC ramp plan geometry"),
         ),
     ]
 
@@ -205,6 +220,23 @@ def _corridor_passing_check(element: Element, blockers: list[Element]) -> dict:
     check["movementSpaceM"] = RULE_LIMITS.corridor_movement_space_m
     check["corridorLengthM"] = result.get("length")
     check["evidence"] = result.get("evidence")
+    if result.get("evidence"):
+        from shapely.geometry import shape
+
+        geometry = result["evidence"]
+        anchor = shape(geometry).representative_point()
+        z = element.center[2] if element.center else 0.0
+        region_key = hashlib.sha1(f"corridor_movement_area:{element.guid}".encode("utf-8")).hexdigest()[:11].upper()
+        check["region"] = {
+            "region_id": f"R{region_key}",
+            "rule_id": "corridor_movement_area",
+            "element_guid": element.guid,
+            "measured": check["measured"],
+            "required": check["required"],
+            "unit": check["unit"],
+            "geometry": geometry,
+            "anchor": [round(anchor.x, 4), round(anchor.y, 4), round(z, 4)],
+        }
     if result.get("reason"):
         check["note"] = result["reason"]
     return check

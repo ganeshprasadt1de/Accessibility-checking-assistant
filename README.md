@@ -14,6 +14,8 @@ The application contains:
 - matching 2D floor plans and a 2.5D wheelchair simulation
 - a local Ollama assistant that explains checked facts without deciding compliance
 
+The project's own code is source-available for non-commercial use under the [PolyForm Noncommercial License 1.0.0](LICENSE). It is not OSI-approved open-source software because commercial use is restricted. Third-party software and the two demonstration IFC models keep their own terms and attribution; see [Third-Party Software And Data](THIRD_PARTY_NOTICES.md).
+
 ## Before You Start
 
 The instructions below are for Windows 10 or Windows 11 and PowerShell.
@@ -202,7 +204,7 @@ For a laptop with limited cooling or fewer CPU cores, add `--low-end`:
 python preprocess.py --ifc ".\20201208DigitalHub_ARC.ifc" --save-bin --low-end
 ```
 
-Normal mode uses parallel IFC geometry extraction and parallel floor and route workers. It is intended for a workstation or a well-cooled laptop. Low-end mode runs the same IFC extraction, RDF conversion, 0.01 m navigation, route audits and SHACL rules using one worker for the heavy routing stages. It also lowers process priority, limits native and Java worker threads, and inserts short pauses in heavy loops. Both profiles use the same geometry, accessibility limits and deterministic checks. Only processing time and CPU pressure change.
+Normal mode uses parallel IFC geometry extraction and parallel floor and route workers. Low-end mode runs the same IFC extraction, RDF conversion, 0.01 m navigation, route audits and SHACL rules using one worker for the heavy routing stages. It also lowers process priority, limits native and Java worker threads, and inserts short pauses in heavy loops. Both profiles use the same geometry, accessibility limits and deterministic checks. Only processing time and CPU pressure change.
 
 `output/app_package` contains one active package at a time. Running either command replaces that generated package with the selected model's results. The original IFC files are not modified.
 
@@ -448,3 +450,17 @@ ollama pull qwen3:8b
 ```
 
 Open Check Results and select `Restart Ollama`. Wait until the page reports that the model is warm before asking a question.
+
+## Credits
+
+IFC-to-RDF conversion is provided by [IFCtoLBD](https://github.com/jyrkioraskari/IFCtoLBD), created by Jyrki Oraskari and the IFCtoLBD contributors. This repository includes the IFCtoLBD 2.43.4 Java runtime under the Apache License 2.0. Its licence and attribution details are recorded in [Third-Party Notices](THIRD_PARTY_NOTICES.md).
+
+The 2D and 2.5D browser views use [Three.js](https://threejs.org/) 0.165.0 under the MIT License.
+
+## License, Contributions And Security
+
+Original Wheelchair Route Checker code and documentation are available under the [PolyForm Noncommercial License 1.0.0](LICENSE). The licence permits non-commercial use, study, modification and redistribution under its stated conditions. It does not grant commercial use. Commercial use requires separate written permission from the relevant copyright holders.
+
+The project-level licence does not relicense IFCtoLBD, its Java dependencies, Three.js, Python packages, Ollama, the Qwen model or the included IFC samples. Their terms are explained in [Third-Party Notices](THIRD_PARTY_NOTICES.md).
+
+Before relying on a result, read the [Project Disclaimer](DISCLAIMER.md). Before submitting code, read [Contributing](CONTRIBUTING.md). Report vulnerabilities using the private process in [Security Policy](SECURITY.md). Academic users can use the repository metadata in [CITATION.cff](CITATION.cff) and should cite IFCtoLBD separately.

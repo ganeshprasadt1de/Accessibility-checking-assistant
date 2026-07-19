@@ -15,4 +15,4 @@ Do not replace individual JAR files with newer releases. The files are tested as
 
 `java_libraries/SHA256SUMS.txt` records the SHA-256 checksum of every included JAR. The verification command is documented in the project README.
 
-Java 17 must be installed separately because a Java runtime cannot be safely bundled as application source code.
+Java 17 is not included in this repository and must be installed separately.

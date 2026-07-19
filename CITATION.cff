@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this software in academic work, cite the repository and IFCtoLBD separately."
+title: "Wheelchair Route Checker"
+type: software
+authors:
+  - family-names: "Prasad"
+    given-names: "Ganesh"
+repository-code: "https://github.com/ganeshprasadt1de/Accessibility-checking-assistant"
+license: "PolyForm-Noncommercial-1.0.0"

@@ -16,6 +16,15 @@ The application contains:
 
 The project's own code is source-available for non-commercial use under the [PolyForm Noncommercial License 1.0.0](LICENSE). It is not OSI-approved open-source software because commercial use is restricted. Third-party software and the two demonstration IFC models keep their own terms and attribution; see [Third-Party Software And Data](THIRD_PARTY_NOTICES.md).
 
+## Project Team
+
+| Name | Contribution |
+| --- | --- |
+| Ganesh Prasad Tamminedi | University project team and software contributor |
+| Yaoqiao Sha | University project team and software contributor |
+| Simon Knorr | University project team |
+| Yang Yu | University project team |
+
 ## Before You Start
 
 The instructions below are for Windows 10 or Windows 11 and PowerShell.

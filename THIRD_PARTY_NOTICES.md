@@ -6,7 +6,7 @@ The licence in [LICENSE](LICENSE) covers Wheelchair Route Checker material only 
 
 This project uses **IFCtoLBD 2.43.4** to convert IFC STEP files into RDF triples. The unzipped Java runtime is stored in `tools/ifctolbd/java_libraries/` so preprocessing can run without Maven.
 
-IFCtoLBD is maintained by [Jyrki Oraskari and the IFCtoLBD contributors](https://github.com/jyrkioraskari/IFCtoLBD). Its upstream README provides the author list, acknowledgements and citation format.
+IFCtoLBD is maintained in the [IFCtoLBD repository](https://github.com/jyrkioraskari/IFCtoLBD) owned by Jyrki Oraskari. Its upstream [`CITATION.cff`](https://github.com/jyrkioraskari/IFCtoLBD/blob/master/CITATION.cff) for version 2.43.4 names Jyrki Oraskari, Mathias Bonduel, Kris McGlinn, Pieter Pauwels, Freddy Priyatna, Anna Wagner, Ville Kukkonen, Simon Steyskaland and Joel Lehtonen as authors. The [upstream README](https://github.com/jyrkioraskari/IFCtoLBD/blob/master/README.md) also credits Maxime Lefrançois and Lewis John McGibbney as contributors, and thanks Vladimir Alexiev, Kathrin Dentler and Lukas Kirner for their insights.
 
 IFCtoLBD is distributed under the Apache License 2.0. A copy of that licence is stored in [`tools/ifctolbd/LICENSE-APACHE-2.0.txt`](tools/ifctolbd/LICENSE-APACHE-2.0.txt). The 170 JAR files in the bundled runtime include IFCtoLBD dependencies with their own upstream licences. Their file names and SHA-256 hashes are recorded in [`tools/ifctolbd/java_libraries/SHA256SUMS.txt`](tools/ifctolbd/java_libraries/SHA256SUMS.txt). Those licences remain in force; the project licence does not relicense the JAR files.
 

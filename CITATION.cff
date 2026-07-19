@@ -3,7 +3,13 @@ message: "If you use this software in academic work, cite the repository and IFC
 title: "Wheelchair Route Checker"
 type: software
 authors:
-  - family-names: "Prasad"
-    given-names: "Ganesh"
+  - family-names: "Tamminedi"
+    given-names: "Ganesh Prasad"
+  - family-names: "Sha"
+    given-names: "Yaoqiao"
+  - family-names: "Knorr"
+    given-names: "Simon"
+  - family-names: "Yu"
+    given-names: "Yang"
 repository-code: "https://github.com/ganeshprasadt1de/Accessibility-checking-assistant"
 license: "PolyForm-Noncommercial-1.0.0"

@@ -555,6 +555,11 @@ function renderFloorPlan() {
     if (guid) showPlanElement(guid, elementsByGuid, issueCounts);
     if (edgeId) showPlanRoute(edgeId, edgesById, elementsByGuid);
   };
+  viewer.onpointermove = (event) => {
+    if (planInteractionMode !== "point") return;
+    updateCursorCoordinateOutput("plan", planPointFromEvent(event, elements, edges));
+  };
+  viewer.onpointerleave = () => updateCursorCoordinateOutput("plan", null, "move over the floor plan");
 }
 
 function setupProjectServiceStop() {
@@ -627,6 +632,14 @@ function updatePointCoordinateControl(prefix, visible, floor) {
   }
 }
 
+function updateCursorCoordinateOutput(prefix, point, emptyText = "move over the floor view") {
+  const output = document.querySelector(`#${prefix}PointCursorCoordinates`);
+  if (!output) return;
+  output.textContent = Array.isArray(point) && point.every(Number.isFinite)
+    ? `Mouse coordinates: X ${point[0].toFixed(4)} m, Y ${point[1].toFixed(4)} m`
+    : `Mouse coordinates: ${emptyText}`;
+}
+
 function pointStatusText(state) {
   if (!state?.start) return "Click a walkable start point, then click the destination.";
   if (!state.end) return "Start point selected. Click the destination.";
@@ -692,19 +705,8 @@ function pointDetailsMarkup(state) {
 
 function handlePlanPointClick(event, floor, elements, edges) {
   if (pointCheck.pending) return;
-  const svg = document.querySelector("#planViewer svg");
-  const matrix = svg?.getScreenCTM();
-  const bounds = floorPlanBounds(elements, edges);
-  if (!svg || !matrix || !bounds) return;
-  const view = floorPlanView(bounds);
-  const cursor = svg.createSVGPoint();
-  cursor.x = event.clientX;
-  cursor.y = event.clientY;
-  const local = cursor.matrixTransform(matrix.inverse());
-  const selected = [
-    bounds.minX + (local.x / view.width) * (bounds.maxX - bounds.minX),
-    bounds.minY + (1 - local.y / view.height) * (bounds.maxY - bounds.minY),
-  ];
+  const selected = planPointFromEvent(event, elements, edges);
+  if (!selected) return;
   if (pointCheck.floor !== floor.name || !pointCheck.start || pointCheck.end) {
     pointRequestSequence += 1;
     pointCheck = { ...emptyPointCheck(floor.name), start: selected };
@@ -714,6 +716,22 @@ function handlePlanPointClick(event, floor, elements, edges) {
   pointCheck = { ...pointCheck, end: selected, result: null, error: "" };
   renderFloorPlan();
   requestPointRoute(floor.name, pointCheck.start, pointCheck.end);
+}
+
+function planPointFromEvent(event, elements, edges) {
+  const svg = document.querySelector("#planViewer svg");
+  const matrix = svg?.getScreenCTM();
+  const bounds = floorPlanBounds(elements, edges);
+  if (!svg || !matrix || !bounds) return null;
+  const view = floorPlanView(bounds);
+  const cursor = svg.createSVGPoint();
+  cursor.x = event.clientX;
+  cursor.y = event.clientY;
+  const local = cursor.matrixTransform(matrix.inverse());
+  return [
+    bounds.minX + (local.x / view.width) * (bounds.maxX - bounds.minX),
+    bounds.minY + (1 - local.y / view.height) * (bounds.maxY - bounds.minY),
+  ];
 }
 
 async function requestPointRoute(floor, start, end) {
@@ -998,6 +1016,9 @@ function floorPlanSvg(floor, elements, edges, issueCounts) {
   const blockerMarkup = blockers.map((element) => floorPlanRect(element, bounds, view, isStairType(element.ifcType) ? "planBlocker" : "planRamp", issueCounts)).join("");
   const doorMarkup = doors.map((element) => floorPlanRect(element, bounds, view, floorPlanDoorClass(element, issueCounts), issueCounts)).join("");
   const labelMarkup = spaces.map((element, index) => index < 90 ? floorPlanLabel(element, bounds, view) : "").join("");
+  const issueMarkerMarkup = planInteractionMode === "inspect"
+    ? floorPlanInspectionIssueMarkup(elements, issueCounts, bounds, view)
+    : "";
   const pointMarkup = floorPlanPointCheck(floor, bounds, view);
   return `<svg class="floorSvg" viewBox="0 0 ${view.width} ${view.height}" role="img" aria-label="${escapeHtml(floor.name)} floor plan">
     <rect class="planCanvas" x="0" y="0" width="${view.width}" height="${view.height}"></rect>
@@ -1007,8 +1028,39 @@ function floorPlanSvg(floor, elements, edges, issueCounts) {
     <g>${blockerMarkup}</g>
     <g>${doorMarkup}</g>
     <g>${labelMarkup}</g>
+    <g class="planIssueMarkerLayer">${issueMarkerMarkup}</g>
     <g>${pointMarkup}</g>
   </svg>`;
+}
+
+function floorPlanInspectionIssueMarkup(elements, issueCounts, bounds, view) {
+  const failedChecksByGuid = new Map();
+  for (const check of appData.inspectionChecks || []) {
+    if (check.status !== "fail" || !check.elementGuid) continue;
+    failedChecksByGuid.set(check.elementGuid, (failedChecksByGuid.get(check.elementGuid) || 0) + 1);
+  }
+  return elements.flatMap((element) => {
+    if (!element.bboxMin || !element.bboxMax) return [];
+    const issueCount = Number(issueCounts.get(element.guid) || 0);
+    const failedCount = Number(failedChecksByGuid.get(element.guid) || 0);
+    const count = issueCount + failedCount;
+    if (!count) return [];
+    const center = [
+      (element.bboxMin[0] + element.bboxMax[0]) / 2,
+      (element.bboxMin[1] + element.bboxMax[1]) / 2,
+      0,
+    ];
+    const [x, y] = floorPlanPoint(center, bounds, view);
+    const label = count > 1 ? String(count) : "!";
+    const title = `${count} inspection issue${count === 1 ? "" : "s"}: ${cleanElementName(element.name || element.label)}`;
+    return [`<g class="planElementIssueMarker" data-guid="${escapeHtml(element.guid)}">
+      <title>${escapeHtml(title)}</title>
+      <circle class="planElementIssueHit" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="11"></circle>
+      <circle class="planElementIssueHalo" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="8.5"></circle>
+      <circle class="planElementIssueDot" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="6.2"></circle>
+      <text class="planElementIssueCount" x="${x.toFixed(2)}" y="${y.toFixed(2)}">${label}</text>
+    </g>`];
+  }).join("");
 }
 
 function floorPlanPointCheck(floor, bounds, view) {
@@ -1020,15 +1072,37 @@ function floorPlanPointCheck(floor, bounds, view) {
     : "";
   const start = pointCheck.start ? floorPlanPoint(pointCheck.start, bounds, view) : null;
   const end = pointCheck.end ? floorPlanPoint(pointCheck.end, bounds, view) : null;
+  const labelsOverlap = start && end
+    ? Math.abs(start[0] - end[0]) < 54 && Math.abs(start[1] - end[1]) < 18
+    : false;
   return `${line}
-    ${start ? `<circle class="pointMarker start" cx="${start[0].toFixed(2)}" cy="${start[1].toFixed(2)}" r="5"></circle>` : ""}
-    ${end ? `<circle class="pointMarker end" cx="${end[0].toFixed(2)}" cy="${end[1].toFixed(2)}" r="5"></circle>` : ""}`;
+    ${start ? floorPlanPointMarker(start, "start", "Start", -7) : ""}
+    ${end ? floorPlanPointMarker(end, "end", "Destination", labelsOverlap ? -22 : -7) : ""}`;
+}
+
+function floorPlanPointMarker(point, className, label, labelOffsetY) {
+  const x = point[0].toFixed(2);
+  const y = point[1].toFixed(2);
+  const width = label === "Destination" ? 62 : 34;
+  return `<g class="pointMarkerGroup ${className}">
+    <circle class="pointMarker ${className}" cx="${x}" cy="${y}" r="3.2"></circle>
+    <g class="pointMarkerLabel ${className}" transform="translate(${x} ${(point[1] + labelOffsetY).toFixed(2)})">
+      <rect x="${(-width / 2).toFixed(1)}" y="-13" width="${width}" height="13" rx="6.5"></rect>
+      <text x="0" y="-4" text-anchor="middle">${label}</text>
+    </g>
+  </g>`;
 }
 
 function floorPlanBounds(elements, edges) {
   const xs = [];
   const ys = [];
-  const baseElements = elements.filter((element) => element.bboxMin && element.bboxMax);
+  const drawableElements = elements.filter((element) => element.bboxMin && element.bboxMax);
+  const layoutElements = drawableElements.filter((element) =>
+    ["IfcSpace", "IfcDoor", "IfcRamp", "IfcRampFlight"].includes(element.ifcType),
+  );
+  const baseElements = layoutElements.some((element) => element.ifcType === "IfcSpace")
+    ? layoutElements
+    : drawableElements;
   for (const element of baseElements) {
     if (!element.bboxMin || !element.bboxMax) continue;
     xs.push(element.bboxMin[0], element.bboxMax[0]);
@@ -1055,7 +1129,7 @@ function floorPlanView(bounds) {
   const width = 1000;
   const worldWidth = Math.max(bounds.maxX - bounds.minX, 1);
   const worldHeight = Math.max(bounds.maxY - bounds.minY, 1);
-  return { width, height: Math.max(1, Math.round(width * worldHeight / worldWidth)) };
+  return { width, height: Math.max(380, Math.min(760, Math.round(width * worldHeight / worldWidth))) };
 }
 
 function floorGeometryContract(elements, edges) {
@@ -1135,6 +1209,7 @@ function showPlanElement(guid, elementsByGuid, issueCounts) {
   const element = elementsByGuid.get(guid);
   if (!element) return;
   const issues = (appData.issues || []).filter((issue) => issue.element_guid === guid);
+  const inspectionChecks = (appData.inspectionChecks || []).filter((check) => check.elementGuid === guid);
   const rows = [
     ["Type", element.ifcType],
     ["Name", cleanElementName(element.name || element.label)],
@@ -1142,8 +1217,9 @@ function showPlanElement(guid, elementsByGuid, issueCounts) {
     ["Depth", valueWithUnit(element.depth, "m")],
     ["Height", valueWithUnit(element.height, "m")],
     ["Issues", String(issueCounts.get(guid) || 0)],
+    ["Inspect checks", String(inspectionChecks.length)],
   ];
-  document.querySelector("#planDetails").innerHTML = `<h3>${escapeHtml(cleanElementName(element.name || element.label))}</h3>${planRows(rows)}${planIssueList(issues)}`;
+  document.querySelector("#planDetails").innerHTML = `<h3>${escapeHtml(cleanElementName(element.name || element.label))}</h3>${planRows(rows)}${planInspectionList(inspectionChecks)}${planIssueList(issues)}`;
 }
 
 function showPlanRoute(edgeId, edgesById, elementsByGuid) {
@@ -1168,7 +1244,39 @@ function planRows(rows) {
 
 function planIssueList(issues) {
   if (!issues.length) return "";
-  return `<div class="planIssues">${issues.map((issue) => `<p><strong>${escapeHtml(issue.rule_id)}</strong><br>${escapeHtml(issue.short_text || issue.details)}</p>`).join("")}</div>`;
+  const groups = new Map();
+  for (const issue of issues) {
+    const description = issue.short_text || issue.details || "Accessibility requirement failed.";
+    const key = `${issue.rule_id || "accessibility"}|${description}`;
+    if (!groups.has(key)) groups.set(key, { ruleId: issue.rule_id || "Accessibility issue", description, count: 0 });
+    groups.get(key).count += 1;
+  }
+  const cards = [...groups.values()].map((issue) => `<article class="planIssueCard">
+    <div class="planIssueCardHeader"><span class="planIssueCardIcon" aria-hidden="true">!</span><div><h4>${escapeHtml(issue.ruleId)}</h4>${issue.count > 1 ? `<span class="planIssueOccurrence">${issue.count} findings</span>` : ""}</div></div>
+    <p class="planIssueComparison">${escapeHtml(issue.description)}</p>
+  </article>`).join("");
+  return `<section class="planElementIssues"><h3>Accessibility issues</h3><div class="planIssueCards">${cards}</div></section>`;
+}
+
+function planInspectionList(checks) {
+  if (!checks.length) return "";
+  const cards = checks.map((check) => {
+    const measured = check.measured == null ? "not available" : valueWithUnit(check.measured, check.unit);
+    const required = valueWithUnit(check.required, check.unit);
+    const comparison = check.comparison === "minimum" ? "minimum" : "maximum";
+    const status = check.status === "pass" ? "passed" : check.status === "fail" ? "failed" : check.status === "advisory" ? "review" : "not available";
+    const movement = check.ruleId === "corridor_movement_area"
+      ? `<p>A ${valueWithUnit(check.movementSpaceM, "m")} × ${valueWithUnit(check.movementSpaceM, "m")} passing area is required at intervals no greater than ${required}.</p>`
+      : "";
+    const note = check.note ? `<p>${escapeHtml(check.note)}</p>` : "";
+    const icon = check.status === "fail" ? "!" : check.status === "pass" ? "P" : "i";
+    return `<article class="planInspectionCard ${escapeHtml(check.status)}">
+      <div class="planInspectionHeader"><span class="planInspectionIcon" aria-hidden="true">${icon}</span><strong>${escapeHtml(check.label)}</strong><span class="planInspectionStatus">${escapeHtml(status)}</span></div>
+      <dl class="planInspectionValues"><dt>Measured</dt><dd>${escapeHtml(measured)}</dd><dt>Rule</dt><dd>${escapeHtml(comparison)} ${escapeHtml(required)}</dd></dl>
+      ${movement}${note}<p class="planInspectionSource">Source: ${escapeHtml(check.source || "not available")}</p>
+    </article>`;
+  }).join("");
+  return `<section class="planInspection"><h3>Inspection checks</h3>${cards}</section>`;
 }
 
 function setupAssistant() {
@@ -1794,10 +1902,10 @@ function updateSimulationModeControls() {
 function addSimulationPointMarkers() {
   if (simInteractionMode !== "point" || pointCheck.floor !== simFloorName) return;
   const markerData = [
-    [pointCheck.start, 0x2159a6],
-    [pointCheck.end, 0x6b2ca0],
+    [pointCheck.start, 0x2159a6, "Start", 34],
+    [pointCheck.end, 0x6b2ca0, "Destination", 76],
   ];
-  for (const [raw, color] of markerData) {
+  for (const [raw, color, label, labelPixelOffset] of markerData) {
     if (!raw) continue;
     const point = simFloorTransform.point(raw);
     const marker = new THREE.Mesh(
@@ -1807,7 +1915,82 @@ function addSimulationPointMarkers() {
     marker.position.set(point.x, simFloorTransform.floorSurfaceY + simFloorTransform.length(0.13), point.z);
     marker.castShadow = true;
     simWorld.add(marker);
+    const labelSprite = createSimulationPointLabel(label, color);
+    labelSprite.userData.pointMarkerPixelWidth = label === "Destination" ? 120 : 76;
+    labelSprite.userData.pointMarkerPixelHeight = 30;
+    labelSprite.userData.pointMarkerPixelOffsetY = labelPixelOffset;
+    labelSprite.userData.pointMarkerAnchor = new THREE.Vector3(
+      point.x,
+      simFloorTransform.floorSurfaceY + simFloorTransform.length(0.13),
+      point.z,
+    );
+    labelSprite.position.copy(labelSprite.userData.pointMarkerAnchor);
+    simWorld.add(labelSprite);
   }
+  updateSimulationPointLabelScales();
+}
+
+function createSimulationPointLabel(text, color) {
+  const canvas = document.createElement("canvas");
+  canvas.width = text === "Destination" ? 1024 : 640;
+  canvas.height = 256;
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "rgba(255, 255, 255, 0.84)";
+  ctx.strokeStyle = `#${color.toString(16).padStart(6, "0")}`;
+  ctx.lineWidth = 12;
+  ctx.beginPath();
+  ctx.roundRect(16, 16, canvas.width - 32, canvas.height - 32, 104);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#1f2628";
+  ctx.font = "700 104px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, canvas.width / 2, canvas.height / 2 + 4);
+  const texture = configureSimulationTextTexture(new THREE.CanvasTexture(canvas));
+  const material = new THREE.SpriteMaterial({
+    map: texture,
+    transparent: true,
+    depthTest: false,
+    depthWrite: false,
+  });
+  const sprite = new THREE.Sprite(material);
+  sprite.userData.pointMarkerLabel = text;
+  sprite.renderOrder = 100;
+  return sprite;
+}
+
+function configureSimulationTextTexture(texture) {
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.generateMipmaps = true;
+  texture.anisotropy = Math.min(8, simRenderer?.capabilities?.getMaxAnisotropy?.() || 1);
+  texture.needsUpdate = true;
+  return texture;
+}
+
+function updateSimulationPointLabelScales() {
+  const height = simRenderer?.domElement?.clientHeight || 0;
+  if (!simWorld || !simCamera || !height || !Number.isFinite(simCamera.zoom) || simCamera.zoom <= 0) return;
+  const worldPerPixel = (simCamera.top - simCamera.bottom) / (height * simCamera.zoom);
+  const screenUp = new THREE.Vector3(0, 1, 0).applyQuaternion(simCamera.quaternion).normalize();
+  simWorld.traverse((object) => {
+    if (!object.userData?.pointMarkerLabel) return;
+    object.scale.set(
+      object.userData.pointMarkerPixelWidth * worldPerPixel,
+      object.userData.pointMarkerPixelHeight * worldPerPixel,
+      1,
+    );
+    const anchor = object.userData.pointMarkerAnchor;
+    if (anchor) {
+      object.position.copy(anchor).addScaledVector(
+        screenUp,
+        object.userData.pointMarkerPixelOffsetY * worldPerPixel,
+      );
+    }
+  });
 }
 
 function setupSimulationPointPicking() {
@@ -1818,26 +2001,19 @@ function setupSimulationPointPicking() {
     simPointGesture = { x: event.clientX, y: event.clientY, moved: false };
   });
   canvas.addEventListener("pointermove", (event) => {
+    if (simInteractionMode === "point") updateCursorCoordinateOutput("sim", simulationPointFromEvent(event));
     if (!simPointGesture) return;
     if (Math.abs(event.clientX - simPointGesture.x) + Math.abs(event.clientY - simPointGesture.y) > 5) simPointGesture.moved = true;
   });
+  canvas.addEventListener("pointerleave", () => updateCursorCoordinateOutput("sim", null));
   canvas.addEventListener("pointerup", (event) => {
     if (!simPointGesture || simPointGesture.moved || simInteractionMode !== "point" || pointCheck.pending) {
       simPointGesture = null;
       return;
     }
     simPointGesture = null;
-    const rect = canvas.getBoundingClientRect();
-    const mouse = new THREE.Vector2(
-      ((event.clientX - rect.left) / rect.width) * 2 - 1,
-      -((event.clientY - rect.top) / rect.height) * 2 + 1,
-    );
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(mouse, simCamera);
-    const scenePoint = new THREE.Vector3();
-    const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -simFloorTransform.floorSurfaceY);
-    if (!raycaster.ray.intersectPlane(floorPlane, scenePoint)) return;
-    const selected = simFloorTransform.inversePoint(scenePoint);
+    const selected = simulationPointFromEvent(event);
+    if (!selected) return;
     if (pointCheck.floor !== simFloorName || !pointCheck.start || pointCheck.end) {
       pointRequestSequence += 1;
       pointCheck = { ...emptyPointCheck(simFloorName), start: selected };
@@ -1852,6 +2028,23 @@ function setupSimulationPointPicking() {
   canvas.addEventListener("pointercancel", () => {
     simPointGesture = null;
   });
+}
+
+function simulationPointFromEvent(event) {
+  const canvas = simRenderer?.domElement;
+  if (!canvas || !simCamera || !simFloorTransform) return null;
+  const rect = canvas.getBoundingClientRect();
+  const mouse = new THREE.Vector2(
+    ((event.clientX - rect.left) / rect.width) * 2 - 1,
+    -((event.clientY - rect.top) / rect.height) * 2 + 1,
+  );
+  const raycaster = new THREE.Raycaster();
+  raycaster.setFromCamera(mouse, simCamera);
+  const scenePoint = new THREE.Vector3();
+  const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -simFloorTransform.floorSurfaceY);
+  return raycaster.ray.intersectPlane(floorPlane, scenePoint)
+    ? simFloorTransform.inversePoint(scenePoint)
+    : null;
 }
 
 function setupFloorSelect() {
@@ -2550,17 +2743,17 @@ function addCylinder(group, position, radius, height, color) {
 
 function addLabelBoard(group, text, position, color, transform) {
   const canvas = document.createElement("canvas");
-  canvas.width = 256;
-  canvas.height = 96;
+  canvas.width = 1024;
+  canvas.height = 384;
   const ctx = canvas.getContext("2d");
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = `#${color.toString(16).padStart(6, "0")}`;
-  ctx.fillRect(0, 0, 12, canvas.height);
+  ctx.fillRect(0, 0, 48, canvas.height);
   ctx.fillStyle = "#1f2628";
-  ctx.font = "bold 28px Arial";
-  ctx.fillText(text, 28, 58);
-  const texture = new THREE.CanvasTexture(canvas);
+  ctx.font = "bold 112px Arial";
+  ctx.fillText(text, 112, 232);
+  const texture = configureSimulationTextTexture(new THREE.CanvasTexture(canvas));
   const mesh = new THREE.Mesh(
     new THREE.PlaneGeometry(transform.length(1.35), transform.length(0.5)),
     new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide }),
@@ -2608,6 +2801,7 @@ function animateSimulation() {
   updateChairPose(simProgress, delta);
   updateSimulationStatus(blocked);
   simControls?.update();
+  updateSimulationPointLabelScales();
   simRenderer.render(simScene, simCamera);
 }
 

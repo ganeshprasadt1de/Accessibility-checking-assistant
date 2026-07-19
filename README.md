@@ -8,6 +8,7 @@ The application contains:
 - IFC-to-RDF conversion with the included IFCtoLBD 2.43.4 Java runtime
 - four-direction A* routing on precomputed 0.01 m floor tiles
 - interactive point-to-point checks using the same 0.01 m navigation data
+- 2D Inspect cards for door, corridor, turning-area, passing-area and ramp measurements
 - shortest door-graph routes calculated with Dijkstra's algorithm
 - SHACL validation with pySHACL
 - matching 2D floor plans and a 2.5D wheelchair simulation
@@ -283,7 +284,7 @@ The website contains:
 
 - `Home`: upload IFC files and manage generated model packages
 - `Check Results`: inspect extracted elements, SHACL results and grounded explanations
-- `Floor Plan 2D`: inspect floor geometry and route overlays
+- `Floor Plan 2D`: inspect a large floor drawing with issue bubbles, measurement cards, route overlays and point-to-point checks
 - `Building Model`: inspect the compact GLB model
 - `Wheelchair Simulation`: play clear and blocked routes on a 2.5D floor slice
 
@@ -312,6 +313,10 @@ The supplied SHACL rules check:
 - ramp slope of at most 6 percent
 
 These checks support model review. They do not replace professional accessibility approval, fire-safety review or requirements from the responsible local authority.
+
+The 2D Inspect mode also reports element-level measurements without changing the SHACL result or route status. It covers door width and height, corridor width and slope, 1.50 m turning space, 1.80 m by 1.80 m passing areas at intervals no greater than 15 m, and ramp width, slope and flight length. Missing or low door-height data is shown as advisory because it is not one of the supplied SHACL compliance constraints.
+
+Issue bubbles are placed over the related IFC element. Selecting a bubble opens the measured value, rule limit, status, evidence source and any linked SHACL issue. The Inspect presentation is separate from point-to-point routing, so these cards do not alter route generation or compliance results.
 
 ## Route Construction
 
@@ -346,12 +351,16 @@ SHACL produces the pass or fail result. Ollama does not decide compliance. It se
 
 The 2D floor plan and wheelchair simulation use the same floor elements, route edges, door boxes, blocker boxes, route coordinates and status colours.
 
+In Point-to-point mode, both views show the current mouse position in IFC floor coordinates below the coordinate fields. The 2.5D readout is calculated by intersecting the camera ray with the selected floor plane, so it stays aligned after orbiting or panning the view.
+
+The selected start and destination use small point markers with labelled bubbles in both views. The 2.5D labels face the active camera and use high-resolution canvas textures, so they remain readable after orbiting. Stair and ramp blocker boards use the same high-resolution texture method. Precomputed candidate lines remain available in the package but are not drawn in the 2.5D foreground; only the selected point route or the thick automatic floor-check route is displayed.
+
 The simulation uses one uniform metres-to-scene scale. Routes are placed on one selected floor-slice surface. The wheelchair is grounded from its calculated mesh bounds so the tyre bottom touches that surface. Orbit, pan and zoom change the camera only; they do not change route coordinates.
 
 ## Generated Package Files
 
 ```text
-output/app_package/app_data.json         browser data, elements, issues and routes
+output/app_package/app_data.json         browser data, elements, inspection checks, issues and routes
 output/app_package/raw_lbd_graph.ttl     IFCtoLBD RDF graph
 output/app_package/lbd_graph.ttl         RDF with derived measurements and routes
 output/app_package/shacl_report.ttl      complete SHACL report
@@ -370,6 +379,7 @@ preprocess.py                              preprocessing entry point
 server.py                                  local server, Model Library and Ollama control
 requirements.txt                           exact Python dependency versions
 backend/geometry.py                        IFC geometry and bounding-box extraction
+backend/inspection.py                      2D element inspection measurements and evidence
 backend/routes.py                          IFC door candidates, route facts and door graph
 backend/navigation.py                      shared 0.01 m tiled grid, A* and final audit
 backend/simulation_routes.py               strict automatic floor-check route geometry

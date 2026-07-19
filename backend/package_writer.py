@@ -16,6 +16,7 @@ def write_json_package(
     missing_geometry: list[str],
     shacl_summary: dict,
     ifctolbd_note: str,
+    inspection_checks: list[dict] | None = None,
 ) -> None:
     doors = [e.guid for e in elements if e.ifc_type == "IfcDoor"]
     route_index = {door: routes_from_start(edges, door) for door in doors}
@@ -36,6 +37,7 @@ def write_json_package(
         "rules": RULE_LIMITS.__dict__,
         "elements": [_element_dict(e) for e in elements],
         "issues": [issue.__dict__ for issue in issues],
+        "inspectionChecks": inspection_checks or [],
         "routeEdges": [_edge_dict(e) for e in edges],
         "routesByDoor": route_index,
         "accessibleRoutesByDoor": accessible_route_index,
@@ -53,6 +55,7 @@ def write_json_package(
 
 
 def _element_dict(e: Element) -> dict:
+    public_extra = {key: value for key, value in e.extra.items() if key != "_inspectionFootprint"}
     return {
         "guid": e.guid,
         "ifcType": e.ifc_type,
@@ -66,7 +69,7 @@ def _element_dict(e: Element) -> dict:
         "bboxMin": e.bbox_min,
         "bboxMax": e.bbox_max,
         "storey": e.storey,
-        "extra": e.extra,
+        "extra": public_extra,
     }
 
 

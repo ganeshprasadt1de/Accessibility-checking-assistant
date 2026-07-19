@@ -31,6 +31,82 @@ def _bbox_from_shape(shape) -> tuple[tuple[float, float, float], tuple[float, fl
     return (min(xs), min(ys), min(zs)), (max(xs), max(ys), max(zs))
 
 
+def _shape_plan_size(shape) -> tuple[float, float] | None:
+    from shapely.geometry import MultiPoint
+
+    verts = getattr(shape.geometry, "verts", None)
+    if not verts:
+        return None
+    rectangle = MultiPoint(
+        [(float(verts[index]), float(verts[index + 1])) for index in range(0, len(verts), 3)]
+    ).minimum_rotated_rectangle
+    if rectangle.is_empty or not hasattr(rectangle, "exterior"):
+        return None
+    coordinates = list(rectangle.exterior.coords)
+    lengths = [math.dist(first, second) for first, second in zip(coordinates, coordinates[1:])]
+    lengths = [value for value in lengths if value > 1e-6]
+    return (min(lengths), max(lengths)) if lengths else None
+
+
+def _shape_floor_slope_percent(shape) -> float | None:
+    verts = getattr(shape.geometry, "verts", None)
+    faces = getattr(shape.geometry, "faces", None)
+    if not verts or not faces:
+        return None
+    points = [
+        (float(verts[index]), float(verts[index + 1]), float(verts[index + 2]))
+        for index in range(0, len(verts), 3)
+    ]
+    min_z = min(point[2] for point in points)
+    max_z = max(point[2] for point in points)
+    limit = min_z + min(1.5, (max_z - min_z) * 0.45)
+    areas: dict[float, float] = {}
+    for index in range(0, len(faces), 3):
+        first, second, third = [points[int(value)] for value in faces[index : index + 3]]
+        if max(first[2], second[2], third[2]) > limit:
+            continue
+        first_edge = tuple(second[value] - first[value] for value in range(3))
+        second_edge = tuple(third[value] - first[value] for value in range(3))
+        normal = (
+            first_edge[1] * second_edge[2] - first_edge[2] * second_edge[1],
+            first_edge[2] * second_edge[0] - first_edge[0] * second_edge[2],
+            first_edge[0] * second_edge[1] - first_edge[1] * second_edge[0],
+        )
+        projected_area = abs(normal[2]) / 2
+        if projected_area <= 1e-6:
+            continue
+        slope = round(math.hypot(normal[0], normal[1]) / abs(normal[2]) * 100, 2)
+        areas[slope] = areas.get(slope, 0.0) + projected_area
+    if not areas:
+        return None
+    total = sum(areas.values())
+    significant = [slope for slope, area in areas.items() if area >= max(0.01, total * 0.005)]
+    return max(significant or areas)
+
+
+def _shape_footprint_mapping(shape) -> dict | None:
+    from shapely.geometry import Polygon, mapping
+    from shapely.ops import unary_union
+
+    verts = getattr(shape.geometry, "verts", None)
+    faces = getattr(shape.geometry, "faces", None)
+    if not verts or not faces:
+        return None
+    polygons = []
+    for index in range(0, len(faces), 3):
+        points = []
+        for vertex_index in faces[index : index + 3]:
+            offset = int(vertex_index) * 3
+            points.append((float(verts[offset]), float(verts[offset + 1])))
+        polygon = Polygon(points)
+        if polygon.is_valid and polygon.area > 1e-6:
+            polygons.append(polygon)
+    if not polygons:
+        return None
+    footprint = unary_union(polygons).buffer(0).simplify(0.005, preserve_topology=True)
+    return mapping(footprint) if not footprint.is_empty else None
+
+
 def _storey_name(obj) -> str | None:
     try:
         for rel in getattr(obj, "ContainedInStructure", []) or []:
@@ -217,6 +293,26 @@ def extract_elements(ifc_path: Path) -> tuple[list[Element], list[str]]:
     objects_by_type = {ifc_type: list(model.by_type(ifc_type)) for ifc_type in wanted}
     geometry_targets = [obj for ifc_type in wanted for obj in objects_by_type[ifc_type]]
     geometry_boxes: dict[int, tuple[tuple[float, float, float], tuple[float, float, float]]] = {}
+    geometry_inspection: dict[int, dict] = {}
+    inspection_types = {
+        "IfcSpace",
+        "IfcRamp",
+        "IfcRampFlight",
+        "IfcWall",
+        "IfcColumn",
+        "IfcStair",
+        "IfcStairFlight",
+    }
+    inspection_ids = {
+        obj.id()
+        for ifc_type in inspection_types
+        for obj in objects_by_type[ifc_type]
+    }
+    slope_inspection_ids = {
+        obj.id()
+        for ifc_type in {"IfcSpace", "IfcRamp", "IfcRampFlight"}
+        for obj in objects_by_type[ifc_type]
+    }
     geometry_threads = 1 if low_end_enabled() else max(1, os.cpu_count() or 1)
     if geometry_targets:
         iterator = ifcopenshell.geom.iterator(
@@ -231,6 +327,12 @@ def extract_elements(ifc_path: Path) -> tuple[list[Element], list[str]]:
                 bbox = _bbox_from_shape(shape)
                 if bbox:
                     geometry_boxes[shape.id] = bbox
+                if shape.id in inspection_ids:
+                    geometry_inspection[shape.id] = {
+                        "planSize": _shape_plan_size(shape),
+                        "floorSlopePercent": _shape_floor_slope_percent(shape) if shape.id in slope_inspection_ids else None,
+                        "footprint": _shape_footprint_mapping(shape),
+                    }
                 if not iterator.next():
                     break
 
@@ -260,6 +362,9 @@ def extract_elements(ifc_path: Path) -> tuple[list[Element], list[str]]:
             height = abs(mx[2] - mn[2])
             center = ((mn[0] + mx[0]) / 2, (mn[1] + mx[1]) / 2, (mn[2] + mx[2]) / 2)
             extra = _semantic_extra(obj, ifc_type, height)
+            inspection = geometry_inspection.get(obj.id(), {})
+            if inspection.get("footprint"):
+                extra["_inspectionFootprint"] = inspection["footprint"]
             if ifc_type == "IfcDoor":
                 declared_width = _length_attribute_number(obj, "OverallWidth", unit_scale) or _length_property_number(
                     obj,
@@ -267,6 +372,37 @@ def extract_elements(ifc_path: Path) -> tuple[list[Element], list[str]]:
                     unit_scale,
                 )
                 extra["derivedDoorWidthM"] = declared_width or _door_opening_width(width, depth)
+                declared_height = _length_property_number(obj, ["ClearHeight"], unit_scale)
+                if declared_height is not None:
+                    extra["derivedDoorHeightM"] = declared_height
+                    extra["doorHeightSource"] = "ClearHeight property"
+                    extra["inspectionDoorWidthM"] = extra["derivedDoorWidthM"]
+                    extra["inspectionDoorHeightM"] = declared_height
+                else:
+                    declared_height = _length_attribute_number(obj, "OverallHeight", unit_scale) or _length_property_number(
+                        obj,
+                        ["OverallHeight", "Height"],
+                        unit_scale,
+                    )
+                    extra["derivedDoorHeightM"] = declared_height or height
+                    extra["doorHeightSource"] = "IfcDoor.OverallHeight" if declared_height is not None else "IFC door geometry"
+                    dimensions_swapped = bool(
+                        declared_width is not None
+                        and declared_height is not None
+                        and declared_width >= 1.80
+                        and declared_height <= 1.50
+                    )
+                    if dimensions_swapped:
+                        extra["inspectionDoorWidthM"] = declared_height
+                        extra["inspectionDoorHeightM"] = declared_width
+                        extra["inspectionDoorDimensionNote"] = "IfcDoor OverallWidth and OverallHeight are stored in reverse order."
+                        extra["doorHeightSource"] = "swapped IfcDoor overall dimensions"
+                        extra["doorWidthSource"] = "swapped IfcDoor overall dimensions"
+                    else:
+                        extra["inspectionDoorWidthM"] = extra["derivedDoorWidthM"]
+                        extra["inspectionDoorHeightM"] = extra["derivedDoorHeightM"]
+                if "doorWidthSource" not in extra:
+                    extra["doorWidthSource"] = "IFC declared width" if declared_width is not None else "IFC door geometry"
                 extra["routeDoorCenterPoint"] = ",".join(f"{v:.4f}" for v in center)
             if ifc_type in {"IfcRamp", "IfcRampFlight"}:
                 run = max(width, depth)
@@ -275,11 +411,21 @@ def extract_elements(ifc_path: Path) -> tuple[list[Element], list[str]]:
                 extra["rampUsableWidthM"] = min(width, depth)
                 extra["rampSlopePercent"] = (rise / run * 100) if run > 0 else None
                 extra["rampPlatformLengthM"] = _length_property_number(obj, ["PlatformLength", "LandingLength"], unit_scale)
+                inspection_size = geometry_inspection.get(obj.id(), {}).get("planSize")
+                extra["inspectionRampRunLengthM"] = inspection_size[1] if inspection_size else run
+                extra["inspectionRampRunSource"] = "minimum rotated IFC ramp footprint" if inspection_size else "axis-aligned IFC ramp bounds"
             if ifc_type == "IfcSpace":
                 extra["derivedClearSpaceWidthM"] = min(width, depth)
                 extra["movementAreaWidthM"] = min(width, depth)
                 extra["movementAreaDepthM"] = max(width, depth)
                 extra["turningSpaceM"] = min(width, depth)
+                plan_size = inspection.get("planSize")
+                if plan_size:
+                    extra["derivedCorridorLengthM"] = plan_size[1]
+                else:
+                    extra["derivedCorridorLengthM"] = max(width, depth)
+                extra["derivedCorridorSlopePercent"] = inspection.get("floorSlopePercent")
+                extra["corridorSlopeSource"] = "IFC space floor faces" if inspection.get("floorSlopePercent") is not None else "unavailable"
             elements.append(
                 Element(
                     guid=guid,

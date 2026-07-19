@@ -17,6 +17,7 @@ if "--low-end" in sys.argv:
 
 from backend.config import ROOT, default_ifctolbd_zip
 from backend.geometry import extract_elements
+from backend.inspection import build_inspection_checks
 from backend.glb_export import export_box_glb
 from backend.ifc_tools import (
     add_geometry_to_graph,
@@ -61,6 +62,8 @@ def main() -> int:
         print("Low-end mode: identical route checks with reduced CPU pressure.")
     elements, missing_geometry = extract_elements(ifc_path)
     print(f"Extracted elements: {len(elements)}")
+    inspection_checks = build_inspection_checks(elements)
+    print(f"2D inspection checks: {len(inspection_checks)}")
 
     raw_ttl = output / "raw_lbd_graph.ttl"
     ifctolbd_note = "raw graph created by IFCtoLBD"
@@ -80,7 +83,16 @@ def main() -> int:
         "resultCount": 0,
         "message": "Provisional package used only to build the 0.01 m navigation tiles.",
     }
-    write_json_package(output, elements, [], edges, missing_geometry, provisional_shacl, ifctolbd_note)
+    write_json_package(
+        output,
+        elements,
+        [],
+        edges,
+        missing_geometry,
+        provisional_shacl,
+        ifctolbd_note,
+        inspection_checks,
+    )
     print("Building tiled navigation package at 0.01 m resolution")
     navigation_index = build_navigation_package(output / "app_data.json", output)
     print("Auditing strict 0.01 m routes")
@@ -129,7 +141,16 @@ def main() -> int:
             graph.add((route_uri, ACC.routeFailureReason, Literal(reason)))
     graph.serialize(destination=lbd_ttl, format="turtle")
 
-    write_json_package(output, elements, issues, edges, missing_geometry, shacl_summary, ifctolbd_note)
+    write_json_package(
+        output,
+        elements,
+        issues,
+        edges,
+        missing_geometry,
+        shacl_summary,
+        ifctolbd_note,
+        inspection_checks,
+    )
     app_data_path = output / "app_data.json"
     app_data = json.loads(app_data_path.read_text(encoding="utf-8"))
     app_data["summary"]["pointNavigation"] = {

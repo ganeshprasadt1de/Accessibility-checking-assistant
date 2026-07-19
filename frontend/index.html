@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Wheelchair Route Checker</title>
-    <link rel="stylesheet" href="styles.css?v=20260715-point-audit-2" />
+    <link rel="stylesheet" href="styles.css?v=20260719-plan-inspect-8" />
   </head>
   <body>
     <header class="topbar">
@@ -99,6 +99,7 @@
               <label>End X <input id="planPointEndX" type="number" step="any" required /></label>
               <label>End Y <input id="planPointEndY" type="number" step="any" required /></label>
               <button type="submit">Check coordinates</button>
+              <output id="planPointCursorCoordinates" class="pointCursorCoordinates">Mouse coordinates: move over the floor plan</output>
             </form>
             <div class="planZoom">
               <button id="planResetView">Reset</button>
@@ -168,6 +169,7 @@
               <label>End X <input id="simPointEndX" type="number" step="any" required /></label>
               <label>End Y <input id="simPointEndY" type="number" step="any" required /></label>
               <button type="submit">Check coordinates</button>
+              <output id="simPointCursorCoordinates" class="pointCursorCoordinates">Mouse coordinates: move over the floor view</output>
             </form>
             <label class="speedControl">Speed <input id="simSpeed" type="range" min="0.35" max="2.4" step="0.05" value="0.85" /></label>
             <button id="simPlayPause">Pause</button>
@@ -199,6 +201,6 @@
         }
       }
     </script>
-    <script type="module" src="app.js?v=20260716-point-animation-3"></script>
+    <script type="module" src="app.js?v=20260719-plan-inspect-12"></script>
   </body>
 </html>

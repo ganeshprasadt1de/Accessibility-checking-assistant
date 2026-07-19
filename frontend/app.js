@@ -1940,7 +1940,6 @@ function buildFloorScenario() {
     build(group) {
       addFloorBase(group, floorElements, transform);
       addFloorSpaces(group, floorElements, transform);
-      addFloorRouteLines(group, floorEdges, transform);
       addFloorDoors(group, floorDoors, floorEdges, transform);
       addFloorBlockers(group, floorElements, transform);
     },

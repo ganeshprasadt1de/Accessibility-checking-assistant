@@ -18,12 +18,12 @@ The project's own code is source-available for non-commercial use under the [Pol
 
 ## Project Team
 
-| Name | Contribution |
+| Name | Programme |
 | --- | --- |
-| Ganesh Prasad Tamminedi | University project team and software contributor |
-| Yaoqiao Sha | University project team and software contributor |
-| Simon Knorr | University project team |
-| Yang Yu | University project team |
+| Yaoqiao Sha | CS |
+| Ganesh Prasad Tamminedi | CS |
+| Simon Knorr | ITECH |
+| Yang Yu | Architecture |
 
 ## Before You Start
 
